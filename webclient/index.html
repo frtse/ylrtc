@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>SFU Demo</title>
+  <style>
+    video {
+      border: 1px solid #000;
+      width: 800px;
+      height: 600px;
+    }
+
+    #input {
+      border: 1px solid #000;
+      width: 800px;
+    }
+
+    #controls {
+      border: 1px solid #000;
+      width: 800px;
+    }
+  </style>
+</head>
+
+<body>
+  <video id="localPlayer" autoplay muted controls></video>
+
+  <div id="input">
+    Signaling Server Setting.
+    <br />
+    <input id="inputIp" type="text" name="ip" value="192.168.1.104">IP address of server.</input>
+    <br />
+    <input id="inputPort" type="text" name="port" value=8000>Listening port of server.</input>
+    <br />
+  </div>
+  <div id="controls">
+    Controls
+    <br />
+    <button id="joinRoom">joinRoom</button>
+    <button id="startPublish">startPublish</button>
+    <button id="stopPublish">stopPublish</button>
+    <button id="muteVideoPublish">muteVideoPublish</button>
+    <button id="unmuteVideoPublish">unmuteVideoPublish</button>
+    <button id="muteVideoSubscribe">muteVideoSubscribe</button>
+    <button id="unmuteVideoSubscribe">unmuteVideoSubscribe</button>
+  </div>
+</body>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/adapter.js"></script>
+<script src="js/eventDispatcher.js"></script>
+<script src="js/device.js"></script>
+<script src="js/signaling.js"></script>
+<script src="js/subscribeStream.js"></script>
+<script src="js/publisheStream.js"></script>
+<script src="js/client.js"></script>
+<script>
+  var inputIp = document.getElementById('inputIp');
+  var inputPort = document.getElementById('inputPort');
+  var localPlayer = document.getElementById('localPlayer');
+
+  var joinRoom = document.getElementById("joinRoom");
+  var startPublish = document.getElementById("startPublish");
+  var stopPublish = document.getElementById("stopPublish");
+  var muteVideoPublish = document.getElementById("muteVideoPublish");
+  var unmuteVideoPublish = document.getElementById("unmuteVideoPublish");
+  var muteVideoSubscribe = document.getElementById("muteVideoSubscribe");
+  var unmuteVideoSubscribe = document.getElementById("unmuteVideoSubscribe");
+
+  startPublish.disabled = true;
+  stopPublish.disabled = true;
+  muteVideoPublish.disabled = true;
+  unmuteVideoPublish.disabled = true;
+  muteVideoSubscribe.disabled = true;
+  unmuteVideoSubscribe.disabled = true;
+
+  var gLocalMediaStream = null;
+  var gRemoteMediaStream = null;
+  var publisheStream = null;
+  var subscribeStream = null;
+
+  function randomString(e) {    
+    e = e || 32;
+    var t = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678",
+    a = t.length,
+    n = "";
+    for (i = 0; i < e; i++)
+      n += t.charAt(Math.floor(Math.random() * a));
+    return n
+  }
+
+  var client = new Client(inputIp.value, inputPort.value);
+
+  joinRoom.addEventListener('click', () => {
+    client.join("AABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEABCD", randomString(32)).then((roomInfo) => {
+      console.log("Join room success.");
+      console.log("room info = ", roomInfo);
+      startPublish.disabled = false;
+      stopPublish.disabled = false;
+      muteVideoPublish.disabled = false;
+      unmuteVideoPublish.disabled = false;
+      muteVideoSubscribe.disabled = false;
+      unmuteVideoSubscribe.disabled = false;
+      roomInfo.streams.forEach(function (e) {
+        subscribe(e);
+      });
+    }).catch(() => {
+      console.log("Join room failed.");
+    });
+  });
+
+  startPublish.addEventListener('click', async() => {
+    let device = await Device.CreateDevice("camera", {audio: true, video: true});
+    localPlayer.srcObject = device.mediaStream();
+    localPlayer.play();
+    publisheStream = client.CreatePublisheStream();
+    await publisheStream.publish(device);
+  });
+
+  stopPublish.addEventListener('click', () => {
+    publisheStream.unpublish();
+  });
+
+  function subscribe(remoteStream) {
+    subscribeStream = client.CreateSubscribeStream();
+    subscribeStream.subscribe(remoteStream).then((mediaStream) => {
+      let $video = $(`<video controls autoplay id=${subscribeStream.Id()}></video>`);
+      $video.get(0).srcObject = mediaStream;
+      $('body').append($video);
+    }).catch((e) => {
+      console.log("Subscribe failed. ", e);
+    });
+
+    subscribeStream.addEventListener("mute", (type) => {
+      console.log("subscribeStream mute event type = ", type);
+    });
+    subscribeStream.addEventListener("unmute", (type) => {
+      console.log("subscribeStream unmute event type = ", type);
+    });
+    subscribeStream.addEventListener("ended", (subscribeStreamId) => {
+      console.log("subscribeStream end ", subscribeStreamId);
+      $(`#${subscribeStream.Id()}`).remove();
+    });
+  }
+
+  muteVideoPublish.addEventListener('click', () => {
+    publisheStream.mute("video");
+  });
+
+  unmuteVideoPublish.addEventListener('click', () => {
+    publisheStream.unmute("video");
+  });
+
+  muteVideoSubscribe.addEventListener('click', () => {
+    subscribeStream.mute("video");
+  });
+
+  unmuteVideoSubscribe.addEventListener('click', () => {
+    subscribeStream.unmute("video");
+  });
+
+  client.addEventListener("streamAdded", (remoteStream) => {
+    console.log("add stream id = " + remoteStream.publishStreamId);
+    subscribe(remoteStream);
+  });
+
+  client.addEventListener("participantJoined", (id) => {
+    console.log("participantJoined id = ", id);
+  });
+
+  client.addEventListener("participantLeft", (id) => {
+    console.log("participantLeft id = ", id);
+  });
+</script>
+
+</html>

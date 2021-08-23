@@ -1,0 +1,268 @@
+#include "rtp_packet.h"
+
+#include <cassert>
+#include <iostream>
+
+#include "byte_buffer.h"
+#include "spdlog/spdlog.h"
+#include "utils.h"
+
+const uint8_t kNalTypeMask = 0x1F;
+const uint8_t kStapA = 24;
+const uint8_t kFuA = 28;
+const uint8_t kFuStart = 0x80;
+const uint8_t kFuEnd = 0x40;
+
+void FixedRtpHeader::SetCC(uint8_t cc) {
+  cc_ = cc;
+}
+
+uint8_t FixedRtpHeader::GetCC() {
+  return cc_;
+}
+
+void FixedRtpHeader::SetHasExtension(uint8_t has_extension) {
+  has_extension_ = has_extension;
+}
+
+uint8_t FixedRtpHeader::GetHasExtension() {
+  return has_extension_;
+}
+
+void FixedRtpHeader::SetPadding(uint8_t padding) {
+  padding_ = padding;
+}
+
+uint8_t FixedRtpHeader::GetPadding() {
+  return padding_;
+}
+
+void FixedRtpHeader::SetVersion(uint8_t version) {
+  version_ = version;
+}
+
+uint8_t FixedRtpHeader::GetVersion() {
+  return version_;
+}
+
+void FixedRtpHeader::SetPayloadType(uint8_t payload_type) {
+  payload_type_ = payload_type;
+}
+
+uint8_t FixedRtpHeader::GetPayloadType() {
+  return payload_type_;
+}
+
+void FixedRtpHeader::SetMarker(uint8_t marker) {
+  marker_ = marker;
+}
+
+uint8_t FixedRtpHeader::GetMarker() {
+  return marker_;
+}
+
+void FixedRtpHeader::SetSeqNum(uint16_t seqnum) {
+  StoreUInt16BE((uint8_t*)&seqnum_, seqnum);
+}
+
+uint16_t FixedRtpHeader::GetSeqNum() {
+  return LoadUInt16BE((uint8_t*)&seqnum_);
+}
+
+void FixedRtpHeader::SetTimestamp(uint32_t timestamp) {
+  StoreUInt32BE((uint8_t*)&timestamp_, timestamp);
+}
+
+uint32_t FixedRtpHeader::GetTimestamp() {
+  return LoadUInt32BE((uint8_t*)&timestamp_);
+}
+
+void FixedRtpHeader::SetSSrc(uint32_t ssrc) {
+  StoreUInt32BE((uint8_t*)&ssrc_, ssrc);
+}
+
+uint32_t FixedRtpHeader::GetSSrc() {
+  return LoadUInt32BE((uint8_t*)&ssrc_);
+}
+
+void RtpPacket::SetMarker(bool marker_bit) {
+  marker_ = marker_bit;
+  if (marker_) {
+    data_.get()[1] = *(data_.get() + 1) | 0x80;
+  } else {
+    data_.get()[1] = *(data_.get() + 1) & 0x7F;
+  }
+}
+
+void RtpPacket::SetPayloadType(uint8_t payload_type) {
+  payload_type_ = payload_type;
+  data_.get()[1] = (data_.get()[1] & 0x80) | payload_type;
+}
+
+void RtpPacket::SetSequenceNumber(uint16_t seq_no) {
+  sequence_number_ = seq_no;
+  StoreUInt16BE(data_.get() + 2, seq_no);
+}
+
+void RtpPacket::SetTimestamp(uint32_t timestamp) {
+  timestamp_ = timestamp;
+  StoreUInt32BE(data_.get() + 4, timestamp);
+}
+
+void RtpPacket::SetSsrc(uint32_t ssrc) {
+  ssrc_ = ssrc;
+  StoreUInt32BE(data_.get() + 8, ssrc);
+}
+
+bool RtpPacket::Marker() const {
+  return marker_;
+}
+uint8_t RtpPacket::PayloadType() const {
+  return payload_type_;
+}
+uint16_t RtpPacket::SequenceNumber() const {
+  return sequence_number_;
+}
+uint32_t RtpPacket::Timestamp() const {
+  return timestamp_;
+}
+uint32_t RtpPacket::Ssrc() const {
+  return ssrc_;
+}
+
+bool RtpPacket::Parse(const uint8_t* buffer, size_t size) {
+  if (size < kFixedHeaderSize) {
+    return false;
+  }
+  const uint8_t version = buffer[0] >> 6;
+  if (version != kRtpVersion) {
+    return false;
+  }
+  const bool has_padding = (buffer[0] & 0x20) != 0;
+  const bool has_extension = (buffer[0] & 0x10) != 0;
+  const uint8_t number_of_crcs = buffer[0] & 0x0f;
+  marker_ = (buffer[1] & 0x80) != 0;
+  payload_type_ = buffer[1] & 0x7f;
+
+  sequence_number_ = LoadUInt16BE(&buffer[2]);
+  timestamp_ = LoadUInt32BE(&buffer[4]);
+  ssrc_ = LoadUInt32BE(&buffer[8]);
+  if (size < kFixedHeaderSize + number_of_crcs * 4) {
+    return false;
+  }
+  payload_offset_ = kFixedHeaderSize + number_of_crcs * 4;
+
+  if (has_padding) {
+    padding_size_ = buffer[size - 1];
+    if (padding_size_ == 0) {
+      spdlog::warn("Padding was set, but padding size is zero");
+      return false;
+    }
+  } else {
+    padding_size_ = 0;
+  }
+
+  extensions_size_ = 0;
+  extension_entries_.clear();
+  if (has_extension) {
+    /* RTP header extension, RFC 3550.
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |      defined by profile       |           length              |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                        header extension                       |
+    |                             ....                              |
+    */
+    size_t extension_offset = payload_offset_ + 4;
+    if (extension_offset > size) {
+      return false;
+    }
+    uint16_t profile = LoadUInt16BE(&buffer[payload_offset_]);
+    size_t extensions_capacity = LoadUInt16BE(&buffer[payload_offset_ + 2]);
+    extensions_capacity *= 4;
+    if (extension_offset + extensions_capacity > size) {
+      return false;
+    }
+    if (profile != kOneByteExtensionProfileId &&
+        (profile & kTwobyteExtensionProfileIdAppBitsFilter) != kTwoByteExtensionProfileId) {
+      spdlog::warn("Unsupported rtp extension {}.", profile);
+    } else {
+      size_t extension_header_length = profile == kOneByteExtensionProfileId
+                                           ? kOneByteExtensionHeaderLength
+                                           : kTwoByteExtensionHeaderLength;
+      constexpr uint8_t kPaddingByte = 0;
+      constexpr uint8_t kPaddingId = 0;
+      constexpr uint8_t kOneByteHeaderExtensionReservedId = 15;
+      while (extensions_size_ + extension_header_length < extensions_capacity) {
+        if (buffer[extension_offset + extensions_size_] == kPaddingByte) {
+          extensions_size_++;
+          continue;
+        }
+        int id;
+        uint8_t length;
+        if (profile == kOneByteExtensionProfileId) {
+          id = buffer[extension_offset + extensions_size_] >> 4;
+          length = 1 + (buffer[extension_offset + extensions_size_] & 0xf);
+          if (id == kOneByteHeaderExtensionReservedId || (id == kPaddingId && length != 1)) {
+            break;
+          }
+        } else {
+          id = buffer[extension_offset + extensions_size_];
+          length = buffer[extension_offset + extensions_size_ + 1];
+        }
+
+        if (extensions_size_ + extension_header_length + length > extensions_capacity) {
+          spdlog::warn("Oversized rtp header extension.");
+          break;
+        }
+
+        ExtensionInfo& extension_info = FindOrCreateExtensionInfo(id);
+        if (extension_info.length != 0) {
+          spdlog::warn("Duplicate rtp header extension id {}. Overwriting", id);
+        }
+
+        size_t offset = extension_offset + extensions_size_ + extension_header_length;
+        extension_info.offset = static_cast<uint16_t>(offset);
+        extension_info.length = length;
+        extensions_size_ += extension_header_length + length;
+      }
+    }
+    payload_offset_ = extension_offset + extensions_capacity;
+  }
+
+  if (payload_offset_ + padding_size_ > size) {
+    return false;
+  }
+  payload_size_ = size - payload_offset_ - padding_size_;
+  return true;
+}
+
+RtpPacket::ExtensionInfo& RtpPacket::FindOrCreateExtensionInfo(int id) {
+  for (ExtensionInfo& extension : extension_entries_) {
+    if (extension.id == id) {
+      return extension;
+    }
+  }
+  extension_entries_.emplace_back(id);
+  return extension_entries_.back();
+}
+
+bool RtpPacket::Create(const uint8_t* buffer, size_t size) {
+  if (!Parse(buffer, size)) {
+    return false;
+  }
+
+  data_.reset(new uint8_t[size]);
+  memcpy(data_.get(), buffer, size);
+  size_ = size;
+  return true;
+}
+
+size_t RtpPacket::Size() const {
+  return payload_offset_ + payload_size_ + padding_size_;
+}
+
+uint8_t* RtpPacket::Data() const {
+  return data_.get();
+}
