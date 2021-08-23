@@ -139,28 +139,42 @@ void WebrtcStream::SendRtp(uint8_t* data, size_t size) {
   work_thread_->CheckInThisThread();
   if (!connection_established_)
     return;
+  int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(size);
   UdpSocket::UdpMessage msg;
-  msg.buffer.reset(new uint8_t[send_srtp_session_->GetProtectRtpNeedLength(size)]);
+  msg.buffer.reset(new uint8_t[protect_rtp_need_len]);
   msg.endpoint = selected_endpoint_;
   memcpy(msg.buffer.get(), data, size);
   int length = 0;
-  if (!send_srtp_session_->ProtectRtp(msg.buffer.get(), size, 65536, &length))
-    spdlog::debug("ProtectRtp failed.");
+  if (!send_srtp_session_->ProtectRtp(msg.buffer.get(), size, protect_rtp_need_len, &length)) {
+    spdlog::error("Failed to encrypt RTP packat.");
+    return;
+  }
   msg.length = length;
   if (udp_socket_)
     udp_socket_->SendData(std::move(msg));
+  else
+    spdlog::error("Send data before socket is connected.");
 }
 
 void WebrtcStream::SendRtcp(uint8_t* data, size_t size) {
   work_thread_->CheckInThisThread();
   if (!connection_established_)
     return;
-  memcpy(protect_buffer_, data, size);
+  int protect_rtcp_need_len = send_srtp_session_->GetProtectRtcpNeedLength(size);
+  UdpSocket::UdpMessage msg;
+  msg.buffer.reset(new uint8_t[protect_rtcp_need_len]);
+  msg.endpoint = selected_endpoint_;
+  memcpy(msg.buffer.get(), data, size);
   int length = 0;
-  if (!send_srtp_session_->ProtectRtcp(protect_buffer_, size, 65536, &length))
-    spdlog::debug("ProtectRtcp failed.");
+  if (!send_srtp_session_->ProtectRtcp(msg.buffer.get(), size, protect_rtcp_need_len, &length)) {
+    spdlog::error("Failed to encrypt RTCP packat.");
+    return;
+  }
+  msg.length = length;
   if (udp_socket_)
-    udp_socket_->SendData(reinterpret_cast<uint8_t*>(protect_buffer_), length, &selected_endpoint_);
+    udp_socket_->SendData(std::move(msg));
+  else
+    spdlog::error("Send data before socket is connected.");
 }
 
 const Sdp& WebrtcStream::GetSdp() const {
