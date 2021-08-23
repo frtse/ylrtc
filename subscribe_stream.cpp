@@ -33,7 +33,7 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
     if (p->Type() == kRtcpTypeRtpfb) {
       if (p->Format() == 1) {
         NackPacket* nack_packet = dynamic_cast<NackPacket*>(p);
-        tracks_[nack_packet->GetMediaSsrc()]->ReceiveNack(nack_packet);
+        ssrc_track_map_[nack_packet->GetMediaSsrc()]->ReceiveNack(nack_packet);
       } else if (p->Format() == 15) {
         // twcc
       } else {
