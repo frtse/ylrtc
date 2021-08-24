@@ -89,6 +89,7 @@ void UdpSocket::Close() {
 
   boost::system::error_code ec;
   if (socket_) {
+    socket_->cancel();
     socket_->shutdown(udp::socket::shutdown_both, ec);
     socket_->close();
   }
