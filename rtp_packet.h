@@ -6,54 +6,6 @@
 #include <type_traits>
 #include <vector>
 
-#include "byte_buffer.h"
-
-constexpr uint32_t kMaxRtpPayloadSize = 1200;
-constexpr uint32_t kRtpHeaderFixedSize = 12;
-
-class FixedRtpHeader {
- public:
-  void SetCC(uint8_t cc);
-  uint8_t GetCC();
-
-  void SetHasExtension(uint8_t has_extension);
-  uint8_t GetHasExtension();
-
-  void SetPadding(uint8_t padding);
-  uint8_t GetPadding();
-
-  void SetVersion(uint8_t version);
-  uint8_t GetVersion();
-
-  void SetPayloadType(uint8_t payload_type);
-  uint8_t GetPayloadType();
-
-  void SetMarker(uint8_t marker);
-  uint8_t GetMarker();
-
-  void SetSeqNum(uint16_t seqnum);
-  uint16_t GetSeqNum();
-
-  void SetTimestamp(uint32_t timestamp);
-  uint32_t GetTimestamp();
-
-  void SetSSrc(uint32_t ssrc);
-  uint32_t GetSSrc();
-
- private:
-  uint8_t cc_ : 4;
-  uint8_t has_extension_ : 1;
-  uint8_t padding_ : 1;
-  uint8_t version_ : 2;
-  uint8_t payload_type_ : 7;
-  uint8_t marker_ : 1;
-  uint16_t seqnum_;
-  uint32_t timestamp_;
-  uint32_t ssrc_;
-};
-
-static_assert(std::is_trivially_copyable<FixedRtpHeader>::value, "");
-
 static bool IsRtpPacket(uint8_t* data, size_t len) {
   return len >= 12              // Min size 12.
          && data[0] >> 6 == 2;  // Version 2.
