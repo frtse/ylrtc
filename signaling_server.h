@@ -24,10 +24,10 @@ class SignalingServer : public SignalingSession::Observer {
   SignalingServer();
   void DoAccept();
   void OnAccept(boost::system::error_code ec, tcp::socket socket);
-  void OnSessionClose(SignalingSession* session) override;
+  void OnSessionClose(std::shared_ptr<SignalingSession> session) override;
 
   net::io_context& ioc_;
   tcp::acceptor acceptor_;
   ssl::context ssl_ctx_{ssl::context::tlsv12};
-  std::set<SignalingSession*> sessions_;
+  std::set<std::shared_ptr<SignalingSession>> sessions_;
 };

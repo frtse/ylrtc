@@ -51,7 +51,7 @@ void SignalingServer::OnAccept(boost::system::error_code ec, tcp::socket socket)
   if (ec) {
     spdlog::error("Signaling server accept failed. ec = {}", ec.message());
   } else {
-    auto session = new SignalingSession(std::move(socket), ssl_ctx_, this);
+    auto session = std::make_shared<SignalingSession>(std::move(socket), ssl_ctx_, this);
     sessions_.insert(session);
     session->Run();
   }
@@ -70,9 +70,8 @@ bool SignalingServer::LoadCertKeyFile(const std::string& cert, const std::string
   return true;
 }
 
-void SignalingServer::OnSessionClose(SignalingSession* session) {
+void SignalingServer::OnSessionClose(std::shared_ptr<SignalingSession> session) {
   sessions_.erase(session);
-  delete session;
 }
 
 SignalingServer& SignalingServer::GetInstance() {

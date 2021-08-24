@@ -19,11 +19,11 @@ namespace ssl = boost::asio::ssl;
 using tcp = boost::asio::ip::tcp;
 
 class SignalingHandler;
-class SignalingSession {
+class SignalingSession : public std::enable_shared_from_this<SignalingSession> {
  public:
   class Observer {
    public:
-    virtual void OnSessionClose(SignalingSession* session) = 0;
+    virtual void OnSessionClose(std::shared_ptr<SignalingSession> session) = 0;
   };
 
   struct SessionInfo {

@@ -22,7 +22,7 @@ void SignalingSession::SendText(const std::string& text) {
 void SignalingSession::DoWrite() {
   auto& buffer = write_buffers_.front();
   ws_.text(true);
-  ws_.async_write(buffer.data(), beast::bind_front_handler(&SignalingSession::OnWrite, this));
+  ws_.async_write(buffer.data(), beast::bind_front_handler(&SignalingSession::OnWrite, shared_from_this()));
 }
 
 // Take ownership of the stream
@@ -33,7 +33,7 @@ SignalingSession::SignalingSession(tcp::socket&& socket, ssl::context& ctx, Obse
 
 // Start the asynchronous operation
 void SignalingSession::Run() {
-  net::dispatch(ws_.get_executor(), beast::bind_front_handler(&SignalingSession::OnRun, this));
+  net::dispatch(ws_.get_executor(), beast::bind_front_handler(&SignalingSession::OnRun, shared_from_this()));
 }
 
 void SignalingSession::OnRun() {
@@ -42,7 +42,7 @@ void SignalingSession::OnRun() {
 
   // Perform the SSL handshake
   ws_.next_layer().async_handshake(ssl::stream_base::server,
-                                   beast::bind_front_handler(&SignalingSession::OnHandshake, this));
+                                   beast::bind_front_handler(&SignalingSession::OnHandshake, shared_from_this()));
   DoRead();
 }
 
@@ -55,7 +55,7 @@ void SignalingSession::OnHandshake(beast::error_code ec) {
 
   ws_.set_option(websocket::stream_base::decorator(
       [](websocket::response_type& res) { res.set(http::field::server, "Webrtc SFU"); }));
-  ws_.async_accept(beast::bind_front_handler(&SignalingSession::OnAccept, this));
+  ws_.async_accept(beast::bind_front_handler(&SignalingSession::OnAccept, shared_from_this()));
 }
 
 void SignalingSession::OnAccept(beast::error_code ec) {
@@ -65,7 +65,7 @@ void SignalingSession::OnAccept(beast::error_code ec) {
 }
 
 void SignalingSession::DoRead() {
-  ws_.async_read(read_buffer_, beast::bind_front_handler(&SignalingSession::OnRead, this));
+  ws_.async_read(read_buffer_, beast::bind_front_handler(&SignalingSession::OnRead, shared_from_this()));
 }
 
 void SignalingSession::OnRead(beast::error_code ec, std::size_t bytes_transferred) {
@@ -108,7 +108,7 @@ void SignalingSession::Fail(beast::error_code ec, char const* what) {
     auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
     if (room)
       room->Leave(session_info_.participant_id);
-    observer_->OnSessionClose(this);
+    observer_->OnSessionClose(shared_from_this());
   }
 }
 
