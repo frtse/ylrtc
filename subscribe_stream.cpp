@@ -63,8 +63,7 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
 }
 
 void SubscribeStream::SetLocalDescription() {
-  auto& media_sections = sdp_.GetMediaSections();
-  spdlog::debug("media_sections = {}", media_sections.dump());
+  auto media_sections = sdp_.GetMediaSections();
   for (int i = 0; i < media_sections.size(); ++i) {
     SubscribeStreamTrack::Configuration config;
     auto& media_section = media_sections[i];
@@ -89,8 +88,6 @@ void SubscribeStream::SetLocalDescription() {
       for (auto& ssrc_group : ssrc_groups) {
         if (ssrc_group.at("semantics") == "FID") {
           auto ssrcs = StringSplit(ssrc_group.at("ssrcs"), " ");
-          for (auto s : ssrcs)
-            spdlog::debug("s = {}.", s);
           if (ssrcs.size() == 2 && std::stol(ssrcs[0]) == config.ssrc)
             config.rtx_ssrc = std::stol(ssrcs[1]);
         }

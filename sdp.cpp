@@ -322,6 +322,25 @@ const std::unordered_map<std::string, nlohmann::json>& Sdp::GetMediaSectionRtpma
   return media_section_rtpmaps_map_;
 }
 
-const nlohmann::json& Sdp::GetMediaSections() const {
-  return subscribe_anwser_sdp_.at("media");
+const nlohmann::json Sdp::GetMediaSections() const {
+  nlohmann::json media_sections;
+  if (subscribe_anwser_sdp_.find("media") != subscribe_anwser_sdp_.end()) {
+    media_sections =  subscribe_anwser_sdp_.at("media");
+  }
+  else if (publish_anwser_sdp_.find("media") != publish_anwser_sdp_.end()) {
+    media_sections = publish_anwser_sdp_.at("media");
+    for (auto& m : media_sections) {
+      if (m.find("type") == m.end())
+        continue;
+      const std::string& media_type = m.at("type");
+      if (media_section_ssrcs_map_.find(media_type) != media_section_ssrcs_map_.end()) {
+        m["ssrcs"] = media_section_ssrcs_map_.at(media_type);
+      }
+
+      if (media_section_ssrc_groups_map_.find(media_type) != media_section_ssrc_groups_map_.end()) {
+        m["ssrcGroups"] = media_section_ssrc_groups_map_.at(media_type);
+      }
+    }
+  }
+  return media_sections;
 }

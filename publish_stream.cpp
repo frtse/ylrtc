@@ -1,6 +1,7 @@
 #include "publish_stream.h"
 
 #include "rtcp_packet.h"
+#include "utils.h"
 
 PublishStream::PublishStream(const std::string& stream_id, Observer* observer)
     : WebrtcStream(stream_id, observer) {}
@@ -62,4 +63,51 @@ void PublishStream::UnregisterDataObserver(DataObserver* observer) {
 void PublishStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {}
 
 void PublishStream::SetLocalDescription() {
+  auto media_sections = sdp_.GetMediaSections();
+  for (int i = 0; i < media_sections.size(); ++i) {
+    PublishStreamTrack::Configuration config;
+    auto& media_section = media_sections[i];
+    if (media_section.find("ssrcs") != media_section.end()) {
+      auto& ssrcs = media_section.at("ssrcs");
+      if (!ssrcs.empty())
+        config.ssrc = ssrcs[0].at("id");
+    }
+    if (media_section.find("rtp") != media_section.end()) {
+      auto& rtpmaps= media_section.at("rtp");
+      if (!rtpmaps.empty())
+        config.payload_type = rtpmaps[0].at("payload");
+      for (auto& rtpmap: rtpmaps) {
+        if (rtpmap.at("codec") == "rtx") {
+          config.rtx_enabled = true;
+          config.rtx_payload_type = rtpmap.at("payload");
+        }
+      }
+    }
+    if (media_section.find("ssrcGroups") != media_section.end()) {
+      auto& ssrc_groups = media_section.at("ssrcGroups");
+      for (auto& ssrc_group : ssrc_groups) {
+        if (ssrc_group.at("semantics") == "FID") {
+          auto ssrcs = StringSplit(ssrc_group.at("ssrcs"), " ");
+          if (ssrcs.size() == 2 && std::stol(ssrcs[0]) == config.ssrc)
+            config.rtx_ssrc = std::stol(ssrcs[1]);
+        }
+      }
+    }
+    if (media_section.find("rtcpFb") != media_section.end()) {
+     auto& rtcpFbs = media_section.at("rtcpFb");
+      for (auto& rtcpFb : rtcpFbs) {
+        if (rtcpFb.at("payload") == std::to_string(config.payload_type) 
+          && rtcpFb.at("type") == "nack" && rtcpFb.find("subtype") == rtcpFb.end())
+          config.nack_enabled = true;
+      }
+    }
+
+    PublishStreamTrack* track = new PublishStreamTrack(config);
+    tracks_.push_back(track);
+    ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
+
+    spdlog::debug("PublishStreamTrack ssrc = {}, payload_type = {}"
+      ", rtx_enabled = {}, rtx_ssrc = {}, rtx_payload_type = {}, nack_enabled = {}", config.ssrc
+      , config.payload_type, config.rtx_enabled, config.rtx_ssrc, config.rtx_payload_type, config.nack_enabled);
+  }
 }

@@ -50,6 +50,7 @@ std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& 
           response_json["error"] = false;
           response_json["streamId"] = publish_stream->GetStreamId();
           response_json["answer"] = publish_stream->CreateAnswer();
+          publish_stream->SetLocalDescription();
         }
       }
     } else if (action == "join") {
