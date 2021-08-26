@@ -21,6 +21,8 @@ class SubscribeStreamTrack {
   class Observer {
    public:
     virtual void OnSubscribeStreamTrackResendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) = 0;
+    virtual void OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet
+      , uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) = 0;
   };
 
   SubscribeStreamTrack(const Configuration& configuration, Observer* observer);
@@ -29,6 +31,7 @@ class SubscribeStreamTrack {
   void ReceiveNack(NackPacket* nack_packet);
  private:
   Configuration configuration_;
+  uint16_t rtx_sequence_number_{0};
   Observer* observer_;
-  RtpPacketHistory rtp_packet_history_; 
+  RtpPacketHistory rtp_packet_history_;
 };

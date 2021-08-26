@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "spdlog/spdlog.h"
 #include "rtcp_packet.h"
+#include "byte_buffer.h"
 
 bool SubscribeStream::SetRemoteDescription(const std::string& offer) {
   return sdp_.SetSubscribeOffer(offer);
@@ -57,7 +58,6 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
       spdlog::error("Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
       return;
     }
-    
     SendRtp(rtp_packet->Data(), rtp_packet->Size());
   });
 }
@@ -114,4 +114,52 @@ void SubscribeStream::SetLocalDescription() {
 
 void SubscribeStream::OnSubscribeStreamTrackResendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
   SendRtp(rtp_packet->Data(), rtp_packet->Size());
+}
+
+void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet
+  , uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) {
+  SendRtx(rtp_packet, payload_type, ssrc, sequence_number);
+}
+
+void SubscribeStream::SendRtx(std::shared_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) {
+  // https://tools.ietf.org/html/rfc4588#section-8.3
+  // The format of a retransmission packet is shown below:
+
+  //  0                   1                   2                   3
+  //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  // |                         RTP Header                            |
+  // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  // |            OSN                |                               |
+  // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+  // |                  Original RTP Packet Payload                  |
+  // |                                                               |
+  // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  work_thread_->CheckInThisThread();
+  if (!connection_established_)
+    return;
+  int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(rtp_packet->Size() + kRtxHeaderSize);
+  UdpSocket::UdpMessage msg;
+  msg.buffer.reset(new uint8_t[protect_rtp_need_len]);
+  msg.endpoint = selected_endpoint_;
+  memcpy(msg.buffer.get(), rtp_packet->Data(), rtp_packet->HeaderSize());
+  memcpy(msg.buffer.get() + rtp_packet->HeaderSize() + kRtxHeaderSize
+    , rtp_packet->Payload(), rtp_packet->PayloadSize());
+  StoreUInt16BE(msg.buffer.get() + rtp_packet->HeaderSize(), rtp_packet->SequenceNumber());
+
+  RtpPacket packet;
+  packet.CreateFromExistingMemory(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize);
+  packet.SetPayloadType(payload_type);
+  packet.SetSsrc(ssrc);
+  packet.SetSequenceNumber(sequence_number);
+  int length = 0;
+  if (!send_srtp_session_->ProtectRtp(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize, protect_rtp_need_len, &length)) {
+    spdlog::error("Failed to encrypt RTP packat.");
+    return;
+  }
+  msg.length = length;
+  if (udp_socket_)
+    udp_socket_->SendData(std::move(msg));
+  else
+    spdlog::error("Send data before socket is connected.");
 }

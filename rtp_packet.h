@@ -42,6 +42,7 @@ constexpr uint16_t kTwobyteExtensionProfileIdAppBitsFilter = 0xfff0;
 constexpr size_t kOneByteExtensionHeaderLength = 1;
 constexpr size_t kTwoByteExtensionHeaderLength = 2;
 constexpr size_t kDefaultPacketSize = 1500;
+constexpr size_t kRtxHeaderSize = 2;
 
 class RtpPacket {
  public:
@@ -62,6 +63,9 @@ class RtpPacket {
   uint32_t Ssrc() const;
   size_t Size() const;
   uint8_t* Data() const;
+  size_t PayloadSize() const;
+  uint8_t* Payload() const;
+  size_t HeaderSize() const;
 
  private:
   struct ExtensionInfo {

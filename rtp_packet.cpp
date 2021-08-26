@@ -212,3 +212,15 @@ size_t RtpPacket::Size() const {
 uint8_t* RtpPacket::Data() const {
   return data_;
 }
+
+size_t RtpPacket::PayloadSize() const {
+  return payload_size_;
+}
+
+uint8_t* RtpPacket::Payload() const {
+  return data_ + payload_offset_;
+}
+
+size_t RtpPacket::HeaderSize() const {
+  return payload_offset_;
+}

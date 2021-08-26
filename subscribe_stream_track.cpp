@@ -24,7 +24,12 @@ void SubscribeStreamTrack::ReceiveNack(NackPacket* nack_packet) {
 
   for (auto& seq_num : lost_packets) {
     auto packet = rtp_packet_history_.GetPacketAndSetSendTime(seq_num);
-    if (packet && observer_)
-      observer_->OnSubscribeStreamTrackResendRtpPacket(packet);
+    if (!packet)
+      continue;
+    if (!configuration_.rtx_enabled)
+        observer_->OnSubscribeStreamTrackResendRtpPacket(packet);
+    else
+        observer_->OnSubscribeStreamTrackSendRtxPacket(packet, configuration_.rtx_payload_type
+          , configuration_.rtx_ssrc, rtx_sequence_number_++);
   }
 }
