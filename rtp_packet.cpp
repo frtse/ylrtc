@@ -13,33 +13,39 @@ const uint8_t kFuA = 28;
 const uint8_t kFuStart = 0x80;
 const uint8_t kFuEnd = 0x40;
 
+RtpPacket::~RtpPacket() {
+  if (owned_memory_ && data_ != nullptr)
+    delete [] data_;
+}
+
+
 void RtpPacket::SetMarker(bool marker_bit) {
   marker_ = marker_bit;
   if (marker_) {
-    data_.get()[1] = *(data_.get() + 1) | 0x80;
+    data_[1] = *(data_ + 1) | 0x80;
   } else {
-    data_.get()[1] = *(data_.get() + 1) & 0x7F;
+    data_[1] = *(data_ + 1) & 0x7F;
   }
 }
 
 void RtpPacket::SetPayloadType(uint8_t payload_type) {
   payload_type_ = payload_type;
-  data_.get()[1] = (data_.get()[1] & 0x80) | payload_type;
+  data_[1] = (data_[1] & 0x80) | payload_type;
 }
 
 void RtpPacket::SetSequenceNumber(uint16_t seq_no) {
   sequence_number_ = seq_no;
-  StoreUInt16BE(data_.get() + 2, seq_no);
+  StoreUInt16BE(data_ + 2, seq_no);
 }
 
 void RtpPacket::SetTimestamp(uint32_t timestamp) {
   timestamp_ = timestamp;
-  StoreUInt32BE(data_.get() + 4, timestamp);
+  StoreUInt32BE(data_ + 4, timestamp);
 }
 
 void RtpPacket::SetSsrc(uint32_t ssrc) {
   ssrc_ = ssrc;
-  StoreUInt32BE(data_.get() + 8, ssrc);
+  StoreUInt32BE(data_ + 8, ssrc);
 }
 
 bool RtpPacket::Marker() const {
@@ -181,9 +187,21 @@ bool RtpPacket::Create(const uint8_t* buffer, size_t size) {
     return false;
   }
 
-  data_.reset(new uint8_t[size]);
-  memcpy(data_.get(), buffer, size);
+  data_ = new uint8_t[size];
+  memcpy(data_, buffer, size);
   size_ = size;
+  owned_memory_ = true;
+  return true;
+}
+
+bool RtpPacket::CreateFromExistingMemory(uint8_t* buffer, size_t size) {
+  if (!Parse(buffer, size)) {
+    return false;
+  }
+
+  data_ = buffer;
+  size_ = size;
+  owned_memory_ = false;
   return true;
 }
 
@@ -192,5 +210,5 @@ size_t RtpPacket::Size() const {
 }
 
 uint8_t* RtpPacket::Data() const {
-  return data_.get();
+  return data_;
 }

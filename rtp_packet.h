@@ -45,7 +45,9 @@ constexpr size_t kDefaultPacketSize = 1500;
 
 class RtpPacket {
  public:
+  ~RtpPacket();
   bool Create(const uint8_t* buffer, size_t size);
+  bool CreateFromExistingMemory(uint8_t* buffer, size_t size);
 
   void SetMarker(bool marker_bit);
   void SetPayloadType(uint8_t payload_type);
@@ -83,6 +85,7 @@ class RtpPacket {
   size_t payload_size_;
   std::vector<ExtensionInfo> extension_entries_;
   size_t extensions_size_ = 0;  // Unaligned.
-  std::unique_ptr<uint8_t[]> data_;
+  uint8_t* data_{nullptr};
   size_t size_;
+  bool owned_memory_{false};
 };
