@@ -6,12 +6,7 @@
 #include "byte_buffer.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
-
-const uint8_t kNalTypeMask = 0x1F;
-const uint8_t kStapA = 24;
-const uint8_t kFuA = 28;
-const uint8_t kFuStart = 0x80;
-const uint8_t kFuEnd = 0x40;
+#include "rtp_utils.h"
 
 RtpPacket::~RtpPacket() {
   if (owned_memory_ && data_ != nullptr)
@@ -65,7 +60,7 @@ uint32_t RtpPacket::Ssrc() const {
 }
 
 bool RtpPacket::Parse(const uint8_t* buffer, size_t size) {
-  if (size < kFixedHeaderSize) {
+  if (size < kMinRtpPacketLen) {
     return false;
   }
   const uint8_t version = buffer[0] >> 6;
@@ -81,10 +76,10 @@ bool RtpPacket::Parse(const uint8_t* buffer, size_t size) {
   sequence_number_ = LoadUInt16BE(&buffer[2]);
   timestamp_ = LoadUInt32BE(&buffer[4]);
   ssrc_ = LoadUInt32BE(&buffer[8]);
-  if (size < kFixedHeaderSize + number_of_crcs * 4) {
+  if (size < kMinRtpPacketLen + number_of_crcs * 4) {
     return false;
   }
-  payload_offset_ = kFixedHeaderSize + number_of_crcs * 4;
+  payload_offset_ = kMinRtpPacketLen + number_of_crcs * 4;
 
   if (has_padding) {
     padding_size_ = buffer[size - 1];

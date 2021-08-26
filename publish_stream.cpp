@@ -2,8 +2,9 @@
 
 #include "rtcp_packet.h"
 #include "utils.h"
+#include "rtp_utils.h"
 
-PublishStream::PublishStream(const std::string& stream_id, Observer* observer)
+PublishStream::PublishStream(const std::string& stream_id, WebrtcStream::Observer* observer)
     : WebrtcStream(stream_id, observer) {}
 
 bool PublishStream::SetRemoteDescription(const std::string& offer) {
@@ -15,11 +16,16 @@ std::string PublishStream::CreateAnswer() {
 }
 
 void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
-  std::shared_ptr<RtpPacket> rtp_packet = std::make_shared<RtpPacket>();
-  if (!rtp_packet->Create(data, length))
+  auto ssrc = GetRtpSsrc(data, length);
+  if (!ssrc)
     return;
-  for (auto observer : data_observers_)
-    observer->OnPublishStreamRtpPacketReceive(rtp_packet);
+
+  if (ssrc_track_map_.find(*ssrc) != ssrc_track_map_.end()) {
+    ssrc_track_map_[*ssrc]->ReceiveRtpPacket(data, length);
+  }
+  else {
+    spdlog::error("Unrecognized RTP packet. ssrc = {}.", *ssrc);
+  }
 }
 
 void PublishStream::SendRequestkeyFrame() {
@@ -102,12 +108,19 @@ void PublishStream::SetLocalDescription() {
       }
     }
 
-    PublishStreamTrack* track = new PublishStreamTrack(config);
+    PublishStreamTrack* track = new PublishStreamTrack(config, this);
     tracks_.push_back(track);
     ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
+    if (config.rtx_enabled)
+      ssrc_track_map_.insert(std::make_pair(config.rtx_ssrc, track));
 
     spdlog::debug("PublishStreamTrack ssrc = {}, payload_type = {}"
       ", rtx_enabled = {}, rtx_ssrc = {}, rtx_payload_type = {}, nack_enabled = {}", config.ssrc
       , config.payload_type, config.rtx_enabled, config.rtx_ssrc, config.rtx_payload_type, config.nack_enabled);
   }
+}
+
+void PublishStream::OnPublishStreamTrackReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
+  for (auto observer : data_observers_)
+    observer->OnPublishStreamRtpPacketReceive(rtp_packet);
 }

@@ -4,6 +4,7 @@
 #include "spdlog/spdlog.h"
 #include "rtcp_packet.h"
 #include "byte_buffer.h"
+#include "rtp_utils.h"
 
 bool SubscribeStream::SetRemoteDescription(const std::string& offer) {
   return sdp_.SetSubscribeOffer(offer);

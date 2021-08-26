@@ -6,11 +6,6 @@
 #include <type_traits>
 #include <vector>
 
-static bool IsRtpPacket(uint8_t* data, size_t len) {
-  return len >= 12              // Min size 12.
-         && data[0] >> 6 == 2;  // Version 2.
-}
-
 //  0                   1                   2                   3
 //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -33,16 +28,6 @@ static bool IsRtpPacket(uint8_t* data, size_t len) {
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // |               padding         | Padding size  |
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-constexpr size_t kFixedHeaderSize = 12;
-constexpr uint8_t kRtpVersion = 2;
-constexpr uint16_t kOneByteExtensionProfileId = 0xBEDE;
-constexpr uint16_t kTwoByteExtensionProfileId = 0x1000;
-constexpr uint16_t kTwobyteExtensionProfileIdAppBitsFilter = 0xfff0;
-constexpr size_t kOneByteExtensionHeaderLength = 1;
-constexpr size_t kTwoByteExtensionHeaderLength = 2;
-constexpr size_t kDefaultPacketSize = 1500;
-constexpr size_t kRtxHeaderSize = 2;
 
 class RtpPacket {
  public:

@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <memory>
 
+#include "rtp_packet.h"
+
 class PublishStreamTrack {
  public:
   struct Configuration {
@@ -14,8 +16,15 @@ class PublishStreamTrack {
     bool nack_enabled{false};
   };
 
-  PublishStreamTrack(const Configuration& configuration);
+  class Observer {
+   public:
+    virtual void OnPublishStreamTrackReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) = 0;
+  };
+
+  PublishStreamTrack(const Configuration& configuration, Observer* observer);
+  void ReceiveRtpPacket(uint8_t* data, size_t length);
 
  private:
   Configuration configuration_;
+  Observer* observer_;
 };
