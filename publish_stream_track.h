@@ -19,6 +19,7 @@ class PublishStreamTrack {
   class Observer {
    public:
     virtual void OnPublishStreamTrackReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) = 0;
+    virtual void OnPublishStreamTrackSendRtcpPacket(uint8_t* data, size_t size) = 0;
   };
 
   PublishStreamTrack(const Configuration& configuration, Observer* observer);

@@ -124,3 +124,7 @@ void PublishStream::OnPublishStreamTrackReceiveRtpPacket(std::shared_ptr<RtpPack
   for (auto observer : data_observers_)
     observer->OnPublishStreamRtpPacketReceive(rtp_packet);
 }
+
+void PublishStream::OnPublishStreamTrackSendRtcpPacket(uint8_t* data, size_t size) {
+  SendRtcp(data, size);
+}

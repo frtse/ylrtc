@@ -252,6 +252,48 @@ const std::vector<uint16_t>& NackPacket::GetLostPacketSequenceNumbers() const {
   return packet_lost_sequence_numbers_;
 }
 
+void NackPacket::SetLostPacketSequenceNumbers(std::vector<uint16_t> nack_list) {
+  packet_lost_sequence_numbers_ = std::move(nack_list);
+}
+
+bool NackPacket::Serialize(ByteWriter* byte_writer) {
+  std::vector<PackedNack> packed;
+  auto it = packet_lost_sequence_numbers_.begin();
+  const auto end = packet_lost_sequence_numbers_.end();
+  while (it != end) {
+    PackedNack item;
+    item.first_pid = *it++;
+    // Bitmask specifies losses in any of the 16 packets following the pid.
+    item.bitmask = 0;
+    while (it != end) {
+      uint16_t shift = static_cast<uint16_t>(*it - item.first_pid - 1);
+      if (shift <= 15) {
+        item.bitmask |= (1 << shift);
+        ++it;
+      } else {
+        break;
+      }
+    }
+    packed.push_back(item);
+  }
+
+  header_.count_or_format = FeedbackRtpMessageType::kNack;
+  header_.length = (kHeaderLength + kCommonFeedbackLength + kNackItemLength * packed.size()) / 4 - 1;
+  header_.packet_type = kRtcpTypeRtpfb;
+  header_.version = 2;
+  header_.padding = 0;
+
+  if (!SerializeCommonHeader(byte_writer))
+    return false;
+  if (!SerializeCommonFeedback(byte_writer))
+    return false;
+  for (auto i : packed) {
+    byte_writer->WriteUInt16(i.first_pid);
+    byte_writer->WriteUInt16(i.bitmask);
+  }
+  return true;
+}
+
 bool NackPacket::Parse(ByteReader* byte_reader) {
   if (!ParseCommonHeader(byte_reader))
     return false;

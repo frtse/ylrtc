@@ -241,9 +241,15 @@ class RtcpFirPacket : public RtcpCommonFeedback {
 class NackPacket : public RtcpCommonFeedback {
  public:
   bool Parse(ByteReader* byte_reader) override;
+  bool Serialize(ByteWriter* byte_writer) override;
   const std::vector<uint16_t>& GetLostPacketSequenceNumbers() const;
+  void SetLostPacketSequenceNumbers(std::vector<uint16_t> nack_list);
 
  private:
+  struct PackedNack {
+    uint16_t first_pid;
+    uint16_t bitmask;
+  };
   static constexpr size_t kNackItemLength = 4;
   std::vector<uint16_t> packet_lost_sequence_numbers_;
 };
