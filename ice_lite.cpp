@@ -19,6 +19,7 @@ void IceLite::ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remot
     return;
   }
 
+  valid_candidates_.insert(*remote_ep);
   if (msg.HasUseCandidate()) {
     auto result = valid_candidates_.find(*remote_ep);
     if (result != valid_candidates_.end()) {
@@ -32,9 +33,7 @@ void IceLite::ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remot
       }
     }
   }
-
-  valid_candidates_.emplace(*remote_ep);
-
+  
   msg.SetXorMappedAddress(remote_ep);
   msg.CreateResponse();
   if (observer_)
