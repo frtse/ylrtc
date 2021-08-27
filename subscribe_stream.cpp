@@ -148,11 +148,9 @@ void SubscribeStream::SendRtx(std::shared_ptr<RtpPacket> rtp_packet, uint8_t pay
     , rtp_packet->Payload(), rtp_packet->PayloadSize());
   StoreUInt16BE(msg.buffer.get() + rtp_packet->HeaderSize(), rtp_packet->SequenceNumber());
 
-  RtpPacket packet;
-  packet.CreateFromExistingMemory(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize);
-  packet.SetPayloadType(payload_type);
-  packet.SetSsrc(ssrc);
-  packet.SetSequenceNumber(sequence_number);
+  SetRtpSsrc(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize,  ssrc);
+  SetPayloadType(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize, payload_type);
+  SetSequenceNumber(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize, sequence_number);
   int length = 0;
   if (!send_srtp_session_->ProtectRtp(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize, protect_rtp_need_len, &length)) {
     spdlog::error("Failed to encrypt RTP packat.");
