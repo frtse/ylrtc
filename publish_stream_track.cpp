@@ -26,7 +26,7 @@ void PublishStreamTrack::ReceiveRtpPacket(uint8_t* data, size_t length) {
   }
 
   std::shared_ptr<RtpPacket> rtp_packet = std::make_shared<RtpPacket>();
-  if (!rtp_packet->Create(data, length))
+  if (!rtp_packet->Create(configuration_.codec, data, length))
     return;
   observer_->OnPublishStreamTrackReceiveRtpPacket(rtp_packet);
 }

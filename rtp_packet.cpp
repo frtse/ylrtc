@@ -177,11 +177,16 @@ RtpPacket::ExtensionInfo& RtpPacket::FindOrCreateExtensionInfo(int id) {
   return extension_entries_.back();
 }
 
-bool RtpPacket::Create(const uint8_t* buffer, size_t size) {
+bool RtpPacket::Create(std::string_view codec, uint8_t* buffer, size_t size) {
   if (!Parse(buffer, size)) {
     return false;
   }
 
+  auto result = RtpPayloadParser::Parse(codec, buffer + payload_offset_, payload_size_);
+  if (result)
+    payload_info_ = *result;
+  if (payload_info_.frame_type == VideoFrameType::kVideoFrameKey)
+    spdlog::debug("Recv key frame.");
   data_ = new uint8_t[size];
   memcpy(data_, buffer, size);
   size_ = size;
@@ -189,11 +194,14 @@ bool RtpPacket::Create(const uint8_t* buffer, size_t size) {
   return true;
 }
 
-bool RtpPacket::CreateFromExistingMemory(uint8_t* buffer, size_t size) {
+bool RtpPacket::CreateFromExistingMemory(std::string_view codec, uint8_t* buffer, size_t size) {
   if (!Parse(buffer, size)) {
     return false;
   }
 
+  auto result = RtpPayloadParser::Parse(codec, buffer + payload_offset_, payload_size_);
+  if (result)
+    payload_info_ = *result;
   data_ = buffer;
   size_ = size;
   owned_memory_ = false;

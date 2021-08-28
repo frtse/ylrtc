@@ -5,6 +5,9 @@
 #include <memory>
 #include <type_traits>
 #include <vector>
+#include <string_view>
+
+#include "rtp_payload_parser.h"
 
 //  0                   1                   2                   3
 //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -32,8 +35,8 @@
 class RtpPacket {
  public:
   ~RtpPacket();
-  bool Create(const uint8_t* buffer, size_t size);
-  bool CreateFromExistingMemory(uint8_t* buffer, size_t size);
+  bool Create(std::string_view codec, uint8_t* buffer, size_t size);
+  bool CreateFromExistingMemory(std::string_view codec, uint8_t* buffer, size_t size);
 
   void SetMarker(bool marker_bit);
   void SetPayloadType(uint8_t payload_type);
@@ -77,4 +80,5 @@ class RtpPacket {
   uint8_t* data_{nullptr};
   size_t size_;
   bool owned_memory_{false};
+  PayloadInfo payload_info_;
 };

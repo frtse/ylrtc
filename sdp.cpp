@@ -73,7 +73,7 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
 std::string Sdp::CreatePublishAnswer() {
   publish_anwser_sdp_ = publish_offer_sdp_;
 
-  std::string video_codec = "H264";
+  std::string video_codec = "VP8";
   std::string audio_codec = "opus";
   nlohmann::json candidate;
   candidate["foundation"] = "4";

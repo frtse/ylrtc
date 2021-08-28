@@ -34,19 +34,6 @@ class NtpTime {
   uint32_t fractions_;
 };
 
-class ScopeGuard {
- public:
-  explicit ScopeGuard(const std::function<void()>& f);
-
-  ~ScopeGuard();
-
-  void Dismiss();
-
- private:
-  std::function<void()> func_;
-  bool dismiss_;
-};
-
 class BitRate {
  public:
   size_t GetBitRate(int64_t time);
@@ -59,6 +46,7 @@ class BitRate {
 };
 
 std::vector<std::string> StringSplit(const std::string& s, const char* delim);
+std::string StringToLower(std::string str);
 
 template <typename U>
 inline bool IsNewer(U value, U prev_value) {

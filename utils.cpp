@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iterator>
 #include <string_view>
+#include <algorithm>
 
 // clang-format off
 #include "spdlog/spdlog.h"
@@ -52,17 +53,6 @@ uint32_t NtpTime::ToCompactNtp() {
   return (seconds_ << 16) | (fractions_ >> 16);
 }
 
-ScopeGuard::ScopeGuard(const std::function<void()>& f) : func_(f), dismiss_(false) {}
-
-ScopeGuard::~ScopeGuard() {
-  if (!dismiss_ && func_)
-    func_();
-}
-
-void ScopeGuard::Dismiss() {
-  dismiss_ = true;
-}
-
 size_t BitRate::GetBitRate(int64_t time) {
   Update(0, time);
   size_t sum = std::accumulate(data_buffer_.begin(), data_buffer_.end(), 0);
@@ -98,4 +88,9 @@ std::vector<std::string> StringSplit(const std::string& s, const char* delim) {
     ret.push_back(s.substr(last));
   }
   return ret;
+}
+
+std::string StringToLower(std::string str) {
+  std::transform(str.begin(), str.end(), str.begin(), towlower);
+  return str;
 }

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 
 #include "rtp_packet.h"
 
@@ -14,6 +15,7 @@ class PublishStreamTrack {
     uint8_t rtx_payload_type{0};
     bool rtx_enabled{false};
     bool nack_enabled{false};
+    std::string codec;
   };
 
   class Observer {

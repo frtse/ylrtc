@@ -80,8 +80,10 @@ void PublishStream::SetLocalDescription() {
     }
     if (media_section.find("rtp") != media_section.end()) {
       auto& rtpmaps= media_section.at("rtp");
-      if (!rtpmaps.empty())
+      if (!rtpmaps.empty()) {
         config.payload_type = rtpmaps[0].at("payload");
+        config.codec = StringToLower(rtpmaps[0].at("codec"));
+      }
       for (auto& rtpmap: rtpmaps) {
         if (rtpmap.at("codec") == "rtx") {
           config.rtx_enabled = true;
