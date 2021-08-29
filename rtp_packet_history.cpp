@@ -3,6 +3,7 @@
 #include <limits>
 #include "spdlog/spdlog.h"
 #include "utils.h"
+#include "sequence_number_util.h"
 
 void RtpPacketHistory::SetRtt(int64_t rtt_ms) {
   rtt_ms_ = rtt_ms;
@@ -42,7 +43,7 @@ int RtpPacketHistory::GetPacketIndex(uint16_t sequence_number) const {
     return 0;
   }
 
-  int first_seq = packet_history_.front().packet_->SequenceNumber();
+  uint16_t first_seq = packet_history_.front().packet_->SequenceNumber();
   if (first_seq == sequence_number) {
     return 0;
   }
@@ -50,7 +51,7 @@ int RtpPacketHistory::GetPacketIndex(uint16_t sequence_number) const {
   int packet_index = sequence_number - first_seq;
   constexpr int kSeqNumSpan = std::numeric_limits<uint16_t>::max() + 1;
 
-  if (IsNewerSequenceNumber(sequence_number, first_seq)) {
+  if (AheadOf(sequence_number, first_seq)) {
     if (sequence_number < first_seq) {
       // Forward wrap.
       packet_index += kSeqNumSpan;
