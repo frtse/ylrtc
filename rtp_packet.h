@@ -54,6 +54,7 @@ class RtpPacket {
   size_t PayloadSize() const;
   uint8_t* Payload() const;
   size_t HeaderSize() const;
+  bool IsKeyFrame() const;
 
  private:
   struct ExtensionInfo {

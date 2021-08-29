@@ -206,8 +206,12 @@ bool RtcpCommonFeedback::SerializeCommonFeedback(ByteWriter* byte_writer) const 
   return true;
 }
 
-uint32_t RtcpCommonFeedback::GetMediaSsrc() {
+uint32_t RtcpCommonFeedback::MediaSsrc() const {
   return media_ssrc_;
+}
+
+void RtcpCommonFeedback::SetMediaSsrc(uint32_t media_ssrc) {
+  media_ssrc_ = media_ssrc;
 }
 
 bool RtcpPliPacket::Serialize(ByteWriter* byte_writer) {
@@ -276,7 +280,6 @@ bool NackPacket::Serialize(ByteWriter* byte_writer) {
     }
     packed.push_back(item);
   }
-
   header_.count_or_format = FeedbackRtpMessageType::kNack;
   header_.length = (kHeaderLength + kCommonFeedbackLength + kNackItemLength * packed.size()) / 4 - 1;
   header_.packet_type = kRtcpTypeRtpfb;

@@ -227,3 +227,7 @@ uint8_t* RtpPacket::Payload() const {
 size_t RtpPacket::HeaderSize() const {
   return payload_offset_;
 }
+
+bool RtpPacket::IsKeyFrame() const {
+  return payload_info_.frame_type == VideoFrameType::kVideoFrameKey;
+}

@@ -2,6 +2,30 @@
 
 #include "spdlog/spdlog.h"
 
+// VP8 format:
+//
+// Payload descriptor
+//       0 1 2 3 4 5 6 7
+//      +-+-+-+-+-+-+-+-+
+//      |X|R|N|S|PartID | (REQUIRED)
+//      +-+-+-+-+-+-+-+-+
+// X:   |I|L|T|K|  RSV  | (OPTIONAL)
+//      +-+-+-+-+-+-+-+-+
+// I:   |   PictureID   | (OPTIONAL)
+//      +-+-+-+-+-+-+-+-+
+// L:   |   TL0PICIDX   | (OPTIONAL)
+//      +-+-+-+-+-+-+-+-+
+// T/K: |TID:Y| KEYIDX  | (OPTIONAL)
+//      +-+-+-+-+-+-+-+-+
+//
+// Payload header (considered part of the actual payload, sent to decoder)
+//       0 1 2 3 4 5 6 7
+//      +-+-+-+-+-+-+-+-+
+//      |Size0|H| VER |P|
+//      +-+-+-+-+-+-+-+-+
+//      |      ...      |
+//      +               +
+
 const int16_t kNoPictureId = -1;
 const int16_t kNoTl0PicIdx = -1;
 const uint8_t kNoTemporalIdx = 0xFF;

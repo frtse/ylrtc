@@ -135,13 +135,8 @@ class ReceiverReportPacket : public RtcpPacket {
 //   :                                                               :
 class RtcpCommonFeedback : public RtcpPacket {
  public:
-  uint32_t GetMediaSsrc();
-  uint32_t MediaSsrc() const {
-    return media_ssrc_;
-  }
-  void SetMediaSsrc(uint32_t media_ssrc) {
-    media_ssrc_ = media_ssrc;
-  }
+  uint32_t MediaSsrc() const;
+  void SetMediaSsrc(uint32_t media_ssrc);
 
  protected:
   static constexpr size_t kCommonFeedbackLength = 8;

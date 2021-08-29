@@ -110,7 +110,7 @@ void PublishStream::SetLocalDescription() {
       }
     }
 
-    PublishStreamTrack* track = new PublishStreamTrack(config, this);
+    PublishStreamTrack* track = new PublishStreamTrack(config, work_thread_->MessageLoop(), this);
     tracks_.push_back(track);
     ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
     if (config.rtx_enabled)
