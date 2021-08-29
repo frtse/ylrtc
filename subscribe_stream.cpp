@@ -56,7 +56,7 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
     if (ssrc_track_map_.find(rtp_packet->Ssrc()) != ssrc_track_map_.end())
       ssrc_track_map_.at(rtp_packet->Ssrc())->SendRtpPacket(rtp_packet);
     else {
-      spdlog::error("Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
+      spdlog::error("SubscribeStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
       return;
     }
     SendRtp(rtp_packet->Data(), rtp_packet->Size());

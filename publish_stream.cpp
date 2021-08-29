@@ -24,7 +24,7 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
     ssrc_track_map_[*ssrc]->ReceiveRtpPacket(data, length);
   }
   else {
-    spdlog::error("Unrecognized RTP packet. ssrc = {}.", *ssrc);
+    spdlog::error("PublishStream: Unrecognized RTP packet. ssrc = {}.", *ssrc);
   }
 }
 
