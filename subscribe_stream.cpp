@@ -42,7 +42,14 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
         spdlog::debug("fb format = {}", p->Format());
       }
     } else if (p->Type() == kRtcpTypeRr) {
-
+      ReceiverReportPacket* rr = dynamic_cast<ReceiverReportPacket*>(p);
+      auto report_blocks = rr->GetReportBlocks();
+      for (auto block : report_blocks) {
+        // When RTX is enabled, the RR packet of RTX is ignored.
+        auto stream_iter = ssrc_track_map_.find(block.source_ssrc);
+        if (stream_iter != ssrc_track_map_.end())
+          stream_iter->second->ReceiveReceiverReport(block);
+      }
     }
   }
 }
@@ -75,8 +82,10 @@ void SubscribeStream::SetLocalDescription() {
     }
     if (media_section.find("rtp") != media_section.end()) {
       auto& rtpmaps= media_section.at("rtp");
-      if (!rtpmaps.empty())
+      if (!rtpmaps.empty()) {
         config.payload_type = rtpmaps[0].at("payload");
+        config.clock_rate = rtpmaps[0].at("rate");
+      }
       for (auto& rtpmap: rtpmaps) {
         if (rtpmap.at("codec") == "rtx") {
           config.rtx_enabled = true;
@@ -103,7 +112,7 @@ void SubscribeStream::SetLocalDescription() {
       }
     }
 
-    SubscribeStreamTrack* track = new SubscribeStreamTrack(config, this);
+    SubscribeStreamTrack* track = new SubscribeStreamTrack(config, work_thread_->MessageLoop(), this);
     tracks_.push_back(track);
     ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
 
@@ -120,6 +129,10 @@ void SubscribeStream::OnSubscribeStreamTrackResendRtpPacket(std::shared_ptr<RtpP
 void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet
   , uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) {
   SendRtx(rtp_packet, payload_type, ssrc, sequence_number);
+}
+
+void SubscribeStream::OnSubscribeStreamTrackSendRtcpPacket(uint8_t* data, size_t size) {
+  SendRtcp(data, size);
 }
 
 void SubscribeStream::SendRtx(std::shared_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) {
