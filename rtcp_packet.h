@@ -54,12 +54,8 @@ class RtcpPacket {
   uint8_t Type() const;
   uint8_t Format() const;
   uint8_t Count() const;
-  void SetSenderSsrc(uint32_t ssrc) {
-    sender_ssrc_ = ssrc;
-  }
-  uint32_t SenderSsrc() const {
-    return sender_ssrc_;
-  }
+  void SetSenderSsrc(uint32_t ssrc);
+  uint32_t SenderSsrc() const;
   static bool IsRtcp(uint8_t* data, size_t size);
 
  protected:
@@ -81,11 +77,27 @@ struct ReportBlock {
   uint32_t delay_since_last_sr;
 };
 
+//    Sender report (SR) (RFC 3550).
+//     0                   1                   2                   3
+//     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//    |V=2|P|    RC   |   PT=SR=200   |             length            |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  0 |                         SSRC of sender                        |
+//    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+//  4 |              NTP timestamp, most significant word             |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  8 |             NTP timestamp, least significant word             |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 12 |                         RTP timestamp                         |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 16 |                     sender's packet count                     |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 20 |                      sender's octet count                     |
+// 24 +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 class SenderReportPacket : public RtcpPacket {
  public:
   bool Serialize(ByteWriter* byte_writer);
-
-  void SetSenderSsrc(uint32_t sender_ssrc);
 
   void SetNtpSeconds(uint32_t ntp_seconds);
 
@@ -107,11 +119,24 @@ class SenderReportPacket : public RtcpPacket {
   uint32_t send_octets_;
 };
 
+// RTCP receiver report (RFC 3550).
+//
+//   0                   1                   2                   3
+//   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |V=2|P|    RC   |   PT=RR=201   |             length            |
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |                     SSRC of packet sender                     |
+//  +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+//  |                         report block(s)                       |
+//  |                            ....                               |
 class ReceiverReportPacket : public RtcpPacket {
  public:
+  static constexpr size_t kMaxNumberOfReportBlocks = 0x1f;
   bool Parse(ByteReader* byte_reader);
-
+  bool Serialize(ByteWriter* byte_writer);
   std::vector<ReportBlock> GetReportBlocks() const;
+  bool SetReportBlocks(const std::vector<ReportBlock>&& blocks);
 
  protected:
   std::vector<ReportBlock> report_blocks_;

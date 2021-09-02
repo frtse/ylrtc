@@ -27,6 +27,14 @@ uint8_t RtcpPacket::Count() const {
   return header_.count_or_format;
 }
 
+void RtcpPacket::SetSenderSsrc(uint32_t ssrc) {
+  sender_ssrc_ = ssrc;
+}
+
+uint32_t RtcpPacket::SenderSsrc() const {
+  return sender_ssrc_;
+}
+
 bool RtcpPacket::IsRtcp(uint8_t* data, size_t size) {
   // 72 to 76 is reserved for RTP
   // 77 to 79 is not reserver but  they are not assigned we will block them
@@ -136,10 +144,6 @@ bool SenderReportPacket::Serialize(ByteWriter* byte_writer) {
   return true;
 }
 
-void SenderReportPacket::SetSenderSsrc(uint32_t sender_ssrc) {
-  sender_ssrc_ = sender_ssrc;
-}
-
 void SenderReportPacket::SetNtpSeconds(uint32_t ntp_seconds) {
   ntp_seconds_ = ntp_seconds;
 }
@@ -186,8 +190,47 @@ bool ReceiverReportPacket::Parse(ByteReader* byte_reader) {
   return true;
 }
 
+bool ReceiverReportPacket::Serialize(ByteWriter* byte_writer) {
+  header_.count_or_format = report_blocks_.size();
+  header_.packet_type = kRtcpTypeRr;
+  header_.padding = 0;
+  header_.version = 2;
+  header_.length = (sizeof(header_) + report_blocks_.size() * ReportBlock::kLength) / 4 - 1;
+  if (!SerializeCommonHeader(byte_writer))
+    return false;
+  if (!byte_writer->WriteUInt32(sender_ssrc_))
+    return false;
+  for (int i = 0; i < report_blocks_.size(); ++i) {
+    ReportBlock block;
+    if (!byte_writer->WriteUInt32(block.source_ssrc))
+      return false;
+    if (!byte_writer->WriteUInt8(block.fraction_lost))
+      return false;
+    if (!byte_writer->WriteUInt24(block.cumulative_lost))
+      return false;
+    if (!byte_writer->WriteUInt32(block.extended_high_seq_num))
+      return false;
+    if (!byte_writer->WriteUInt32(block.jitter))
+      return false;
+    if (!byte_writer->WriteUInt32(block.last_sr))
+      return false;
+    if (!byte_writer->WriteUInt32(block.delay_since_last_sr))
+      return false;
+  }
+  return true;
+}
+
 std::vector<ReportBlock> ReceiverReportPacket::GetReportBlocks() const {
   return report_blocks_;
+}
+
+bool ReceiverReportPacket::SetReportBlocks(const std::vector<ReportBlock>&& blocks) {
+  if (blocks.size() > kMaxNumberOfReportBlocks) {
+    spdlog::warn("Too many report blocks ({}) for receiver report.", blocks.size());
+    return false;
+  }
+  report_blocks_ = std::move(blocks);
+  return true;
 }
 
 bool RtcpCommonFeedback::ParseCommonFeedback(ByteReader* byte_reader) {
