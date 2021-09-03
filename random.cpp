@@ -9,6 +9,11 @@ uint32_t Random::RandomUInt(uint32_t min, uint32_t max) {
   return dist(engine_);
 }
 
+int64_t Random::RandomInt64(int64_t min, int64_t max) {
+  std::uniform_int_distribution<> dist(min, max);
+  return dist(engine_);
+}
+
 std::string Random::RandomString(size_t length) {
   std::string random_string;
   random_string.reserve(length);

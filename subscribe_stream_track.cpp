@@ -5,8 +5,10 @@
 
 SubscribeStreamTrack::SubscribeStreamTrack(const Configuration& configuration
   , boost::asio::io_context& io_context, Observer* observer)
-  : configuration_{configuration}, io_context_{io_context}, rtcp_timer_{io_context_, this}, observer_{observer} {
-  rtcp_timer_.AsyncWait(1000);
+  : configuration_{configuration}, io_context_{io_context}
+  , rtcp_timer_{io_context_, this}, observer_{observer}, rate_statistics_{1000, RateStatistics::kBpsScale} {
+  report_interval_ = configuration_.audio ? kDefaultAudioReportInterval : kDefaultVideoReportInterval;
+  rtcp_timer_.AsyncWait(report_interval_);
 }
 
 void SubscribeStreamTrack::SendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
@@ -14,6 +16,7 @@ void SubscribeStreamTrack::SendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) 
   media_bytes_sent_ += rtp_packet->Size();
   last_rtp_timestamp_ = rtp_packet->Timestamp();
   last_send_timestamp_ = TimeMillis();
+  rate_statistics_.Update(rtp_packet->Size(), last_send_timestamp_);
   if (!configuration_.nack_enabled)
     return;
   rtp_packet_history_.PutRtpPacket(rtp_packet);
@@ -79,5 +82,24 @@ void SubscribeStreamTrack::OnTimerTimeout() {
       observer_->OnSubscribeStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
     }
   }
-  rtcp_timer_.AsyncWait(1000);
+
+  // generate next time to send an RTCP report
+  int64_t min_interval = report_interval_;
+
+  if (!configuration_.audio) {
+    // Calculate bandwidth for video; 360 / send bandwidth in kbit/s.
+    auto rate = rate_statistics_.Rate(TimeMillis());
+    if (rate) {
+      int64_t send_bitrate_kbit = *rate / 1000;
+      if (send_bitrate_kbit != 0) {
+        min_interval = std::min(360000 / send_bitrate_kbit, report_interval_);
+      }
+    }
+  }
+
+  // The interval between RTCP packets is varied randomly over the
+  // range [1/2,3/2] times the calculated interval.
+  int64_t time_to_next = 
+      random_.RandomInt64(min_interval * 1 / 2, min_interval * 3 / 2);
+  rtcp_timer_.AsyncWait(time_to_next);
 }

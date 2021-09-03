@@ -75,6 +75,8 @@ void SubscribeStream::SetLocalDescription() {
   for (int i = 0; i < media_sections.size(); ++i) {
     SubscribeStreamTrack::Configuration config;
     auto& media_section = media_sections[i];
+    if (media_section.at("type") == "audio")
+      config.audio = true;
     if (media_section.find("ssrcs") != media_section.end()) {
       auto& ssrcs = media_section.at("ssrcs");
       if (!ssrcs.empty())

@@ -8,6 +8,8 @@
 #include "rtp_packet_history.h"
 #include "rtcp_packet.h"
 #include "timer.h"
+#include "rate_statistics.h"
+#include "random.h"
 
 class SubscribeStreamTrack : public Timer::Listener {
  public:
@@ -19,6 +21,7 @@ class SubscribeStreamTrack : public Timer::Listener {
     bool rtx_enabled{false};
     bool nack_enabled{false};
     uint32_t clock_rate{0};
+    bool audio{false};
   };
 
   class Observer {
@@ -49,4 +52,7 @@ class SubscribeStreamTrack : public Timer::Listener {
   uint32_t last_rtp_timestamp_{0};
   int64_t last_send_timestamp_{-1};
   int64_t rtt_millis_{100};
+  RateStatistics rate_statistics_;
+  int64_t report_interval_;
+  Random random_;
 };
