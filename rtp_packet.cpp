@@ -231,3 +231,7 @@ size_t RtpPacket::HeaderSize() const {
 bool RtpPacket::IsKeyFrame() const {
   return payload_info_.frame_type == VideoFrameType::kVideoFrameKey;
 }
+
+const std::vector<RtpPacket::ExtensionInfo>& RtpPacket::GetExtensions() {
+  return extension_entries_;
+}

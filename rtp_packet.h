@@ -34,6 +34,15 @@
 
 class RtpPacket {
  public:
+  struct ExtensionInfo {
+    explicit ExtensionInfo(uint8_t id) : ExtensionInfo(id, 0, 0) {}
+    ExtensionInfo(uint8_t id, uint8_t length, uint16_t offset)
+        : id(id), length(length), offset(offset) {}
+    uint8_t id;
+    uint8_t length;
+    uint16_t offset;
+  };
+
   ~RtpPacket();
   bool Create(std::string_view codec, uint8_t* buffer, size_t size);
   bool CreateFromExistingMemory(std::string_view codec, uint8_t* buffer, size_t size);
@@ -55,16 +64,9 @@ class RtpPacket {
   uint8_t* Payload() const;
   size_t HeaderSize() const;
   bool IsKeyFrame() const;
+  const std::vector<ExtensionInfo>& GetExtensions();
 
  private:
-  struct ExtensionInfo {
-    explicit ExtensionInfo(uint8_t id) : ExtensionInfo(id, 0, 0) {}
-    ExtensionInfo(uint8_t id, uint8_t length, uint16_t offset)
-        : id(id), length(length), offset(offset) {}
-    uint8_t id;
-    uint8_t length;
-    uint16_t offset;
-  };
   ExtensionInfo& FindOrCreateExtensionInfo(int id);
   bool Parse(const uint8_t* buffer, size_t size);
 

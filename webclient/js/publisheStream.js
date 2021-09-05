@@ -17,7 +17,7 @@ class PublisheStream {
 
     const transceiverInit = {
       direction: 'sendonly',
-      streams: [this.mediaStream_],
+      streams: [this.mediaStream_]
     };
 
     if (this.mediaStream_.getAudioTracks().length >

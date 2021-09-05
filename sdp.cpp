@@ -103,6 +103,22 @@ std::string Sdp::CreatePublishAnswer() {
     media_section["fingerprint"]["type"] = local_fingerprint_type_;
     media_section["fingerprint"]["hash"] = local_fingerprint_hash_;
     media_section["setup"] = local_dtls_setup_;
+    if (media_section.find("rids") != media_section.end()) {
+      auto& rids = media_section.at("rids");
+      for (auto& rid : rids) {
+        if (rid.find("direction") != rid.end()) {
+          rid.at("direction") = "recv";
+        }
+      }
+    }
+
+    if (media_section.find("simulcast") != media_section.end()) {
+      auto& simulcast = media_section.at("simulcast");
+      if (simulcast.find("dir1") != simulcast.end())
+        simulcast.at("dir1") = "recv";
+      if (simulcast.find("dir2") != simulcast.end())
+        simulcast.at("dir2") = "recv";
+    }
 
     std::string select_codec;
     std::string media_section_type = media_section.at("type");

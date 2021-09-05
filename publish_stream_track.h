@@ -8,6 +8,7 @@
 #include "rtp_packet.h"
 #include "nack_requester.h"
 #include "threads.h"
+#include "rtp_header_extension.h"
 
 class PublishStreamTrack : public NackRequester::Observer {
  public:
@@ -19,6 +20,7 @@ class PublishStreamTrack : public NackRequester::Observer {
     bool rtx_enabled{false};
     bool nack_enabled{false};
     std::string codec;
+    IdRtpExtensionTypeManager id_extension_manager_;
   };
 
   class Observer {

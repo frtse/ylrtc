@@ -16,6 +16,10 @@ std::string PublishStream::CreateAnswer() {
 }
 
 void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
+  
+  std::shared_ptr<RtpPacket> rtp_packet = std::make_shared<RtpPacket>();
+  if (!rtp_packet->CreateFromExistingMemory("vp8", data, length))
+    return;
   auto ssrc = GetRtpSsrc(data, length);
   if (!ssrc)
     return;
@@ -73,6 +77,11 @@ void PublishStream::SetLocalDescription() {
   for (int i = 0; i < media_sections.size(); ++i) {
     PublishStreamTrack::Configuration config;
     auto& media_section = media_sections[i];
+    if (media_section.find("ext") != media_section.end()) {
+      for (auto& e : media_section.at("ext")) {
+        config.id_extension_manager_.Register(e.at("value"), e.at("uri"));
+      }
+    }
     if (media_section.find("ssrcs") != media_section.end()) {
       auto& ssrcs = media_section.at("ssrcs");
       if (!ssrcs.empty())
