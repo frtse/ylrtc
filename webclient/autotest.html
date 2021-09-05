@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>SFU Test</title>
+  <style>
+    video {
+      width: 200px;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <video id="localPlayer" autoplay muted controls></video>
+</body>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/adapter.js"></script>
+<script src="js/eventDispatcher.js"></script>
+<script src="js/device.js"></script>
+<script src="js/signaling.js"></script>
+<script src="js/subscribeStream.js"></script>
+<script src="js/publisheStream.js"></script>
+<script src="js/client.js"></script>
+<script>
+  window.onload = function() {
+    var localPlayer = document.getElementById('localPlayer');
+    var publisheStreamArr = new Array();
+    var subscribeStreamArr = new Array();
+
+    var client = new Client("192.168.1.104", 8000);
+    var times = 0;
+    async function subscribe(remoteStream) {
+      let subscribeStream = client.CreateSubscribeStream();
+      let mediaStream = await subscribeStream.subscribe(remoteStream);
+      let $video = $(`<video controls autoplay id=${subscribeStream.Id()}></video>`);
+      $video.get(0).srcObject = mediaStream;
+      $('body').append($video);
+      subscribeStreamArr.push(subscribeStream);
+    }
+
+    client.addEventListener("streamAdded", async (remoteStream) => {
+      console.log("add stream id = " + remoteStream.publishStreamId);
+      await subscribe(remoteStream);
+      times++;
+      if (times === 20)
+        location.reload();
+    });
+    client.join("AABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEABCD", "test").then(async(roomInfo) => {
+        let device = await Device.CreateDevice("camera", {audio: true, video: true});
+        localPlayer.srcObject = device.mediaStream();
+        localPlayer.play();
+        for (let i = 0; i < 20; ++i) {
+          let publisheStream = client.CreatePublisheStream();
+          await publisheStream.publish(device);
+          publisheStreamArr.push(publisheStream);
+        }
+    }).catch(() => {
+      console.log("Join room failed.");
+    });
+  }
+</script>
+
+</html>

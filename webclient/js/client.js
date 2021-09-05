@@ -11,7 +11,7 @@ class Client extends EventDispatcher {
   async join(roomId, participantId) {
     if (this.joined_)
       throw "Already joined meeting.";
-    let signalingUrl = "wss://" + inputIp.value + ":" + inputPort.value;
+    let signalingUrl = "wss://" + this.signallingServerIp + ":" + this.signallingServerPort;
     this.signaling.addEventListener("onsignaling", (e) => {
       let notification = JSON.parse(e);
       if (notification.type === "streamAdded" || notification.type === "participantJoined" || notification.type === "participantLeft")
