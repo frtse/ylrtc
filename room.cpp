@@ -30,19 +30,17 @@ void Room::Leave(const std::string& participant_id) {
   }
 }
 
-PublishStream* Room::ParticipantPublish(const std::string& participant_id,
+std::shared_ptr<PublishStream> Room::ParticipantPublish(const std::string& participant_id,
                                         const std::string& offer) {
   if (participant_id_set_.find(participant_id) == participant_id_set_.end())
     return nullptr;
   std::string stream_id = random_.RandomString(64);
-  auto publish_stream = new PublishStream(stream_id, this);
+  auto publish_stream = std::make_shared<PublishStream>(stream_id, this);
 
   if (!publish_stream->SetRemoteDescription(offer)) {
-    delete publish_stream;
     return nullptr;
   }
   if (!publish_stream->Start()) {
-    delete publish_stream;
     return nullptr;
   }
 
@@ -51,7 +49,7 @@ PublishStream* Room::ParticipantPublish(const std::string& participant_id,
   return publish_stream;
 }
 
-SubscribeStream* Room::ParticipantSubscribe(const std::string& src_participant_id,
+std::shared_ptr<SubscribeStream> Room::ParticipantSubscribe(const std::string& src_participant_id,
                                             const std::string& dst_participant_id,
                                             const std::string& stream_id,
                                             const std::string& sdp) {
@@ -65,7 +63,7 @@ SubscribeStream* Room::ParticipantSubscribe(const std::string& src_participant_i
   auto publish_stream_set = participant_publishs_map_iter->second;
   auto publish_stream_set_iter =
       std::find_if(publish_stream_set.begin(), publish_stream_set.end(),
-                   [&](PublishStream* stream) { return stream_id == stream->GetStreamId(); });
+                   [&](auto stream) { return stream_id == stream->GetStreamId(); });
 
   if (publish_stream_set_iter == publish_stream_set.end())
     return nullptr;
@@ -73,17 +71,15 @@ SubscribeStream* Room::ParticipantSubscribe(const std::string& src_participant_i
   auto publish_stream = *publish_stream_set_iter;
 
   std::string subscribe_stream_id = random_.RandomString(64);
-  auto subscribe_stream = new SubscribeStream(subscribe_stream_id, this);
+  auto subscribe_stream = std::make_shared<SubscribeStream>(subscribe_stream_id, this);
 
   subscribe_stream->SetPublishSdp(publish_stream->GetSdp());
 
   if (!subscribe_stream->SetRemoteDescription(sdp)) {
-    delete subscribe_stream;
     return nullptr;
   }
 
   if (!subscribe_stream->Start()) {
-    delete subscribe_stream;
     return nullptr;
   }
 
@@ -136,13 +132,13 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
       auto& publish_stream_set = iter->second;
       auto publish_stream_set_iter = std::find_if(
           publish_stream_set.begin(), publish_stream_set.end(),
-          [stream_id](PublishStream* stream) { return stream_id == stream->GetStreamId(); });
+          [stream_id](auto stream) { return stream_id == stream->GetStreamId(); });
       if (publish_stream_set_iter != publish_stream_set.end()) {
         auto notification = Notification::MakeStreamRemovedNotification(
             id_, iter->first, (*publish_stream_set_iter)->GetStreamId());
         SignalingServer::GetInstance().Notify(notification);
 
-        PublishStream* publish_stream = *publish_stream_set_iter;
+        auto publish_stream = *publish_stream_set_iter;
         auto publish_subscribes_map_iter = publish_subscribes_map_.find(publish_stream);
         if (publish_subscribes_map_iter != publish_subscribes_map_.end()) {
           auto& subscribe_stream_set = publish_subscribes_map_iter->second;
@@ -151,7 +147,6 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
           }
           publish_subscribes_map_.erase(publish_subscribes_map_iter);
         }
-        delete publish_stream;
         publish_stream_set.erase(publish_stream_set_iter);
       }
     }
@@ -161,10 +156,10 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
       auto& subscribe_stream_set = iter->second;
       auto subscribe_stream_set_iter = std::find_if(
           subscribe_stream_set.begin(), subscribe_stream_set.end(),
-          [&stream_id](SubscribeStream* stream) { return stream_id == stream->GetStreamId(); });
+          [&stream_id](auto stream) { return stream_id == stream->GetStreamId(); });
 
       if (subscribe_stream_set_iter != subscribe_stream_set.end()) {
-        SubscribeStream* subscribe_stream = *subscribe_stream_set_iter;
+        auto subscribe_stream = *subscribe_stream_set_iter;
         for (auto publish_subscribes_map_iter = publish_subscribes_map_.begin();
              publish_subscribes_map_iter != publish_subscribes_map_.end();
              ++publish_subscribes_map_iter) {
@@ -179,7 +174,6 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
               ++subscribe_stream_set_iter;
           }
         }
-        delete subscribe_stream;
         subscribe_stream_set.erase(subscribe_stream_set_iter);
       }
     }

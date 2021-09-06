@@ -37,6 +37,6 @@ class PublishStreamTrack : public NackRequester::Observer {
   void OnNackRequesterRequestKeyFrame() override;
   Configuration configuration_;
   boost::asio::io_context& io_context_;
-  std::unique_ptr<NackRequester> nack_request_;
+  std::shared_ptr<NackRequester> nack_request_;
   Observer* observer_;
 };

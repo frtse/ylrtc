@@ -43,7 +43,7 @@ class SubscribeStreamTrack : public Timer::Listener {
   void OnTimerTimeout() override;
   Configuration configuration_;
   boost::asio::io_context& io_context_;
-  Timer rtcp_timer_;
+  std::shared_ptr<Timer> rtcp_timer_;
   uint16_t rtx_sequence_number_{0};
   Observer* observer_;
   RtpPacketHistory rtp_packet_history_;

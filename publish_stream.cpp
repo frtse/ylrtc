@@ -3,9 +3,14 @@
 #include "rtcp_packet.h"
 #include "utils.h"
 #include "rtp_utils.h"
+#include "subscribe_stream.h"
+#include <iostream>
 
 PublishStream::PublishStream(const std::string& stream_id, WebrtcStream::Observer* observer)
     : WebrtcStream(stream_id, observer) {}
+
+PublishStream::~PublishStream() {
+}
 
 bool PublishStream::SetRemoteDescription(const std::string& offer) {
   return sdp_.SetPublishOffer(offer);
@@ -33,7 +38,8 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
 }
 
 void PublishStream::SendRequestkeyFrame() {
-  work_thread_->PostAsync([this] {
+  auto self(shared_from_this());
+  work_thread_->PostAsync([self, this] {
     auto video_ssrc = sdp_.GetPrimarySsrc("video");
     if (!video_ssrc)
       return;
@@ -54,16 +60,18 @@ void PublishStream::SendRequestkeyFrame() {
   });
 }
 
-void PublishStream::RegisterDataObserver(DataObserver* observer) {
-  work_thread_->PostSync([this, observer]() {
+void PublishStream::RegisterDataObserver(std::shared_ptr<SubscribeStream> observer) {
+  auto self(shared_from_this());
+  work_thread_->PostSync([self, this, observer]() {
     auto result = std::find(data_observers_.begin(), data_observers_.end(), observer);
     if (result == data_observers_.end())
       data_observers_.push_back(observer);
   });
 }
 
-void PublishStream::UnregisterDataObserver(DataObserver* observer) {
-  work_thread_->PostSync([this, observer]() {
+void PublishStream::UnregisterDataObserver(std::shared_ptr<SubscribeStream> observer) {
+  auto self(shared_from_this());
+  work_thread_->PostSync([self, this, observer]() {
     auto result = std::find(data_observers_.begin(), data_observers_.end(), observer);
     if (result != data_observers_.end())
       data_observers_.erase(result);
@@ -118,8 +126,7 @@ void PublishStream::SetLocalDescription() {
           config.nack_enabled = true;
       }
     }
-
-    PublishStreamTrack* track = new PublishStreamTrack(config, work_thread_->MessageLoop(), this);
+    std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), this);
     tracks_.push_back(track);
     ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
     if (config.rtx_enabled)

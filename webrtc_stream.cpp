@@ -41,8 +41,7 @@ bool WebrtcStream::Start() {
 }
 
 WebrtcStream::~WebrtcStream() {
-  work_thread_->PostSync([this] { Stop(); });
-  spdlog::debug("Call WebrtcStream's destructor.");
+  Stop();
 }
 
 void WebrtcStream::Stop() {

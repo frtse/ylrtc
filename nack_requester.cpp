@@ -28,13 +28,13 @@ NackRequester::NackInfo::NackInfo(uint16_t seq_num,
 
 NackRequester::NackRequester(boost::asio::io_context& io_context, Observer* observer)
   : io_context_{io_context},
-  timer_{io_context, this},
+  timer_{std::make_shared<Timer>(io_context, this)},
   observer_{observer},
   initialized_(false),
   rtt_ms_(kDefaultRttMs),
   newest_seq_num_(0),
   send_nack_delay_ms_{10} {
-  timer_.AsyncWait(kUpdateIntervalMillis);
+  timer_->AsyncWait(kUpdateIntervalMillis);
 }
 
 void NackRequester::OnTimerTimeout() {
@@ -42,7 +42,7 @@ void NackRequester::OnTimerTimeout() {
   if (!nack_batch.empty()) {
     observer_->OnNackRequesterRequestNack(nack_batch);
   }
-  timer_.AsyncWait(kUpdateIntervalMillis);
+  timer_->AsyncWait(kUpdateIntervalMillis);
 }
 
 int NackRequester::OnReceivedPacket(uint16_t seq_num, bool is_keyframe) {

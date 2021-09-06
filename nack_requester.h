@@ -88,7 +88,7 @@ class NackRequester : public Timer::Listener {
   std::set<uint16_t, DescendingSeqNumComp<uint16_t>> keyframe_list_;
   std::set<uint16_t, DescendingSeqNumComp<uint16_t>> recovered_list_;
   boost::asio::io_context& io_context_;
-  Timer timer_;
+  std::shared_ptr<Timer> timer_;
   Observer* observer_;
   bool initialized_;
   int64_t rtt_ms_;

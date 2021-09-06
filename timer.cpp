@@ -13,7 +13,7 @@ Timer::~Timer() {
 
 void Timer::AsyncWait(uint64_t timeout) {
   timer_->expires_from_now(boost::posix_time::milliseconds(timeout));
-  timer_->async_wait(boost::bind(&Timer::OnTimeout, this, boost::asio::placeholders::error));
+  timer_->async_wait(boost::bind(&Timer::OnTimeout, shared_from_this(), boost::asio::placeholders::error));
 }
 
 void Timer::OnTimeout(const boost::system::error_code& ec) {

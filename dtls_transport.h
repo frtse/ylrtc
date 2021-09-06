@@ -65,7 +65,7 @@ class DtlsTransport : public Timer::Listener {
   unsigned char remote_fingerprint_[EVP_MAX_MD_SIZE];
   DtlsContext::Hash remote_hash_;
   std::atomic<bool> inited_;
-  std::unique_ptr<Timer> timer_;
+  std::shared_ptr<Timer> timer_;
   Observer* listener_;
   static constexpr int kReadBufferSize{65536};
   uint8_t read_buffer_[kReadBufferSize];

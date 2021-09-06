@@ -63,7 +63,7 @@ void UdpSocket::DoSend() {
 
   boost::system::error_code ignored_error;
   socket_->async_send_to(boost::asio::buffer(data.buffer.get(), data.length), data.endpoint,
-                         boost::bind(&UdpSocket::HandSend, this, boost::asio::placeholders::error,
+                         boost::bind(&UdpSocket::HandSend, shared_from_this(), boost::asio::placeholders::error,
                                      boost::asio::placeholders::bytes_transferred));
 }
 
@@ -110,7 +110,7 @@ void UdpSocket::StartReceive() {
   socket_->async_receive_from(
       boost::asio::buffer(receive_data_.buffer.get(), init_receive_buffer_size_),
       receive_data_.endpoint,
-      boost::bind(&UdpSocket::HandleReceive, this, boost::asio::placeholders::error,
+      boost::bind(&UdpSocket::HandleReceive, shared_from_this(), boost::asio::placeholders::error,
                   boost::asio::placeholders::bytes_transferred));
 }
 

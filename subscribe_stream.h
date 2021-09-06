@@ -3,13 +3,14 @@
 #include <cstdint>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 #include "publish_stream.h"
 #include "rtp_packet.h"
 #include "webrtc_stream.h"
 #include "subscribe_stream_track.h"
 
-class SubscribeStream : public WebrtcStream, public PublishStream::DataObserver, public SubscribeStreamTrack::Observer {
+class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observer, public std::enable_shared_from_this<SubscribeStream> {
  public:
   SubscribeStream(const std::string& stream_id, WebrtcStream::Observer* observer);
   ~SubscribeStream();
@@ -17,11 +18,11 @@ class SubscribeStream : public WebrtcStream, public PublishStream::DataObserver,
   bool SetRemoteDescription(const std::string& offer) override;
   std::string CreateAnswer() override;
   void SetLocalDescription() override;
+  void OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket> rtp_packet);
 
  private:
   void OnRtpPacketReceive(uint8_t* data, size_t length) override;
   void OnRtcpPacketReceive(uint8_t* data, size_t length) override;
-  void OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket> rtp_packet) override;
   void OnSubscribeStreamTrackResendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) override;
   void OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet
     , uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) override;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -17,8 +18,8 @@ class Room : public WebrtcStream::Observer {
 
   bool Join(const std::string& participant_id);
   void Leave(const std::string& participant_id);
-  PublishStream* ParticipantPublish(const std::string& participant_id, const std::string& offer);
-  SubscribeStream* ParticipantSubscribe(const std::string& src_participant_id,
+  std::shared_ptr<PublishStream> ParticipantPublish(const std::string& participant_id, const std::string& offer);
+  std::shared_ptr<SubscribeStream> ParticipantSubscribe(const std::string& src_participant_id,
                                         const std::string& dst_participant_id,
                                         const std::string& stream_id,
                                         const std::string& sdp);
@@ -33,8 +34,8 @@ class Room : public WebrtcStream::Observer {
   const static uint32_t kParticipantIdLength = 64;
   std::string id_;
   std::unordered_set<std::string> participant_id_set_;
-  std::unordered_map<std::string, std::unordered_set<PublishStream*>> participant_publishs_map_;
-  std::unordered_map<std::string, std::unordered_set<SubscribeStream*>> participant_subscribes_map_;
-  std::unordered_map<PublishStream*, std::unordered_set<SubscribeStream*>> publish_subscribes_map_;
+  std::unordered_map<std::string, std::unordered_set<std::shared_ptr<PublishStream>>> participant_publishs_map_;
+  std::unordered_map<std::string, std::unordered_set<std::shared_ptr<SubscribeStream>>> participant_subscribes_map_;
+  std::unordered_map<std::shared_ptr<PublishStream>, std::unordered_set<std::shared_ptr<SubscribeStream>>> publish_subscribes_map_;
   Random random_;
 };

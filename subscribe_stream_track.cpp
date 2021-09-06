@@ -6,9 +6,9 @@
 SubscribeStreamTrack::SubscribeStreamTrack(const Configuration& configuration
   , boost::asio::io_context& io_context, Observer* observer)
   : configuration_{configuration}, io_context_{io_context}
-  , rtcp_timer_{io_context_, this}, observer_{observer}, rate_statistics_{1000, RateStatistics::kBpsScale} {
+  , rtcp_timer_{std::make_shared<Timer>(io_context_, this)}, observer_{observer}, rate_statistics_{1000, RateStatistics::kBpsScale} {
   report_interval_ = configuration_.audio ? kDefaultAudioReportInterval : kDefaultVideoReportInterval;
-  rtcp_timer_.AsyncWait(report_interval_);
+  rtcp_timer_->AsyncWait(report_interval_);
 }
 
 void SubscribeStreamTrack::SendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
@@ -101,5 +101,5 @@ void SubscribeStreamTrack::OnTimerTimeout() {
   // range [1/2,3/2] times the calculated interval.
   int64_t time_to_next = 
       random_.RandomInt64(min_interval * 1 / 2, min_interval * 3 / 2);
-  rtcp_timer_.AsyncWait(time_to_next);
+  rtcp_timer_->AsyncWait(time_to_next);
 }

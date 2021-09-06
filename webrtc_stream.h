@@ -62,9 +62,9 @@ class WebrtcStream : public UdpSocket::Observer,
 
   std::unique_ptr<SrtpSession> send_srtp_session_;
   std::unique_ptr<SrtpSession> recv_srtp_session_;
-  std::unique_ptr<UdpSocket> udp_socket_;
+  std::shared_ptr<UdpSocket> udp_socket_;
   std::unique_ptr<IceLite> ice_lite_;
-  std::unique_ptr<DtlsTransport> dtls_transport_;
+  std::shared_ptr<DtlsTransport> dtls_transport_;
   udp::endpoint selected_endpoint_;
   char protect_buffer_[65536];
   bool connection_established_;
