@@ -9,8 +9,10 @@
 PublishStreamTrack::PublishStreamTrack(const Configuration& configuration
   , boost::asio::io_context& io_context, Observer* observer)
   : configuration_{configuration}, io_context_{io_context}, observer_{observer} {
-  if (configuration_.nack_enabled)
+  if (configuration_.nack_enabled) {
     nack_request_.reset(new NackRequester(io_context, this));
+    nack_request_->Init();
+  }
 }
 
 void PublishStreamTrack::ReceiveRtpPacket(uint8_t* data, size_t length) {

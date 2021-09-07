@@ -18,8 +18,6 @@ SubscribeStream::SubscribeStream(const std::string& stream_id, WebrtcStream::Obs
     : WebrtcStream(stream_id, observer) {}
 
 SubscribeStream::~SubscribeStream() {
-  for (auto track : tracks_)
-    delete track;
 }
 
 void SubscribeStream::OnRtpPacketReceive(uint8_t* data, size_t length) {}
@@ -115,7 +113,8 @@ void SubscribeStream::SetLocalDescription() {
       }
     }
 
-    SubscribeStreamTrack* track = new SubscribeStreamTrack(config, work_thread_->MessageLoop(), this);
+    auto track = std::make_shared<SubscribeStreamTrack>(config, work_thread_->MessageLoop(), this);
+    track->Init();
     tracks_.push_back(track);
     ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
 

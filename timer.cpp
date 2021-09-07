@@ -2,7 +2,7 @@
 
 #include <boost/bind/bind.hpp>
 
-Timer::Timer(boost::asio::io_context& io_context, Listener* listener)
+Timer::Timer(boost::asio::io_context& io_context, std::shared_ptr<Listener> listener)
     : io_context_{io_context},
       timer_{std::make_unique<boost::asio::deadline_timer>(io_context_)},
       listener_{listener} {}
@@ -18,7 +18,8 @@ void Timer::AsyncWait(uint64_t timeout) {
 
 void Timer::OnTimeout(const boost::system::error_code& ec) {
   if (!ec) {
-    if (listener_)
-      listener_->OnTimerTimeout();
+    auto listener_shared = listener_.lock();
+    if (listener_shared)
+      listener_shared->OnTimerTimeout();
   }
 }

@@ -28,12 +28,15 @@ NackRequester::NackInfo::NackInfo(uint16_t seq_num,
 
 NackRequester::NackRequester(boost::asio::io_context& io_context, Observer* observer)
   : io_context_{io_context},
-  timer_{std::make_shared<Timer>(io_context, this)},
   observer_{observer},
   initialized_(false),
   rtt_ms_(kDefaultRttMs),
   newest_seq_num_(0),
   send_nack_delay_ms_{10} {
+}
+
+void NackRequester::Init() {
+  timer_.reset(new Timer(io_context_, shared_from_this()));
   timer_->AsyncWait(kUpdateIntervalMillis);
 }
 

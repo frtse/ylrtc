@@ -12,7 +12,7 @@
 #include "sequence_number_util.h"
 #include "timer.h"
 
-class NackRequester : public Timer::Listener {
+class NackRequester : public Timer::Listener, public std::enable_shared_from_this<NackRequester> {
  public:
   class Observer
   {
@@ -22,6 +22,7 @@ class NackRequester : public Timer::Listener {
   };
 
   NackRequester(boost::asio::io_context& io_context, Observer* observer);
+  void Init();
 
   int OnReceivedPacket(uint16_t seq_num, bool is_keyframe);
   int OnReceivedPacket(uint16_t seq_num, bool is_keyframe, bool is_recovered);

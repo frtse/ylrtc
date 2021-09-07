@@ -16,7 +16,7 @@
 #include "srtp_session.h"
 #include "timer.h"
 
-class DtlsTransport : public Timer::Listener {
+class DtlsTransport : public Timer::Listener, public std::enable_shared_from_this<DtlsTransport> {
  public:
   enum Setup { kActive, kPassive, kActPass, kUnknown };
 

@@ -160,8 +160,7 @@ bool DtlsTransport::Start(const std::string& setup_in_sdp) {
 
   inited_ = true;
   SSL_do_handshake(ssl_);
-
-  timer_.reset(new Timer(io_context_, this));
+  timer_.reset(new Timer(io_context_, shared_from_this()));
   SetTimeout();
   return true;
 }
