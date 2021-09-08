@@ -30,25 +30,17 @@ class LibSrtpInitializer {
 
 class SrtpSession {
  public:
-  enum class CipherSuite {
-    SUITE_NONE,
-    SUITE_AES_CM_128_HMAC_SHA1_80,
-    SUITE_AES_CM_128_HMAC_SHA1_32,
-    SUITE_AEAD_AES_128_GCM,
-    SUITE_AEAD_AES_256_GCM
-  };
+  enum class CipherSuite { SUITE_NONE, SUITE_AES_CM_128_HMAC_SHA1_80, SUITE_AES_CM_128_HMAC_SHA1_32, SUITE_AEAD_AES_128_GCM, SUITE_AEAD_AES_256_GCM };
 
   struct CipherSuiteKeySaltLength {
     CipherSuiteKeySaltLength() = default;
-    CipherSuiteKeySaltLength(size_t key_length, size_t salt_length)
-        : key_length_{key_length}, salt_length_{salt_length} {}
+    CipherSuiteKeySaltLength(size_t key_length, size_t salt_length) : key_length_{key_length}, salt_length_{salt_length} {}
     size_t key_length_{0};
     size_t salt_length_{0};
   };
 
   static SrtpSession::CipherSuite GetCipherSuiteFromString(const std::string& str);
-  static SrtpSession::CipherSuiteKeySaltLength GetSuiteKeySaltLength(
-      SrtpSession::CipherSuite suite);
+  static SrtpSession::CipherSuiteKeySaltLength GetSuiteKeySaltLength(SrtpSession::CipherSuite suite);
 
   SrtpSession();
   ~SrtpSession();
@@ -68,8 +60,7 @@ class SrtpSession {
 
  private:
   static std::map<std::string, SrtpSession::CipherSuite> str_to_cipher_suite_;
-  static std::map<SrtpSession::CipherSuite, CipherSuiteKeySaltLength>
-      cipher_suites_key_salt_length_;
+  static std::map<SrtpSession::CipherSuite, CipherSuiteKeySaltLength> cipher_suites_key_salt_length_;
   srtp_ctx_t_* session_{nullptr};
   int rtp_auth_tag_len_{0};
   int rtcp_auth_tag_len_{0};

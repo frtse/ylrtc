@@ -1,14 +1,14 @@
 #include "publish_stream_track.h"
 
 #include <cstring>
+
 #include "byte_buffer.h"
-#include "rtp_utils.h"
 #include "rtcp_packet.h"
+#include "rtp_utils.h"
 #include "spdlog/spdlog.h"
 
-PublishStreamTrack::PublishStreamTrack(const Configuration& configuration
-  , boost::asio::io_context& io_context, Observer* observer)
-  : configuration_{configuration}, io_context_{io_context}, observer_{observer} {
+PublishStreamTrack::PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer)
+    : configuration_{configuration}, io_context_{io_context}, observer_{observer} {
   if (configuration_.nack_enabled) {
     nack_request_.reset(new NackRequester(io_context, this));
     nack_request_->Init();
@@ -25,7 +25,7 @@ void PublishStreamTrack::ReceiveRtpPacket(uint8_t* data, size_t length) {
     if (!rtp_header_len)
       return;
     SetSequenceNumber(data, length, LoadUInt16BE(data + *rtp_header_len));
-		std::memmove(data + *rtp_header_len, data + *rtp_header_len + kRtxHeaderSize, length - *rtp_header_len - kRtxHeaderSize);
+    std::memmove(data + *rtp_header_len, data + *rtp_header_len + kRtxHeaderSize, length - *rtp_header_len - kRtxHeaderSize);
     length -= kRtxHeaderSize;
     SetRtpSsrc(data, length, configuration_.ssrc);
     SetPayloadType(data, length, configuration_.payload_type);

@@ -25,9 +25,7 @@ class UdpSocket : public std::enable_shared_from_this<UdpSocket> {
     udp::endpoint endpoint;
   };
 
-  UdpSocket(boost::asio::io_context& io_context,
-            Observer* listener,
-            size_t init_receive_buffer_size);
+  UdpSocket(boost::asio::io_context& io_context, Observer* listener, size_t init_receive_buffer_size);
   UdpSocket& operator=(const UdpSocket&) = delete;
   UdpSocket(const UdpSocket&) = delete;
   ~UdpSocket();

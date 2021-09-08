@@ -1,17 +1,15 @@
 #include "srtp_session.h"
 
-std::map<std::string, SrtpSession::CipherSuite> SrtpSession::str_to_cipher_suite_ = {
-    {"SRTP_AES128_CM_SHA1_80", CipherSuite::SUITE_AES_CM_128_HMAC_SHA1_80},
-    {"SRTP_AES128_CM_SHA1_32", CipherSuite::SUITE_AES_CM_128_HMAC_SHA1_32},
-    {"SRTP_AEAD_AES_128_GCM", CipherSuite::SUITE_AEAD_AES_128_GCM},
-    {"SRTP_AEAD_AES_256_GCM", CipherSuite::SUITE_AEAD_AES_256_GCM}};
+std::map<std::string, SrtpSession::CipherSuite> SrtpSession::str_to_cipher_suite_ = {{"SRTP_AES128_CM_SHA1_80", CipherSuite::SUITE_AES_CM_128_HMAC_SHA1_80},
+                                                                                     {"SRTP_AES128_CM_SHA1_32", CipherSuite::SUITE_AES_CM_128_HMAC_SHA1_32},
+                                                                                     {"SRTP_AEAD_AES_128_GCM", CipherSuite::SUITE_AEAD_AES_128_GCM},
+                                                                                     {"SRTP_AEAD_AES_256_GCM", CipherSuite::SUITE_AEAD_AES_256_GCM}};
 
-std::map<SrtpSession::CipherSuite, SrtpSession::CipherSuiteKeySaltLength>
-    SrtpSession::cipher_suites_key_salt_length_ = {
-        {SrtpSession::CipherSuite::SUITE_AES_CM_128_HMAC_SHA1_80, {16, 14}},
-        {SrtpSession::CipherSuite::SUITE_AES_CM_128_HMAC_SHA1_32, {16, 14}},
-        {SrtpSession::CipherSuite::SUITE_AEAD_AES_128_GCM, {16, 12}},
-        {SrtpSession::CipherSuite::SUITE_AEAD_AES_256_GCM, {32, 12}},
+std::map<SrtpSession::CipherSuite, SrtpSession::CipherSuiteKeySaltLength> SrtpSession::cipher_suites_key_salt_length_ = {
+    {SrtpSession::CipherSuite::SUITE_AES_CM_128_HMAC_SHA1_80, {16, 14}},
+    {SrtpSession::CipherSuite::SUITE_AES_CM_128_HMAC_SHA1_32, {16, 14}},
+    {SrtpSession::CipherSuite::SUITE_AEAD_AES_128_GCM, {16, 12}},
+    {SrtpSession::CipherSuite::SUITE_AEAD_AES_256_GCM, {32, 12}},
 };
 
 SrtpSession::CipherSuite SrtpSession::GetCipherSuiteFromString(const std::string& str) {
@@ -21,8 +19,7 @@ SrtpSession::CipherSuite SrtpSession::GetCipherSuiteFromString(const std::string
   return iter->second;
 }
 
-SrtpSession::CipherSuiteKeySaltLength SrtpSession::GetSuiteKeySaltLength(
-    SrtpSession::CipherSuite suite) {
+SrtpSession::CipherSuiteKeySaltLength SrtpSession::GetSuiteKeySaltLength(SrtpSession::CipherSuite suite) {
   return cipher_suites_key_salt_length_[suite];
 }
 

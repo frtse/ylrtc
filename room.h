@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -19,10 +19,7 @@ class Room : public WebrtcStream::Observer {
   bool Join(const std::string& participant_id);
   void Leave(const std::string& participant_id);
   std::shared_ptr<PublishStream> ParticipantPublish(const std::string& participant_id, const std::string& offer);
-  std::shared_ptr<SubscribeStream> ParticipantSubscribe(const std::string& src_participant_id,
-                                        const std::string& dst_participant_id,
-                                        const std::string& stream_id,
-                                        const std::string& sdp);
+  std::shared_ptr<SubscribeStream> ParticipantSubscribe(const std::string& src_participant_id, const std::string& dst_participant_id, const std::string& stream_id, const std::string& sdp);
 
   nlohmann::json GetRoomInfo();
 

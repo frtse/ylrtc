@@ -9,8 +9,7 @@
 #include "spdlog/spdlog.h"
 #include "subscribe_stream.h"
 
-SignalingHandler::SignalingHandler(SignalingSession::SessionInfo& session_info)
-    : session_info_{session_info} {}
+SignalingHandler::SignalingHandler(SignalingSession::SessionInfo& session_info) : session_info_{session_info} {}
 
 std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& signaling) {
   try {
@@ -26,12 +25,10 @@ std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& 
       std::string stream_id = request_json["streamId"];
       std::string offer_sdp = request_json["offer"];
       std::string participant_id = request_json["participantId"];
-      spdlog::debug("subscribe, {} {} {}", session_info_.room_id, session_info_.participant_id,
-                    stream_id);
+      spdlog::debug("subscribe, {} {} {}", session_info_.room_id, session_info_.participant_id, stream_id);
       auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
       if (room) {
-        auto subscribe_stream = room->ParticipantSubscribe(session_info_.participant_id,
-                                                           participant_id, stream_id, offer_sdp);
+        auto subscribe_stream = room->ParticipantSubscribe(session_info_.participant_id, participant_id, stream_id, offer_sdp);
         if (subscribe_stream) {
           response_json["error"] = false;
           response_json["streamId"] = subscribe_stream->GetStreamId();
@@ -43,8 +40,7 @@ std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& 
       spdlog::debug("publish, {} {}", session_info_.room_id, session_info_.participant_id);
       auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
       if (room) {
-        auto publish_stream =
-            room->ParticipantPublish(session_info_.participant_id, request_json["offer"]);
+        auto publish_stream = room->ParticipantPublish(session_info_.participant_id, request_json["offer"]);
 
         if (publish_stream) {
           response_json["error"] = false;
@@ -72,8 +68,7 @@ std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& 
       std::string publish_stream_id = request_json["streamId"];
       bool muted = request_json["muted"];
       std::string type = request_json["type"];
-      auto notification = Notification::MakePublishMuteOrUnmuteNotification(
-          session_info_.room_id, muted, type, publish_stream_id);
+      auto notification = Notification::MakePublishMuteOrUnmuteNotification(session_info_.room_id, muted, type, publish_stream_id);
       SignalingServer::GetInstance().Notify(notification);
     } else {
       response_json["error"] = true;

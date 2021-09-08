@@ -1,10 +1,10 @@
 #pragma
 
-#include <unordered_map>
-#include <string>
-#include <cstring>
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <string>
+#include <unordered_map>
 
 enum RTPHeaderExtensionType : int {
   kRtpExtensionNone,
@@ -36,6 +36,7 @@ class IdRtpExtensionTypeManager {
  public:
   void Register(int id, const std::string& uri);
   RTPHeaderExtensionType GetIdType(int id);
+
  private:
   std::unordered_map<int, RTPHeaderExtensionType> id_type_map_;
 };
@@ -44,6 +45,7 @@ class RtpStreamIdExtension {
  public:
   bool Parse(uint8_t* data, size_t size);
   const std::string& RtpStreamId() const;
+
  private:
   std::string rid_;
 };
@@ -52,7 +54,7 @@ class RepairedRtpStreamIdExtension {
  public:
   bool Parse(uint8_t* data, size_t size);
   const std::string& RepairedRtpStreamId() const;
+
  private:
   std::string rrid_;
 };
-

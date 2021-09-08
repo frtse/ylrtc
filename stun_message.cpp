@@ -7,14 +7,8 @@
 #include "hmac_sha1.h"
 #include "spdlog/spdlog.h"
 
-StunMessage::StunMessage(std::string local_ufrag,
-                         std::string local_password,
-                         std::string remote_ufrag)
-    : mapped_endpoint_{nullptr},
-      has_use_candidate_{false},
-      local_ufrag_{local_ufrag},
-      local_password_{local_password},
-      remote_ufrag_{remote_ufrag} {}
+StunMessage::StunMessage(std::string local_ufrag, std::string local_password, std::string remote_ufrag)
+    : mapped_endpoint_{nullptr}, has_use_candidate_{false}, local_ufrag_{local_ufrag}, local_password_{local_password}, remote_ufrag_{remote_ufrag} {}
 
 bool StunMessage::Parse(uint8_t* data, size_t size) {
   ByteReader reader(data, size);
@@ -58,9 +52,7 @@ bool StunMessage::Parse(uint8_t* data, size_t size) {
       case Attribute::kAttrFingerprint: {
         uint32_t announced = LoadUInt32BE(reader.CurrentData());
 
-        uint32_t computed =
-            Crc32::Calculate(data, reader.CurrentData() - data - kStunAttributeHeaderSize) ^
-            0x5354554e;
+        uint32_t computed = Crc32::Calculate(data, reader.CurrentData() - data - kStunAttributeHeaderSize) ^ 0x5354554e;
         if (announced != computed)
           return false;
         has_fingerprint = true;
@@ -94,15 +86,12 @@ bool StunMessage::Parse(uint8_t* data, size_t size) {
 
   if (has_message_integrity) {
     if (has_fingerprint)
-      StoreUInt16BE(data + kLengthOffset,
-                    size - kStunHeaderSize - kFingerprintAttrLength - kStunAttributeHeaderSize);
+      StoreUInt16BE(data + kLengthOffset, size - kStunHeaderSize - kFingerprintAttrLength - kStunAttributeHeaderSize);
 
     HmacSha1 hmac_sha1;
-    auto result =
-        hmac_sha1.Calculate(local_password_, data, message_integrity_start_address - data);
+    auto result = hmac_sha1.Calculate(local_password_, data, message_integrity_start_address - data);
 
-    if (std::memcmp(message_integrity_start_address + kStunAttributeHeaderSize, result,
-                    HmacSha1::kSha1ResultLength) != 0)
+    if (std::memcmp(message_integrity_start_address + kStunAttributeHeaderSize, result, HmacSha1::kSha1ResultLength) != 0)
       return false;
 
     if (has_fingerprint)

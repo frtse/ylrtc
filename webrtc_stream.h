@@ -15,9 +15,7 @@
 #include "threads.h"
 #include "udp_socket.h"
 
-class WebrtcStream : public UdpSocket::Observer,
-                     public IceLite::Observer,
-                     public DtlsTransport::Observer {
+class WebrtcStream : public UdpSocket::Observer, public IceLite::Observer, public DtlsTransport::Observer {
  public:
   class Observer {
    public:
@@ -50,11 +48,7 @@ class WebrtcStream : public UdpSocket::Observer,
   void OnStunMessageSend(uint8_t* data, size_t size, udp::endpoint* ep) override;
   void OnIceConnectionCompleted() override;
   void OnIceConnectionError() override;
-  void OnDtlsTransportSetup(SrtpSession::CipherSuite suite,
-                            uint8_t* localMasterKey,
-                            int localMasterKeySize,
-                            uint8_t* remoteMasterKey,
-                            int remoteMasterKeySize) override;
+  void OnDtlsTransportSetup(SrtpSession::CipherSuite suite, uint8_t* localMasterKey, int localMasterKeySize, uint8_t* remoteMasterKey, int remoteMasterKeySize) override;
   void OnDtlsTransportError() override;
   void OnDtlsTransportShutdown() override;
   void OnDtlsTransportSendData(const uint8_t* data, size_t len) override;

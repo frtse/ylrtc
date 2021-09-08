@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstdint>
 #include <cstddef>
-#include <memory>
+#include <cstdint>
 #include <deque>
+#include <memory>
 
 #include "rtp_packet.h"
 
@@ -28,11 +28,7 @@ class RtpPacketHistory {
  private:
   class StoredPacket {
    public:
-    StoredPacket(std::shared_ptr<RtpPacket> packet, int64_t send_time_ms, uint64_t insert_order)
-      : send_time_ms_(send_time_ms),
-      packet_(packet),
-      insert_order_(insert_order),
-      times_retransmitted_(0) {}
+    StoredPacket(std::shared_ptr<RtpPacket> packet, int64_t send_time_ms, uint64_t insert_order) : send_time_ms_(send_time_ms), packet_(packet), insert_order_(insert_order), times_retransmitted_(0) {}
 
     // The time of last transmission, including retransmissions.
     int64_t send_time_ms_;
@@ -59,7 +55,7 @@ class RtpPacketHistory {
   // Packets may also be removed out-of-order, in which case there will be
   // instances of StoredPacket with `packet_` set to nullptr. The first and last
   // entry in the queue will however always be populated.
-  std::deque<StoredPacket> packet_history_ ;
+  std::deque<StoredPacket> packet_history_;
   // Total number of packets with inserted.
   uint64_t packets_inserted_{0};
   int64_t rtt_ms_{-1};

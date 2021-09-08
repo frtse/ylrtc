@@ -3,9 +3,7 @@
 #include <boost/bind/bind.hpp>
 
 Timer::Timer(boost::asio::io_context& io_context, std::shared_ptr<Listener> listener)
-    : io_context_{io_context},
-      timer_{std::make_unique<boost::asio::deadline_timer>(io_context_)},
-      listener_{listener} {}
+    : io_context_{io_context}, timer_{std::make_unique<boost::asio::deadline_timer>(io_context_)}, listener_{listener} {}
 
 Timer::~Timer() {
   timer_->cancel();

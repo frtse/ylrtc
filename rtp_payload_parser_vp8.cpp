@@ -58,9 +58,7 @@ struct RTPVideoHeaderVP8 {
                               // in a VP8 partition. Otherwise false
 };
 
-int ParseVP8Descriptor(RTPVideoHeaderVP8* vp8,
-                       const uint8_t* data,
-                       size_t data_length) {
+int ParseVP8Descriptor(RTPVideoHeaderVP8* vp8, const uint8_t* data, size_t data_length) {
   if (data_length <= 0)
     return kFailedToParse;
   int parsed_bytes = 0;
@@ -146,8 +144,7 @@ std::optional<PayloadInfo> RtpPayloadParserVp8::Parse(uint8_t* data, size_t size
   RTPVideoHeaderVP8 vp8_header;
   vp8_header.InitRTPVideoHeaderVP8();
 
-  const int descriptor_size =
-      ParseVP8Descriptor(&vp8_header, data, size);
+  const int descriptor_size = ParseVP8Descriptor(&vp8_header, data, size);
   if (descriptor_size == kFailedToParse)
     return std::nullopt;
 
@@ -155,8 +152,7 @@ std::optional<PayloadInfo> RtpPayloadParserVp8::Parse(uint8_t* data, size_t size
     // Weak check for corrupt payload_data: PartID MUST NOT be larger than 8.
     return std::nullopt;
   }
-  payload_info.is_first_packet_in_frame =
-      vp8_header.beginningOfPartition && vp8_header.partitionId == 0;
+  payload_info.is_first_packet_in_frame = vp8_header.beginningOfPartition && vp8_header.partitionId == 0;
 
   int vp8_payload_size = size - descriptor_size;
   if (vp8_payload_size == 0) {

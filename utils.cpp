@@ -1,9 +1,9 @@
 #include "utils.h"
 
+#include <algorithm>
 #include <chrono>
 #include <iterator>
 #include <string_view>
-#include <algorithm>
 
 // clang-format off
 #include "spdlog/spdlog.h"
@@ -11,9 +11,7 @@
 // clang-format on
 
 int64_t TimeMillis() {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(
-             std::chrono::steady_clock::now().time_since_epoch())
-      .count();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
 void DumpHex(const uint8_t* data, size_t size) {
@@ -23,8 +21,7 @@ void DumpHex(const uint8_t* data, size_t size) {
 
 NtpTime NtpTime::CreateFromMillis(uint64_t millis) {
   uint32_t seconds = millis / 1000;
-  uint32_t fractions =
-      static_cast<uint32_t>((static_cast<double>(millis % 1000) / 1000) * kFractionsPerSecond);
+  uint32_t fractions = static_cast<uint32_t>((static_cast<double>(millis % 1000) / 1000) * kFractionsPerSecond);
 
   return NtpTime(seconds, fractions);
 }

@@ -1,27 +1,26 @@
 #include "rtp_header_extension.h"
 
 std::unordered_map<std::string, RTPHeaderExtensionType> UriRTPHeaderExtensionMap = {
-  {"urn:ietf:params:rtp-hdrext:toffset", kRtpExtensionTransmissionTimeOffset},
-  {"urn:ietf:params:rtp-hdrext:ssrc-audio-level", kRtpExtensionAudioLevel},
-  {"urn:ietf:params:rtp-hdrext:csrc-audio-level", kRtpExtensionCsrcAudioLevel},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/inband-cn", kRtpExtensionInbandComfortNoise},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time", kRtpExtensionAbsoluteSendTime},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time", kRtpExtensionAbsoluteCaptureTime},
-  {"urn:3gpp:video-orientation", kRtpExtensionVideoRotation},
-  {"http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01", kRtpExtensionTransportSequenceNumber},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/transport-wide-cc-02", kRtpExtensionTransportSequenceNumber02},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/playout-delay", kRtpExtensionPlayoutDelay},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/video-content-type", kRtpExtensionVideoContentType},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/video-layers-allocation00", kRtpExtensionVideoLayersAllocation},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/video-timing", kRtpExtensionVideoTiming},
-  {"urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id", kRtpExtensionRtpStreamId},
-  {"urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id", kRtpExtensionRepairedRtpStreamId},
-  {"urn:ietf:params:rtp-hdrext:sdes:mid", kRtpExtensionMid},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/generic-frame-descriptor-00", kRtpExtensionGenericFrameDescriptor00},
-  {"https://aomediacodec.github.io/av1-rtp-spec/dependency-descriptor-rtp-header-extension", kRtpExtensionGenericFrameDescriptor02},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/color-space", kRtpExtensionColorSpace},
-  {"http://www.webrtc.org/experiments/rtp-hdrext/video-frame-tracking-id", kRtpExtensionVideoFrameTrackingId}
-};
+    {"urn:ietf:params:rtp-hdrext:toffset", kRtpExtensionTransmissionTimeOffset},
+    {"urn:ietf:params:rtp-hdrext:ssrc-audio-level", kRtpExtensionAudioLevel},
+    {"urn:ietf:params:rtp-hdrext:csrc-audio-level", kRtpExtensionCsrcAudioLevel},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/inband-cn", kRtpExtensionInbandComfortNoise},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time", kRtpExtensionAbsoluteSendTime},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time", kRtpExtensionAbsoluteCaptureTime},
+    {"urn:3gpp:video-orientation", kRtpExtensionVideoRotation},
+    {"http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01", kRtpExtensionTransportSequenceNumber},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/transport-wide-cc-02", kRtpExtensionTransportSequenceNumber02},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/playout-delay", kRtpExtensionPlayoutDelay},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/video-content-type", kRtpExtensionVideoContentType},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/video-layers-allocation00", kRtpExtensionVideoLayersAllocation},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/video-timing", kRtpExtensionVideoTiming},
+    {"urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id", kRtpExtensionRtpStreamId},
+    {"urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id", kRtpExtensionRepairedRtpStreamId},
+    {"urn:ietf:params:rtp-hdrext:sdes:mid", kRtpExtensionMid},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/generic-frame-descriptor-00", kRtpExtensionGenericFrameDescriptor00},
+    {"https://aomediacodec.github.io/av1-rtp-spec/dependency-descriptor-rtp-header-extension", kRtpExtensionGenericFrameDescriptor02},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/color-space", kRtpExtensionColorSpace},
+    {"http://www.webrtc.org/experiments/rtp-hdrext/video-frame-tracking-id", kRtpExtensionVideoFrameTrackingId}};
 
 void IdRtpExtensionTypeManager::Register(int id, const std::string& uri) {
   auto result = UriRTPHeaderExtensionMap.find(uri);

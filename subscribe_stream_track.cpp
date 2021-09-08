@@ -3,10 +3,8 @@
 #include "spdlog/spdlog.h"
 #include "utils.h"
 
-SubscribeStreamTrack::SubscribeStreamTrack(const Configuration& configuration
-  , boost::asio::io_context& io_context, Observer* observer)
-  : configuration_{configuration}, io_context_{io_context}
-  , observer_{observer}, rate_statistics_{1000, RateStatistics::kBpsScale} {
+SubscribeStreamTrack::SubscribeStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer)
+    : configuration_{configuration}, io_context_{io_context}, observer_{observer}, rate_statistics_{1000, RateStatistics::kBpsScale} {
   report_interval_ = configuration_.audio ? kDefaultAudioReportInterval : kDefaultVideoReportInterval;
 }
 
@@ -14,7 +12,6 @@ void SubscribeStreamTrack::Init() {
   rtcp_timer_.reset(new Timer(io_context_, shared_from_this()));
   rtcp_timer_->AsyncWait(report_interval_);
 }
-
 
 void SubscribeStreamTrack::SendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
   packets_sent_++;
@@ -42,10 +39,9 @@ void SubscribeStreamTrack::ReceiveNack(NackPacket* nack_packet) {
     if (!packet)
       continue;
     if (!configuration_.rtx_enabled)
-        observer_->OnSubscribeStreamTrackResendRtpPacket(packet);
+      observer_->OnSubscribeStreamTrackResendRtpPacket(packet);
     else
-        observer_->OnSubscribeStreamTrackSendRtxPacket(packet, configuration_.rtx_payload_type
-          , configuration_.rtx_ssrc, rtx_sequence_number_++);
+      observer_->OnSubscribeStreamTrackSendRtxPacket(packet, configuration_.rtx_payload_type, configuration_.rtx_ssrc, rtx_sequence_number_++);
   }
 }
 
@@ -54,8 +50,7 @@ void SubscribeStreamTrack::ReceiveReceiverReport(const ReportBlock& report_block
   NtpTime ntp = NtpTime::CreateFromMillis(now);
   uint32_t compact_ntp = ntp.ToCompactNtp();
   if (report_block.last_sr != 0) {
-    uint32_t rtp_compact_ntp =
-        compact_ntp - report_block.delay_since_last_sr - report_block.last_sr;
+    uint32_t rtp_compact_ntp = compact_ntp - report_block.delay_since_last_sr - report_block.last_sr;
     rtt_millis_ = NtpTime::CreateFromCompactNtp(rtp_compact_ntp).ToMillis();
     rtp_packet_history_.SetRtt(rtt_millis_);
   }
@@ -104,7 +99,6 @@ void SubscribeStreamTrack::OnTimerTimeout() {
 
   // The interval between RTCP packets is varied randomly over the
   // range [1/2,3/2] times the calculated interval.
-  int64_t time_to_next = 
-      random_.RandomNumber(min_interval * 1 / 2, min_interval * 3 / 2);
+  int64_t time_to_next = random_.RandomNumber(min_interval * 1 / 2, min_interval * 3 / 2);
   rtcp_timer_->AsyncWait(time_to_next);
 }

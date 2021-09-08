@@ -6,18 +6,15 @@
 
 static const uint32_t kDtlsMtu = 1350;
 
-std::map<std::string, DtlsTransport::Setup> DtlsTransport::string_to_setup_ = {
-    {"active", DtlsTransport::Setup::kActive},
-    {"passive", DtlsTransport::Setup::kPassive},
-    {"actpass", DtlsTransport::Setup::kActPass}};
+std::map<std::string, DtlsTransport::Setup> DtlsTransport::string_to_setup_ = {{"active", DtlsTransport::Setup::kActive},
+                                                                               {"passive", DtlsTransport::Setup::kPassive},
+                                                                               {"actpass", DtlsTransport::Setup::kActPass}};
 
-std::map<DtlsTransport::Setup, std::string> DtlsTransport::setup_to_string_ = {
-    {DtlsTransport::Setup::kActive, "active"},
-    {DtlsTransport::Setup::kPassive, "passive"},
-    {DtlsTransport::Setup::kActPass, "actpass"}};
+std::map<DtlsTransport::Setup, std::string> DtlsTransport::setup_to_string_ = {{DtlsTransport::Setup::kActive, "active"},
+                                                                               {DtlsTransport::Setup::kPassive, "passive"},
+                                                                               {DtlsTransport::Setup::kActPass, "actpass"}};
 
-DtlsTransport::DtlsTransport(boost::asio::io_context& io_context, Observer* listener)
-    : io_context_{io_context}, listener_{listener} {
+DtlsTransport::DtlsTransport(boost::asio::io_context& io_context, Observer* listener) : io_context_{io_context}, listener_{listener} {
   setup_ = Setup::kUnknown;
   ssl_ = nullptr;
   read_bio_ = nullptr;
@@ -227,8 +224,7 @@ bool DtlsTransport::CheckRemoteCertificate() {
       return false;
   }
 
-  if (X509_digest(certificate, hash_function, fingerprint, &size) == 0 ||
-      memcmp(fingerprint, remote_fingerprint_, size)) {
+  if (X509_digest(certificate, hash_function, fingerprint, &size) == 0 || memcmp(fingerprint, remote_fingerprint_, size)) {
     spdlog::error("The fingerprint in SDP does not match the certificate.");
     X509_free(certificate);
     return false;
@@ -258,8 +254,7 @@ bool DtlsTransport::ExtractSrtpParams() {
     return false;
   }
 
-  if (!SSL_export_keying_material(ssl_, material, max_length * 2, "EXTRACTOR-dtls_srtp", 19, NULL,
-                                  0, 0)) {
+  if (!SSL_export_keying_material(ssl_, material, max_length * 2, "EXTRACTOR-dtls_srtp", 19, NULL, 0, 0)) {
     spdlog::error(
         "Unable to extract SRTP keying material from DTLS-SRTP negotiation on "
         "RTP instance .");

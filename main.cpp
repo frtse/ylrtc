@@ -14,8 +14,7 @@
 #include "threads.h"
 
 int main(int argc, char* argv[]) {
-  RoomManager::GetInstance().CreateRoom(
-      "AABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEABCD");
+  RoomManager::GetInstance().CreateRoom("AABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEABCD");
 #ifdef NDEBUG
   spdlog::set_level(spdlog::level::info);
 #else
@@ -39,13 +38,11 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  if (!SignalingServer::GetInstance().LoadCertKeyFile(ServerConfig::GetInstance().GetCertFile(),
-                                                      ServerConfig::GetInstance().GetKeyFile())) {
+  if (!SignalingServer::GetInstance().LoadCertKeyFile(ServerConfig::GetInstance().GetCertFile(), ServerConfig::GetInstance().GetKeyFile())) {
     spdlog::error("Load file failed.");
     return EXIT_FAILURE;
   }
-  if (!SignalingServer::GetInstance().Start(ServerConfig::GetInstance().GetIp(),
-                                            ServerConfig::GetInstance().GetSignalingServerPort())) {
+  if (!SignalingServer::GetInstance().Start(ServerConfig::GetInstance().GetIp(), ServerConfig::GetInstance().GetSignalingServerPort())) {
     spdlog::error("Signaling server failed to start.");
     return EXIT_FAILURE;
   }

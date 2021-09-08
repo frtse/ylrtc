@@ -4,7 +4,7 @@
 #include <memory>
 #include <thread>
 
-class Timer : public std::enable_shared_from_this<Timer>{
+class Timer : public std::enable_shared_from_this<Timer> {
  public:
   class Listener {
    public:

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <string_view>
 
@@ -19,6 +19,6 @@ struct PayloadInfo {
 };
 
 class RtpPayloadParser {
-public:
+ public:
   static std::optional<PayloadInfo> Parse(const std::string_view codec, uint8_t* data, size_t size);
 };

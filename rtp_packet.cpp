@@ -4,15 +4,14 @@
 #include <iostream>
 
 #include "byte_buffer.h"
+#include "rtp_utils.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
-#include "rtp_utils.h"
 
 RtpPacket::~RtpPacket() {
   if (owned_memory_ && data_ != nullptr)
-    delete [] data_;
+    delete[] data_;
 }
-
 
 void RtpPacket::SetMarker(bool marker_bit) {
   marker_ = marker_bit;
@@ -113,13 +112,10 @@ bool RtpPacket::Parse(const uint8_t* buffer, size_t size) {
     if (extension_offset + extensions_capacity > size) {
       return false;
     }
-    if (profile != kOneByteExtensionProfileId &&
-        (profile & kTwobyteExtensionProfileIdAppBitsFilter) != kTwoByteExtensionProfileId) {
+    if (profile != kOneByteExtensionProfileId && (profile & kTwobyteExtensionProfileIdAppBitsFilter) != kTwoByteExtensionProfileId) {
       spdlog::warn("Unsupported rtp extension {}.", profile);
     } else {
-      size_t extension_header_length = profile == kOneByteExtensionProfileId
-                                           ? kOneByteExtensionHeaderLength
-                                           : kTwoByteExtensionHeaderLength;
+      size_t extension_header_length = profile == kOneByteExtensionProfileId ? kOneByteExtensionHeaderLength : kTwoByteExtensionHeaderLength;
       constexpr uint8_t kPaddingByte = 0;
       constexpr uint8_t kPaddingId = 0;
       constexpr uint8_t kOneByteHeaderExtensionReservedId = 15;

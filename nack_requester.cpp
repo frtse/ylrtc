@@ -14,26 +14,13 @@ const int kNumReorderingBuckets = 10;
 const int kDefaultSendNackDelayMs = 0;
 int64_t kUpdateIntervalMillis = 20;
 
-NackRequester::NackInfo::NackInfo()
-    : seq_num(0), send_at_seq_num(0), sent_at_time(-1), retries(0) {}
+NackRequester::NackInfo::NackInfo() : seq_num(0), send_at_seq_num(0), sent_at_time(-1), retries(0) {}
 
-NackRequester::NackInfo::NackInfo(uint16_t seq_num,
-                                  uint16_t send_at_seq_num,
-                                  int64_t created_at_time)
-    : seq_num(seq_num),
-      send_at_seq_num(send_at_seq_num),
-      created_at_time(created_at_time),
-      sent_at_time(-1),
-      retries(0) {}
+NackRequester::NackInfo::NackInfo(uint16_t seq_num, uint16_t send_at_seq_num, int64_t created_at_time)
+    : seq_num(seq_num), send_at_seq_num(send_at_seq_num), created_at_time(created_at_time), sent_at_time(-1), retries(0) {}
 
 NackRequester::NackRequester(boost::asio::io_context& io_context, Observer* observer)
-  : io_context_{io_context},
-  observer_{observer},
-  initialized_(false),
-  rtt_ms_(kDefaultRttMs),
-  newest_seq_num_(0),
-  send_nack_delay_ms_{10} {
-}
+    : io_context_{io_context}, observer_{observer}, initialized_(false), rtt_ms_(kDefaultRttMs), newest_seq_num_(0), send_nack_delay_ms_{10} {}
 
 void NackRequester::Init() {
   timer_.reset(new Timer(io_context_, shared_from_this()));
@@ -113,10 +100,8 @@ int NackRequester::OnReceivedPacket(uint16_t seq_num, bool is_keyframe, bool is_
 
 void NackRequester::ClearUpTo(uint16_t seq_num) {
   nack_list_.erase(nack_list_.begin(), nack_list_.lower_bound(seq_num));
-  keyframe_list_.erase(keyframe_list_.begin(),
-                        keyframe_list_.lower_bound(seq_num));
-  recovered_list_.erase(recovered_list_.begin(),
-                        recovered_list_.lower_bound(seq_num));
+  keyframe_list_.erase(keyframe_list_.begin(), keyframe_list_.lower_bound(seq_num));
+  recovered_list_.erase(recovered_list_.begin(), recovered_list_.lower_bound(seq_num));
 }
 
 void NackRequester::UpdateRtt(int64_t rtt_ms) {
@@ -141,8 +126,7 @@ bool NackRequester::RemovePacketsUntilKeyFrame() {
   return false;
 }
 
-void NackRequester::AddPacketsToNack(uint16_t seq_num_start,
-                                     uint16_t seq_num_end) {
+void NackRequester::AddPacketsToNack(uint16_t seq_num_start, uint16_t seq_num_end) {
   // Remove old packets.
   auto it = nack_list_.lower_bound(seq_num_end - kMaxPacketAge);
   nack_list_.erase(nack_list_.begin(), it);
@@ -152,8 +136,7 @@ void NackRequester::AddPacketsToNack(uint16_t seq_num_start,
   // clear it and request a keyframe.
   uint16_t num_new_nacks = ForwardDiff(seq_num_start, seq_num_end);
   if (nack_list_.size() + num_new_nacks > kMaxNackPackets) {
-    while (RemovePacketsUntilKeyFrame() &&
-           nack_list_.size() + num_new_nacks > kMaxNackPackets) {
+    while (RemovePacketsUntilKeyFrame() && nack_list_.size() + num_new_nacks > kMaxNackPackets) {
     }
 
     if (nack_list_.size() + num_new_nacks > kMaxNackPackets) {
@@ -168,8 +151,7 @@ void NackRequester::AddPacketsToNack(uint16_t seq_num_start,
     // Do not send nack for packets that are already recovered by FEC or RTX
     if (recovered_list_.find(seq_num) != recovered_list_.end())
       continue;
-    NackInfo nack_info(seq_num, seq_num,
-                       TimeMillis());
+    NackInfo nack_info(seq_num, seq_num, TimeMillis());
     nack_list_[seq_num] = nack_info;
   }
 }
@@ -183,25 +165,17 @@ std::vector<uint16_t> NackRequester::GetNackBatch(NackFilterOptions options) {
   while (it != nack_list_.end()) {
     int64_t resend_delay = rtt_ms_;
     if (backoff_settings_) {
-      resend_delay =
-          std::max(resend_delay, backoff_settings_->min_retry_interval);
+      resend_delay = std::max(resend_delay, backoff_settings_->min_retry_interval);
       if (it->second.retries > 1) {
-        int64_t exponential_backoff =
-            std::min(rtt_ms_, backoff_settings_->max_rtt) *
-            std::pow(backoff_settings_->base, it->second.retries - 1);
+        int64_t exponential_backoff = std::min(rtt_ms_, backoff_settings_->max_rtt) * std::pow(backoff_settings_->base, it->second.retries - 1);
         resend_delay = std::max(resend_delay, exponential_backoff);
       }
     }
 
-    bool delay_timed_out =
-        now - it->second.created_at_time >= send_nack_delay_ms_;
-    bool nack_on_rtt_passed =
-        now - it->second.sent_at_time >= resend_delay;
-    bool nack_on_seq_num_passed =
-        it->second.sent_at_time == -1 &&
-        AheadOrAt(newest_seq_num_, it->second.send_at_seq_num);
-    if (delay_timed_out && ((consider_seq_num && nack_on_seq_num_passed) ||
-                            (consider_timestamp && nack_on_rtt_passed))) {
+    bool delay_timed_out = now - it->second.created_at_time >= send_nack_delay_ms_;
+    bool nack_on_rtt_passed = now - it->second.sent_at_time >= resend_delay;
+    bool nack_on_seq_num_passed = it->second.sent_at_time == -1 && AheadOrAt(newest_seq_num_, it->second.send_at_seq_num);
+    if (delay_timed_out && ((consider_seq_num && nack_on_seq_num_passed) || (consider_timestamp && nack_on_rtt_passed))) {
       nack_batch.emplace_back(it->second.seq_num);
       ++it->second.retries;
       it->second.sent_at_time = now;

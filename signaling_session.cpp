@@ -27,9 +27,7 @@ void SignalingSession::DoWrite() {
 
 // Take ownership of the stream
 SignalingSession::SignalingSession(tcp::socket&& socket, ssl::context& ctx, Observer* observer)
-    : ws_(std::move(socket), ctx),
-      observer_{observer},
-      signaling_handler_{std::make_unique<SignalingHandler>(session_info_)} {}
+    : ws_(std::move(socket), ctx), observer_{observer}, signaling_handler_{std::make_unique<SignalingHandler>(session_info_)} {}
 
 // Start the asynchronous operation
 void SignalingSession::Run() {
@@ -41,8 +39,7 @@ void SignalingSession::OnRun() {
   beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(30));
 
   // Perform the SSL handshake
-  ws_.next_layer().async_handshake(ssl::stream_base::server,
-                                   beast::bind_front_handler(&SignalingSession::OnHandshake, shared_from_this()));
+  ws_.next_layer().async_handshake(ssl::stream_base::server, beast::bind_front_handler(&SignalingSession::OnHandshake, shared_from_this()));
   DoRead();
 }
 
@@ -53,8 +50,7 @@ void SignalingSession::OnHandshake(beast::error_code ec) {
   beast::get_lowest_layer(ws_).expires_never();
   ws_.set_option(websocket::stream_base::timeout::suggested(beast::role_type::server));
 
-  ws_.set_option(websocket::stream_base::decorator(
-      [](websocket::response_type& res) { res.set(http::field::server, "Webrtc SFU"); }));
+  ws_.set_option(websocket::stream_base::decorator([](websocket::response_type& res) { res.set(http::field::server, "Webrtc SFU"); }));
   ws_.async_accept(beast::bind_front_handler(&SignalingSession::OnAccept, shared_from_this()));
 }
 

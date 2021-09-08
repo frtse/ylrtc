@@ -3,8 +3,8 @@
 #include <stdint.h>
 
 #include <limits>
-#include <type_traits>
 #include <optional>
+#include <type_traits>
 
 #include "mod_ops.h"
 
@@ -15,8 +15,7 @@
 // considered to be ahead.
 template <typename T, T M>
 inline typename std::enable_if<(M > 0), bool>::type AheadOrAt(T a, T b) {
-  static_assert(std::is_unsigned<T>::value,
-                "Type must be an unsigned integer.");
+  static_assert(std::is_unsigned<T>::value, "Type must be an unsigned integer.");
   const T maxDist = M / 2;
   if (!(M & 1) && MinDiff<T, M>(a, b) == maxDist)
     return b < a;
@@ -25,8 +24,7 @@ inline typename std::enable_if<(M > 0), bool>::type AheadOrAt(T a, T b) {
 
 template <typename T, T M>
 inline typename std::enable_if<(M == 0), bool>::type AheadOrAt(T a, T b) {
-  static_assert(std::is_unsigned<T>::value,
-                "Type must be an unsigned integer.");
+  static_assert(std::is_unsigned<T>::value, "Type must be an unsigned integer.");
   const T maxDist = std::numeric_limits<T>::max() / 2 + T(1);
   if (a - b == maxDist)
     return b < a;
@@ -45,8 +43,7 @@ inline bool AheadOrAt(T a, T b) {
 // considered to be ahead.
 template <typename T, T M = 0>
 inline bool AheadOf(T a, T b) {
-  static_assert(std::is_unsigned<T>::value,
-                "Type must be an unsigned integer.");
+  static_assert(std::is_unsigned<T>::value, "Type must be an unsigned integer.");
   return a != b && AheadOrAt<T, M>(a, b);
 }
 
@@ -56,7 +53,9 @@ inline bool AheadOf(T a, T b) {
 //          covered by the sequence numbers may not be larger than floor(M/2).
 template <typename T, T M = 0>
 struct AscendingSeqNumComp {
-  bool operator()(T a, T b) const { return AheadOf<T, M>(a, b); }
+  bool operator()(T a, T b) const {
+    return AheadOf<T, M>(a, b);
+  }
 };
 
 // Comparator used to compare sequence numbers in a continuous fashion.
@@ -65,17 +64,16 @@ struct AscendingSeqNumComp {
 //          covered by the sequence numbers may not be larger than floor(M/2).
 template <typename T, T M = 0>
 struct DescendingSeqNumComp {
-  bool operator()(T a, T b) const { return AheadOf<T, M>(b, a); }
+  bool operator()(T a, T b) const {
+    return AheadOf<T, M>(b, a);
+  }
 };
 
 // A sequence number unwrapper where the first unwrapped value equals the
 // first value being unwrapped.
 template <typename T, T M = 0>
 class SeqNumUnwrapper {
-  static_assert(
-      std::is_unsigned<T>::value &&
-          std::numeric_limits<T>::max() < std::numeric_limits<int64_t>::max(),
-      "Type unwrapped must be an unsigned integer smaller than int64_t.");
+  static_assert(std::is_unsigned<T>::value && std::numeric_limits<T>::max() < std::numeric_limits<int64_t>::max(), "Type unwrapped must be an unsigned integer smaller than int64_t.");
 
  public:
   int64_t Unwrap(T value) {
@@ -85,8 +83,7 @@ class SeqNumUnwrapper {
       last_unwrapped_ += ForwardDiff<T, M>(*last_value_, value);
 
       if (!AheadOrAt<T, M>(value, *last_value_)) {
-        constexpr int64_t kBackwardAdjustment =
-            M == 0 ? int64_t{std::numeric_limits<T>::max()} + 1 : M;
+        constexpr int64_t kBackwardAdjustment = M == 0 ? int64_t{std::numeric_limits<T>::max()} + 1 : M;
         last_unwrapped_ -= kBackwardAdjustment;
       }
     }

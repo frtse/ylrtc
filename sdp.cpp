@@ -11,8 +11,7 @@ Sdp::Sdp() : local_dtls_setup_{"active"} {}
 bool Sdp::SetPublishOffer(const std::string& offer) {
   try {
     auto publish_offer_sdp = sdptransform::parse(offer);
-    if (publish_offer_sdp.find("media") == publish_offer_sdp.end() ||
-        publish_offer_sdp.at("media").empty()) {
+    if (publish_offer_sdp.find("media") == publish_offer_sdp.end() || publish_offer_sdp.at("media").empty()) {
       spdlog::error("No media section.");
       return false;
     }
@@ -20,8 +19,7 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
     // https://datatracker.ietf.org/doc/html/draft-ietf-mmusic-sdp-bundle-negotiation
     if (publish_offer_sdp.find("groups") != publish_offer_sdp.end()) {
       auto& groups = publish_offer_sdp.at("groups");
-      auto resutl = std::count_if(groups.begin(), groups.end(),
-                                  [](auto obj) { return obj.at("type") == "BUNDLE"; });
+      auto resutl = std::count_if(groups.begin(), groups.end(), [](auto obj) { return obj.at("type") == "BUNDLE"; });
 
       if (resutl != 1) {
         spdlog::error("Only support one BUNDLE.");
@@ -36,8 +34,7 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
     for (int i = 0; i < media.size(); ++i) {
       auto& media_section = media[i];
 
-      if (media_section.find("direction") == media_section.end() ||
-          media_section.at("direction") != "sendonly")
+      if (media_section.find("direction") == media_section.end() || media_section.at("direction") != "sendonly")
         return false;
       std::string media_type = media_section.at("type");
       if (media_section.find("ssrcs") != media_section.end()) {
@@ -60,8 +57,7 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
       }
     }
 
-    if (remote_ice_ufrag_.empty() || remote_ice_pwd_.empty() || remote_fingerprint_type_.empty() ||
-        remote_fingerprint_hash_.empty() || remote_dtls_setup_.empty())
+    if (remote_ice_ufrag_.empty() || remote_ice_pwd_.empty() || remote_fingerprint_type_.empty() || remote_fingerprint_hash_.empty() || remote_dtls_setup_.empty())
       return false;
     publish_offer_sdp_ = publish_offer_sdp;
     return true;
@@ -165,8 +161,7 @@ std::string Sdp::CreatePublishAnswer() {
                                  if (rtx_payload != -1 && payload == rtx_payload) {
                                    media_section_rtpmaps_map_[media_section_type].push_back(item);
                                    return false;
-                                 }
-                                 else if (payload == codec_payload)
+                                 } else if (payload == codec_payload)
                                    return false;
                                  else
                                    return true;
@@ -178,8 +173,7 @@ std::string Sdp::CreatePublishAnswer() {
       auto& rtcp_fb = media_section.at("rtcpFb");
       rtcp_fb.erase(std::remove_if(rtcp_fb.begin(), rtcp_fb.end(),
                                    [codec_payload](auto item) {
-                                     return item.at("payload") != std::to_string(codec_payload) &&
-                                            item.at("payload") != "*";  // * todo
+                                     return item.at("payload") != std::to_string(codec_payload) && item.at("payload") != "*";  // * todo
                                    }),
                     rtcp_fb.end());
     }
@@ -188,16 +182,12 @@ std::string Sdp::CreatePublishAnswer() {
       auto& rtcp_fb_trr_int = media_section.at("rtcpFbTrrInt");
       rtcp_fb_trr_int.erase(std::remove_if(rtcp_fb_trr_int.begin(), rtcp_fb_trr_int.end(),
                                            [codec_payload](auto item) {
-                                             return item.at("payload") !=
-                                                        std::to_string(codec_payload) &&
-                                                    item.at("payload") != "*";  // * todo
+                                             return item.at("payload") != std::to_string(codec_payload) && item.at("payload") != "*";  // * todo
                                            }),
                             rtcp_fb_trr_int.end());
     }
 
-    std::string payloads = rtx_payload == -1
-                               ? std::to_string(codec_payload)
-                               : std::to_string(codec_payload) + " " + std::to_string(rtx_payload);
+    std::string payloads = rtx_payload == -1 ? std::to_string(codec_payload) : std::to_string(codec_payload) + " " + std::to_string(rtx_payload);
     media_section["payloads"] = payloads;
   }
 
@@ -206,8 +196,7 @@ std::string Sdp::CreatePublishAnswer() {
 
 bool Sdp::SetSubscribeOffer(const std::string& offer) {
   subscribe_offer_sdp_ = sdptransform::parse(offer);
-  if (subscribe_offer_sdp_.find("media") == subscribe_offer_sdp_.end() ||
-      subscribe_offer_sdp_.at("media").empty()) {
+  if (subscribe_offer_sdp_.find("media") == subscribe_offer_sdp_.end() || subscribe_offer_sdp_.at("media").empty()) {
     spdlog::error("No media section.");
     return false;
   }
@@ -262,8 +251,7 @@ std::string Sdp::CreateSubscribeAnswer() {
       media_section["setup"] = local_dtls_setup_;
       if (media_section_ssrcs_map_.find(media_section["type"]) != media_section_ssrcs_map_.end())
         media_section["ssrcs"] = media_section_ssrcs_map_.at(media_section["type"]);
-      if (media_section_ssrc_groups_map_.find(media_section["type"]) !=
-          media_section_ssrc_groups_map_.end())
+      if (media_section_ssrc_groups_map_.find(media_section["type"]) != media_section_ssrc_groups_map_.end())
         media_section["ssrcGroups"] = media_section_ssrc_groups_map_.at(media_section["type"]);
     }
 
@@ -341,9 +329,8 @@ const std::unordered_map<std::string, nlohmann::json>& Sdp::GetMediaSectionRtpma
 const nlohmann::json Sdp::GetMediaSections() const {
   nlohmann::json media_sections;
   if (subscribe_anwser_sdp_.find("media") != subscribe_anwser_sdp_.end()) {
-    media_sections =  subscribe_anwser_sdp_.at("media");
-  }
-  else if (publish_anwser_sdp_.find("media") != publish_anwser_sdp_.end()) {
+    media_sections = subscribe_anwser_sdp_.at("media");
+  } else if (publish_anwser_sdp_.find("media") != publish_anwser_sdp_.end()) {
     media_sections = publish_anwser_sdp_.at("media");
     for (auto& m : media_sections) {
       if (m.find("type") == m.end())

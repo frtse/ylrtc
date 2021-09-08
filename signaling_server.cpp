@@ -6,8 +6,7 @@
 #include "spdlog/spdlog.h"
 #include "threads.h"
 
-SignalingServer::SignalingServer()
-    : ioc_{MainThread::GetInstance().MessageLoop()}, acceptor_{ioc_} {}
+SignalingServer::SignalingServer() : ioc_{MainThread::GetInstance().MessageLoop()}, acceptor_{ioc_} {}
 
 bool SignalingServer::Start(std::string_view ip, uint16_t port) {
   boost::system::error_code ec;
@@ -43,8 +42,7 @@ bool SignalingServer::Start(std::string_view ip, uint16_t port) {
 }
 
 void SignalingServer::DoAccept() {
-  acceptor_.async_accept(
-      std::bind(&SignalingServer::OnAccept, this, std::placeholders::_1, std::placeholders::_2));
+  acceptor_.async_accept(std::bind(&SignalingServer::OnAccept, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 void SignalingServer::OnAccept(boost::system::error_code ec, tcp::socket socket) {

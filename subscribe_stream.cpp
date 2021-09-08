@@ -1,10 +1,10 @@
 #include "subscribe_stream.h"
 
-#include "utils.h"
-#include "spdlog/spdlog.h"
-#include "rtcp_packet.h"
 #include "byte_buffer.h"
+#include "rtcp_packet.h"
 #include "rtp_utils.h"
+#include "spdlog/spdlog.h"
+#include "utils.h"
 
 bool SubscribeStream::SetRemoteDescription(const std::string& offer) {
   return sdp_.SetSubscribeOffer(offer);
@@ -14,11 +14,9 @@ std::string SubscribeStream::CreateAnswer() {
   return sdp_.CreateSubscribeAnswer();
 }
 
-SubscribeStream::SubscribeStream(const std::string& stream_id, WebrtcStream::Observer* observer)
-    : WebrtcStream(stream_id, observer) {}
+SubscribeStream::SubscribeStream(const std::string& stream_id, WebrtcStream::Observer* observer) : WebrtcStream(stream_id, observer) {}
 
-SubscribeStream::~SubscribeStream() {
-}
+SubscribeStream::~SubscribeStream() {}
 
 void SubscribeStream::OnRtpPacketReceive(uint8_t* data, size_t length) {}
 
@@ -82,12 +80,12 @@ void SubscribeStream::SetLocalDescription() {
         config.ssrc = ssrcs[0].at("id");
     }
     if (media_section.find("rtp") != media_section.end()) {
-      auto& rtpmaps= media_section.at("rtp");
+      auto& rtpmaps = media_section.at("rtp");
       if (!rtpmaps.empty()) {
         config.payload_type = rtpmaps[0].at("payload");
         config.clock_rate = rtpmaps[0].at("rate");
       }
-      for (auto& rtpmap: rtpmaps) {
+      for (auto& rtpmap : rtpmaps) {
         if (rtpmap.at("codec") == "rtx") {
           config.rtx_enabled = true;
           config.rtx_payload_type = rtpmap.at("payload");
@@ -105,10 +103,9 @@ void SubscribeStream::SetLocalDescription() {
       }
     }
     if (media_section.find("rtcpFb") != media_section.end()) {
-     auto& rtcpFbs = media_section.at("rtcpFb");
+      auto& rtcpFbs = media_section.at("rtcpFb");
       for (auto& rtcpFb : rtcpFbs) {
-        if (rtcpFb.at("payload") == std::to_string(config.payload_type) 
-          && rtcpFb.at("type") == "nack" && rtcpFb.find("subtype") == rtcpFb.end())
+        if (rtcpFb.at("payload") == std::to_string(config.payload_type) && rtcpFb.at("type") == "nack" && rtcpFb.find("subtype") == rtcpFb.end())
           config.nack_enabled = true;
       }
     }
@@ -118,9 +115,10 @@ void SubscribeStream::SetLocalDescription() {
     tracks_.push_back(track);
     ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
 
-    spdlog::debug("SubscribeStreamTrack ssrc = {}, payload_type = {}"
-      ", rtx_enabled = {}, rtx_ssrc = {}, rtx_payload_type = {}, nack_enabled = {}", config.ssrc
-      , config.payload_type, config.rtx_enabled, config.rtx_ssrc, config.rtx_payload_type, config.nack_enabled);
+    spdlog::debug(
+        "SubscribeStreamTrack ssrc = {}, payload_type = {}"
+        ", rtx_enabled = {}, rtx_ssrc = {}, rtx_payload_type = {}, nack_enabled = {}",
+        config.ssrc, config.payload_type, config.rtx_enabled, config.rtx_ssrc, config.rtx_payload_type, config.nack_enabled);
   }
 }
 
@@ -128,8 +126,7 @@ void SubscribeStream::OnSubscribeStreamTrackResendRtpPacket(std::shared_ptr<RtpP
   SendRtp(rtp_packet->Data(), rtp_packet->Size());
 }
 
-void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet
-  , uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) {
+void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) {
   SendRtx(rtp_packet, payload_type, ssrc, sequence_number);
 }
 
@@ -159,11 +156,10 @@ void SubscribeStream::SendRtx(std::shared_ptr<RtpPacket> rtp_packet, uint8_t pay
   msg.buffer.reset(new uint8_t[protect_rtp_need_len]);
   msg.endpoint = selected_endpoint_;
   memcpy(msg.buffer.get(), rtp_packet->Data(), rtp_packet->HeaderSize());
-  memcpy(msg.buffer.get() + rtp_packet->HeaderSize() + kRtxHeaderSize
-    , rtp_packet->Payload(), rtp_packet->PayloadSize());
+  memcpy(msg.buffer.get() + rtp_packet->HeaderSize() + kRtxHeaderSize, rtp_packet->Payload(), rtp_packet->PayloadSize());
   StoreUInt16BE(msg.buffer.get() + rtp_packet->HeaderSize(), rtp_packet->SequenceNumber());
 
-  SetRtpSsrc(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize,  ssrc);
+  SetRtpSsrc(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize, ssrc);
   SetPayloadType(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize, payload_type);
   SetSequenceNumber(msg.buffer.get(), rtp_packet->Size() + kRtxHeaderSize, sequence_number);
   int length = 0;

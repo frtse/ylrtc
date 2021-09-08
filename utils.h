@@ -4,11 +4,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <numeric>
 #include <string>
 #include <vector>
-#include <limits>
 
 #include "boost/circular_buffer.hpp"
 

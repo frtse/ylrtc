@@ -1,16 +1,15 @@
 #include "publish_stream.h"
 
-#include "rtcp_packet.h"
-#include "utils.h"
-#include "rtp_utils.h"
-#include "subscribe_stream.h"
 #include <iostream>
 
-PublishStream::PublishStream(const std::string& stream_id, WebrtcStream::Observer* observer)
-    : WebrtcStream(stream_id, observer) {}
+#include "rtcp_packet.h"
+#include "rtp_utils.h"
+#include "subscribe_stream.h"
+#include "utils.h"
 
-PublishStream::~PublishStream() {
-}
+PublishStream::PublishStream(const std::string& stream_id, WebrtcStream::Observer* observer) : WebrtcStream(stream_id, observer) {}
+
+PublishStream::~PublishStream() {}
 
 bool PublishStream::SetRemoteDescription(const std::string& offer) {
   return sdp_.SetPublishOffer(offer);
@@ -21,7 +20,6 @@ std::string PublishStream::CreateAnswer() {
 }
 
 void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
-  
   std::shared_ptr<RtpPacket> rtp_packet = std::make_shared<RtpPacket>();
   if (!rtp_packet->CreateFromExistingMemory("vp8", data, length))
     return;
@@ -31,8 +29,7 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
 
   if (ssrc_track_map_.find(*ssrc) != ssrc_track_map_.end()) {
     ssrc_track_map_[*ssrc]->ReceiveRtpPacket(data, length);
-  }
-  else {
+  } else {
     spdlog::error("PublishStream: Unrecognized RTP packet. ssrc = {}.", *ssrc);
   }
 }
@@ -96,12 +93,12 @@ void PublishStream::SetLocalDescription() {
         config.ssrc = ssrcs[0].at("id");
     }
     if (media_section.find("rtp") != media_section.end()) {
-      auto& rtpmaps= media_section.at("rtp");
+      auto& rtpmaps = media_section.at("rtp");
       if (!rtpmaps.empty()) {
         config.payload_type = rtpmaps[0].at("payload");
         config.codec = StringToLower(rtpmaps[0].at("codec"));
       }
-      for (auto& rtpmap: rtpmaps) {
+      for (auto& rtpmap : rtpmaps) {
         if (rtpmap.at("codec") == "rtx") {
           config.rtx_enabled = true;
           config.rtx_payload_type = rtpmap.at("payload");
@@ -119,10 +116,9 @@ void PublishStream::SetLocalDescription() {
       }
     }
     if (media_section.find("rtcpFb") != media_section.end()) {
-     auto& rtcpFbs = media_section.at("rtcpFb");
+      auto& rtcpFbs = media_section.at("rtcpFb");
       for (auto& rtcpFb : rtcpFbs) {
-        if (rtcpFb.at("payload") == std::to_string(config.payload_type) 
-          && rtcpFb.at("type") == "nack" && rtcpFb.find("subtype") == rtcpFb.end())
+        if (rtcpFb.at("payload") == std::to_string(config.payload_type) && rtcpFb.at("type") == "nack" && rtcpFb.find("subtype") == rtcpFb.end())
           config.nack_enabled = true;
       }
     }
@@ -132,9 +128,10 @@ void PublishStream::SetLocalDescription() {
     if (config.rtx_enabled)
       ssrc_track_map_.insert(std::make_pair(config.rtx_ssrc, track));
 
-    spdlog::debug("PublishStreamTrack ssrc = {}, payload_type = {}"
-      ", rtx_enabled = {}, rtx_ssrc = {}, rtx_payload_type = {}, nack_enabled = {}", config.ssrc
-      , config.payload_type, config.rtx_enabled, config.rtx_ssrc, config.rtx_payload_type, config.nack_enabled);
+    spdlog::debug(
+        "PublishStreamTrack ssrc = {}, payload_type = {}"
+        ", rtx_enabled = {}, rtx_ssrc = {}, rtx_payload_type = {}, nack_enabled = {}",
+        config.ssrc, config.payload_type, config.rtx_enabled, config.rtx_ssrc, config.rtx_payload_type, config.nack_enabled);
   }
 }
 

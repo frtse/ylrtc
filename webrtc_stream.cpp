@@ -5,37 +5,30 @@
 #include "dtls_context.h"
 #include "rtcp_packet.h"
 #include "rtp_packet.h"
+#include "rtp_utils.h"
 #include "sdptransform/sdptransform.hpp"
 #include "server_config.h"
 #include "signaling_server.h"
 #include "stun_message.h"
 #include "utils.h"
-#include "rtp_utils.h"
 
 WebrtcStream::WebrtcStream(const std::string& stream_id, Observer* observer)
-    : observer_{observer},
-      connection_established_(false),
-      stream_id_{stream_id},
-      work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {}
+    : observer_{observer}, connection_established_(false), stream_id_{stream_id}, work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {}
 
 bool WebrtcStream::Start() {
   udp_socket_.reset(new UdpSocket(work_thread_->MessageLoop(), this, 5000));
-  udp_socket_->SetMinMaxPort(ServerConfig::GetInstance().GetWebRtcMinPort(),
-                             ServerConfig::GetInstance().GetWebRtcMaxPort());
+  udp_socket_->SetMinMaxPort(ServerConfig::GetInstance().GetWebRtcMinPort(), ServerConfig::GetInstance().GetWebRtcMaxPort());
   if (!udp_socket_->Listen(ServerConfig::GetInstance().GetIp()))
     return false;
   ice_lite_.reset(new IceLite(sdp_.GetRemoteIceUfrag(), this));
   send_srtp_session_.reset(new SrtpSession());
   recv_srtp_session_.reset(new SrtpSession());
   dtls_transport_.reset(new DtlsTransport(work_thread_->MessageLoop(), this));
-  dtls_transport_->SetRemoteFingerprint(sdp_.GetRemoteFingerprintType(),
-                                        sdp_.GetRemoteFingerprintHash().c_str());
+  dtls_transport_->SetRemoteFingerprint(sdp_.GetRemoteFingerprintType(), sdp_.GetRemoteFingerprintHash().c_str());
   if (!dtls_transport_->Init())
     return false;
-  sdp_.SetLocalHostAddress(ServerConfig::GetInstance().GetAnnouncedIp(),
-                           udp_socket_->GetListeningPort());
-  sdp_.SetLocalFingerprint(
-      "sha-256", DtlsContext::GetInstance().GetCertificateFingerPrint(DtlsContext::Hash::kSha256));
+  sdp_.SetLocalHostAddress(ServerConfig::GetInstance().GetAnnouncedIp(), udp_socket_->GetListeningPort());
+  sdp_.SetLocalFingerprint("sha-256", DtlsContext::GetInstance().GetCertificateFingerPrint(DtlsContext::Hash::kSha256));
   sdp_.SetLocalIceInfo(ice_lite_->GetLocalUfrag(), ice_lite_->GetLocalPassword());
   return true;
 }
@@ -106,11 +99,7 @@ void WebrtcStream::OnDtlsTransportSendData(const uint8_t* data, size_t len) {
     udp_socket_->SendData(data, len, &selected_endpoint_);
 }
 
-void WebrtcStream::OnDtlsTransportSetup(SrtpSession::CipherSuite suite,
-                                        uint8_t* localMasterKey,
-                                        int localMasterKeySize,
-                                        uint8_t* remoteMasterKey,
-                                        int remoteMasterKeySize) {
+void WebrtcStream::OnDtlsTransportSetup(SrtpSession::CipherSuite suite, uint8_t* localMasterKey, int localMasterKeySize, uint8_t* remoteMasterKey, int remoteMasterKeySize) {
   spdlog::debug("DTLS ready.");
   if (!send_srtp_session_->Init(false, suite, localMasterKey, localMasterKeySize))
     spdlog::error("Srtp send session init failed.");

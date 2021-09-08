@@ -3,9 +3,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <string_view>
 #include <type_traits>
 #include <vector>
-#include <string_view>
 
 #include "rtp_payload_parser.h"
 
@@ -36,8 +36,7 @@ class RtpPacket {
  public:
   struct ExtensionInfo {
     explicit ExtensionInfo(uint8_t id) : ExtensionInfo(id, 0, 0) {}
-    ExtensionInfo(uint8_t id, uint8_t length, uint16_t offset)
-        : id(id), length(length), offset(offset) {}
+    ExtensionInfo(uint8_t id, uint8_t length, uint16_t offset) : id(id), length(length), offset(offset) {}
     uint8_t id;
     uint8_t length;
     uint16_t offset;

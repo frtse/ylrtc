@@ -5,8 +5,8 @@
 
 template <unsigned long M>                                    // NOLINT
 inline unsigned long Add(unsigned long a, unsigned long b) {  // NOLINT
-  unsigned long t = M - b % M;  // NOLINT
-  unsigned long res = a - t;    // NOLINT
+  unsigned long t = M - b % M;                                // NOLINT
+  unsigned long res = a - t;                                  // NOLINT
   if (t > a)
     return res + M;
   return res;
@@ -14,7 +14,7 @@ inline unsigned long Add(unsigned long a, unsigned long b) {  // NOLINT
 
 template <unsigned long M>                                         // NOLINT
 inline unsigned long Subtract(unsigned long a, unsigned long b) {  // NOLINT
-  unsigned long sub = b % M;  // NOLINT
+  unsigned long sub = b % M;                                       // NOLINT
   if (a < sub)
     return M - (sub - a);
   return a - sub;
@@ -46,15 +46,13 @@ inline unsigned long Subtract(unsigned long a, unsigned long b) {  // NOLINT
 // largest value representable by T.
 template <typename T, T M>
 inline typename std::enable_if<(M > 0), T>::type ForwardDiff(T a, T b) {
-  static_assert(std::is_unsigned<T>::value,
-                "Type must be an unsigned integer.");
+  static_assert(std::is_unsigned<T>::value, "Type must be an unsigned integer.");
   return a <= b ? b - a : M - (a - b);
 }
 
 template <typename T, T M>
 inline typename std::enable_if<(M == 0), T>::type ForwardDiff(T a, T b) {
-  static_assert(std::is_unsigned<T>::value,
-                "Type must be an unsigned integer.");
+  static_assert(std::is_unsigned<T>::value, "Type must be an unsigned integer.");
   return b - a;
 }
 
@@ -89,15 +87,13 @@ inline T ForwardDiff(T a, T b) {
 // largest value representable by T.
 template <typename T, T M>
 inline typename std::enable_if<(M > 0), T>::type ReverseDiff(T a, T b) {
-  static_assert(std::is_unsigned<T>::value,
-                "Type must be an unsigned integer.");
+  static_assert(std::is_unsigned<T>::value, "Type must be an unsigned integer.");
   return b <= a ? a - b : M - (b - a);
 }
 
 template <typename T, T M>
 inline typename std::enable_if<(M == 0), T>::type ReverseDiff(T a, T b) {
-  static_assert(std::is_unsigned<T>::value,
-                "Type must be an unsigned integer.");
+  static_assert(std::is_unsigned<T>::value, "Type must be an unsigned integer.");
   return a - b;
 }
 
@@ -111,7 +107,6 @@ inline T ReverseDiff(T a, T b) {
 // The minimum distance is defined as min(ForwardDiff(a, b), ReverseDiff(a, b))
 template <typename T, T M = 0>
 inline T MinDiff(T a, T b) {
-  static_assert(std::is_unsigned<T>::value,
-                "Type must be an unsigned integer.");
+  static_assert(std::is_unsigned<T>::value, "Type must be an unsigned integer.");
   return std::min(ForwardDiff<T, M>(a, b), ReverseDiff<T, M>(a, b));
 }

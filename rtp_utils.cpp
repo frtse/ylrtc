@@ -31,7 +31,6 @@ void SetSequenceNumber(uint8_t* data, size_t size, uint16_t seq_no) {
 }
 
 std::optional<size_t> GetRtpHeaderLength(const uint8_t* rtp, size_t length) {
-
   if (length < kMinRtpPacketLen) {
     return std::nullopt;
   }
@@ -59,9 +58,7 @@ std::optional<size_t> GetRtpHeaderLength(const uint8_t* rtp, size_t length) {
   uint16_t extension_length_in_32bits = LoadUInt16BE(rtp + 2);
   size_t extension_length = extension_length_in_32bits * 4;
 
-  size_t rtp_header_length = extension_length +
-                             header_length_without_extension +
-                             kRtpExtensionHeaderLen;
+  size_t rtp_header_length = extension_length + header_length_without_extension + kRtpExtensionHeaderLen;
 
   // Verify input length against total header size.
   if (rtp_header_length > length) {

@@ -4,12 +4,12 @@
 #include <memory>
 
 #include "boost/asio.hpp"
+#include "random.h"
+#include "rate_statistics.h"
+#include "rtcp_packet.h"
 #include "rtp_packet.h"
 #include "rtp_packet_history.h"
-#include "rtcp_packet.h"
 #include "timer.h"
-#include "rate_statistics.h"
-#include "random.h"
 
 class SubscribeStreamTrack : public Timer::Listener, public std::enable_shared_from_this<SubscribeStreamTrack> {
  public:
@@ -27,8 +27,7 @@ class SubscribeStreamTrack : public Timer::Listener, public std::enable_shared_f
   class Observer {
    public:
     virtual void OnSubscribeStreamTrackResendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) = 0;
-    virtual void OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet
-      , uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) = 0;
+    virtual void OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) = 0;
     virtual void OnSubscribeStreamTrackSendRtcpPacket(uint8_t* data, size_t size) = 0;
   };
 

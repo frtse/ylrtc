@@ -6,16 +6,10 @@
 
 #include "spdlog/spdlog.h"
 
-RateStatistics::Bucket::Bucket(int64_t timestamp)
-    : sum(0), num_samples(0), timestamp(timestamp) {}
+RateStatistics::Bucket::Bucket(int64_t timestamp) : sum(0), num_samples(0), timestamp(timestamp) {}
 
 RateStatistics::RateStatistics(int64_t window_size_ms, float scale)
-    : accumulated_count_(0),
-      first_timestamp_(-1),
-      num_samples_(0),
-      scale_(scale),
-      max_window_size_ms_(window_size_ms),
-      current_window_size_ms_(max_window_size_ms_) {}
+    : accumulated_count_(0), first_timestamp_(-1), num_samples_(0), scale_(scale), max_window_size_ms_(window_size_ms), current_window_size_ms_(max_window_size_ms_) {}
 
 RateStatistics::RateStatistics(const RateStatistics& other)
     : buckets_(other.buckets_),
@@ -86,10 +80,7 @@ std::optional<int64_t> RateStatistics::Rate(int64_t now_ms) const {
   // If window is a single bucket or there is only one sample in a data set that
   // has not grown to the full window size, or if the accumulator has
   // overflowed, treat this as rate unavailable.
-  if (num_samples_ == 0 || active_window_size <= 1 ||
-      (num_samples_ <= 1 &&
-      active_window_size < current_window_size_ms_) ||
-      overflow_) {
+  if (num_samples_ == 0 || active_window_size <= 1 || (num_samples_ <= 1 && active_window_size < current_window_size_ms_) || overflow_) {
     return std::nullopt;
   }
 

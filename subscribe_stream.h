@@ -1,14 +1,14 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <unordered_map>
 #include <vector>
-#include <memory>
 
 #include "publish_stream.h"
 #include "rtp_packet.h"
-#include "webrtc_stream.h"
 #include "subscribe_stream_track.h"
+#include "webrtc_stream.h"
 
 class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observer, public std::enable_shared_from_this<SubscribeStream> {
  public:
@@ -24,8 +24,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   void OnRtpPacketReceive(uint8_t* data, size_t length) override;
   void OnRtcpPacketReceive(uint8_t* data, size_t length) override;
   void OnSubscribeStreamTrackResendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) override;
-  void OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet
-    , uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) override;
+  void OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) override;
   void OnSubscribeStreamTrackSendRtcpPacket(uint8_t* data, size_t size) override;
   void SendRtx(std::shared_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number);
   std::vector<std::shared_ptr<SubscribeStreamTrack>> tracks_;

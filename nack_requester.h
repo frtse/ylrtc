@@ -1,12 +1,11 @@
 #pragma once
 
 #include <cstdint>
-
 #include <map>
+#include <memory>
+#include <optional>
 #include <set>
 #include <vector>
-#include <optional>
-#include <memory>
 
 #include "boost/asio.hpp"
 #include "sequence_number_util.h"
@@ -14,8 +13,7 @@
 
 class NackRequester : public Timer::Listener, public std::enable_shared_from_this<NackRequester> {
  public:
-  class Observer
-  {
+  class Observer {
    public:
     virtual void OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) = 0;
     virtual void OnNackRequesterRequestKeyFrame() = 0;
@@ -40,9 +38,7 @@ class NackRequester : public Timer::Listener, public std::enable_shared_from_thi
   // we have tried to nack this packet.
   struct NackInfo {
     NackInfo();
-    NackInfo(uint16_t seq_num,
-             uint16_t send_at_seq_num,
-             int64_t created_at_time);
+    NackInfo(uint16_t seq_num, uint16_t send_at_seq_num, int64_t created_at_time);
 
     uint16_t seq_num;
     uint16_t send_at_seq_num;
@@ -53,11 +49,11 @@ class NackRequester : public Timer::Listener, public std::enable_shared_from_thi
 
   struct BackoffSettings {
     // Matches magic number in RTPSender::OnReceivedNack().
-    static constexpr int64_t kDefaultMinRetryInterval = 5; // Millis
+    static constexpr int64_t kDefaultMinRetryInterval = 5;  // Millis
     // Upper bound on link-delay considered for exponential backoff.
     // Selected so that cumulative delay with 1.25 base and 10 retries ends up
     // below 3s, since above that there will be a FIR generated instead.
-    static constexpr int64_t kDefaultMaxRtt = 160; // Millis
+    static constexpr int64_t kDefaultMaxRtt = 160;  // Millis
     // Default base for exponential backoff, adds 25% RTT delay for each retry.
     static constexpr double kDefaultBase = 1.25;
 

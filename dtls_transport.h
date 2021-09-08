@@ -24,11 +24,7 @@ class DtlsTransport : public Timer::Listener, public std::enable_shared_from_thi
    public:
     virtual ~Observer() = default;
 
-    virtual void OnDtlsTransportSetup(SrtpSession::CipherSuite suite,
-                                      uint8_t* localMasterKey,
-                                      int localMasterKeySize,
-                                      uint8_t* remoteMasterKey,
-                                      int remoteMasterKeySize) = 0;
+    virtual void OnDtlsTransportSetup(SrtpSession::CipherSuite suite, uint8_t* localMasterKey, int localMasterKeySize, uint8_t* remoteMasterKey, int remoteMasterKeySize) = 0;
     virtual void OnDtlsTransportError() = 0;
     virtual void OnDtlsTransportShutdown() = 0;
     virtual void OnDtlsTransportSendData(const uint8_t* data, size_t len) = 0;

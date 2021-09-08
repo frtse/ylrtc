@@ -16,19 +16,17 @@ static const int SERIAL_RAND_BITS = 64;
 static const int kRsaDefaultModSize = 1024;
 static const int kRsaDefaultExponent = 0x10001;  // = 2^16+1 = 65537
 
-std::map<std::string, DtlsContext::Hash> DtlsContext::string_to_Hash_ = {
-    {"sha-1", DtlsContext::Hash::kSha1},
-    {"sha-224", DtlsContext::Hash::kSha224},
-    {"sha-256", DtlsContext::Hash::kSha256},
-    {"sha-384", DtlsContext::Hash::kSha384},
-    {"sha-512", DtlsContext::Hash::kSha512}};
+std::map<std::string, DtlsContext::Hash> DtlsContext::string_to_Hash_ = {{"sha-1", DtlsContext::Hash::kSha1},
+                                                                         {"sha-224", DtlsContext::Hash::kSha224},
+                                                                         {"sha-256", DtlsContext::Hash::kSha256},
+                                                                         {"sha-384", DtlsContext::Hash::kSha384},
+                                                                         {"sha-512", DtlsContext::Hash::kSha512}};
 
-std::map<DtlsContext::Hash, std::string> DtlsContext::Hash_tp_string_ = {
-    {DtlsContext::Hash::kSha1, "sha-1"},
-    {DtlsContext::Hash::kSha224, "sha-224"},
-    {DtlsContext::Hash::kSha256, "sha-256"},
-    {DtlsContext::Hash::kSha384, "sha-384"},
-    {DtlsContext::Hash::kSha512, "sha-512"}};
+std::map<DtlsContext::Hash, std::string> DtlsContext::Hash_tp_string_ = {{DtlsContext::Hash::kSha1, "sha-1"},
+                                                                         {DtlsContext::Hash::kSha224, "sha-224"},
+                                                                         {DtlsContext::Hash::kSha256, "sha-256"},
+                                                                         {DtlsContext::Hash::kSha384, "sha-384"},
+                                                                         {DtlsContext::Hash::kSha512, "sha-512"}};
 
 DtlsContext::Hash DtlsContext::GetHashFromString(const std::string& hash_name) {
   auto result = string_to_Hash_.find(hash_name);
@@ -52,8 +50,7 @@ bool DtlsContext::MakeRSAKeyPair() {
   private_key_ = EVP_PKEY_new();
   BIGNUM* exponent = BN_new();
   RSA* rsa = RSA_new();
-  if (!private_key_ || !exponent || !rsa || !BN_set_word(exponent, kRsaDefaultExponent) ||
-      !RSA_generate_key_ex(rsa, kRsaDefaultModSize, exponent, nullptr) ||
+  if (!private_key_ || !exponent || !rsa || !BN_set_word(exponent, kRsaDefaultExponent) || !RSA_generate_key_ex(rsa, kRsaDefaultModSize, exponent, nullptr) ||
       !EVP_PKEY_assign_RSA(private_key_, rsa)) {
     EVP_PKEY_free(private_key_);
     BN_free(exponent);
@@ -79,9 +76,7 @@ bool DtlsContext::MakeCertificate() {
     goto error;
   }
   // serial number - temporary reference to serial number inside x509 struct
-  if ((serial_number = BN_new()) == nullptr ||
-      !BN_pseudo_rand(serial_number, SERIAL_RAND_BITS, 0, 0) ||
-      (asn1_serial_number = X509_get_serialNumber(certificate_)) == nullptr ||
+  if ((serial_number = BN_new()) == nullptr || !BN_pseudo_rand(serial_number, SERIAL_RAND_BITS, 0, 0) || (asn1_serial_number = X509_get_serialNumber(certificate_)) == nullptr ||
       !BN_to_ASN1_INTEGER(serial_number, asn1_serial_number)) {
     goto error;
   }
@@ -90,15 +85,12 @@ bool DtlsContext::MakeCertificate() {
     goto error;
   }
 
-  if ((name = X509_NAME_new()) == nullptr || !X509_set_subject_name(certificate_, name) ||
-      !X509_set_issuer_name(certificate_, name)) {
+  if ((name = X509_NAME_new()) == nullptr || !X509_set_subject_name(certificate_, name) || !X509_set_issuer_name(certificate_, name)) {
     goto error;
   }
 
-  if (!X509_time_adj(X509_get_notBefore(certificate_), -1 * kDefaultCertificateLifetimeInSeconds,
-                     &epoch_off) ||
-      !X509_time_adj(X509_get_notAfter(certificate_), kDefaultCertificateLifetimeInSeconds,
-                     &epoch_off)) {
+  if (!X509_time_adj(X509_get_notBefore(certificate_), -1 * kDefaultCertificateLifetimeInSeconds, &epoch_off) ||
+      !X509_time_adj(X509_get_notAfter(certificate_), kDefaultCertificateLifetimeInSeconds, &epoch_off)) {
     goto error;
   }
   if (!X509_sign(certificate_, private_key_, EVP_sha256())) {
@@ -148,8 +140,7 @@ bool DtlsContext::Initialize() {
     return false;
   }
 
-  if (!SSL_CTX_set_cipher_list(
-          ssl_ctx_, "DEFAULT:!NULL:!aNULL:!SHA256:!SHA384:!aECDH:!AESGCM+AES256:!aPSK")) {
+  if (!SSL_CTX_set_cipher_list(ssl_ctx_, "DEFAULT:!NULL:!aNULL:!SHA256:!SHA384:!aECDH:!AESGCM+AES256:!aPSK")) {
     spdlog::error("SSL_CTX_set_cipher_list failed.");
     ReleaseResources();
     return false;

@@ -4,15 +4,8 @@
 
 #include "spdlog/spdlog.h"
 
-UdpSocket::UdpSocket(boost::asio::io_context& io_context,
-                     Observer* listener,
-                     size_t init_receive_buffer_size)
-    : io_context_(io_context),
-      is_closing_(false),
-      listener_(listener),
-      max_port_(65535),
-      min_port_(0),
-      init_receive_buffer_size_(init_receive_buffer_size) {}
+UdpSocket::UdpSocket(boost::asio::io_context& io_context, Observer* listener, size_t init_receive_buffer_size)
+    : io_context_(io_context), is_closing_(false), listener_(listener), max_port_(65535), min_port_(0), init_receive_buffer_size_(init_receive_buffer_size) {}
 
 UdpSocket::~UdpSocket() {
   Close();
@@ -21,8 +14,7 @@ UdpSocket::~UdpSocket() {
 bool UdpSocket::Listen(std::string_view ip) {
   for (uint16_t i = min_port_; i <= max_port_; ++i) {
     try {
-      socket_.reset(new udp::socket(
-          io_context_, udp::endpoint(boost::asio::ip::address::from_string(ip.data()), i)));
+      socket_.reset(new udp::socket(io_context_, udp::endpoint(boost::asio::ip::address::from_string(ip.data()), i)));
       spdlog::debug("Select port {}.", i);
       break;
     } catch (...) {
@@ -63,8 +55,7 @@ void UdpSocket::DoSend() {
 
   boost::system::error_code ignored_error;
   socket_->async_send_to(boost::asio::buffer(data.buffer.get(), data.length), data.endpoint,
-                         boost::bind(&UdpSocket::HandSend, shared_from_this(), boost::asio::placeholders::error,
-                                     boost::asio::placeholders::bytes_transferred));
+                         boost::bind(&UdpSocket::HandSend, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 }
 
 void UdpSocket::HandSend(const boost::system::error_code& ec, size_t bytes) {
@@ -107,11 +98,8 @@ void UdpSocket::StartReceive() {
     receive_data_.buffer.reset(new uint8_t[init_receive_buffer_size_]);
   assert(socket_);
 
-  socket_->async_receive_from(
-      boost::asio::buffer(receive_data_.buffer.get(), init_receive_buffer_size_),
-      receive_data_.endpoint,
-      boost::bind(&UdpSocket::HandleReceive, shared_from_this(), boost::asio::placeholders::error,
-                  boost::asio::placeholders::bytes_transferred));
+  socket_->async_receive_from(boost::asio::buffer(receive_data_.buffer.get(), init_receive_buffer_size_), receive_data_.endpoint,
+                              boost::bind(&UdpSocket::HandleReceive, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 }
 
 void UdpSocket::HandleReceive(const boost::system::error_code& ec, size_t bytes) {
