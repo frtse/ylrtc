@@ -105,6 +105,6 @@ void SubscribeStreamTrack::OnTimerTimeout() {
   // The interval between RTCP packets is varied randomly over the
   // range [1/2,3/2] times the calculated interval.
   int64_t time_to_next = 
-      random_.RandomInt64(min_interval * 1 / 2, min_interval * 3 / 2);
+      random_.RandomNumber(min_interval * 1 / 2, min_interval * 3 / 2);
   rtcp_timer_->AsyncWait(time_to_next);
 }

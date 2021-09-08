@@ -6,8 +6,11 @@
 class Random {
  public:
   Random();
-  uint32_t RandomUInt(uint32_t min, uint32_t max);
-  int64_t RandomInt64(int64_t min, int64_t max);
+  template<typename T>
+  T RandomNumber(T min, T max) {
+   std::uniform_int_distribution<T> dist(min, max);
+   return dist(engine_);
+  }
   std::string RandomString(size_t length);
 
  private:
