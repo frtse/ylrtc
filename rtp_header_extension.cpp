@@ -1,5 +1,7 @@
 #include "rtp_header_extension.h"
 
+#include "byte_buffer.h"
+
 std::unordered_map<std::string, RTPHeaderExtensionType> UriRTPHeaderExtensionMap = {
     {"urn:ietf:params:rtp-hdrext:toffset", kRtpExtensionTransmissionTimeOffset},
     {"urn:ietf:params:rtp-hdrext:ssrc-audio-level", kRtpExtensionAudioLevel},
@@ -63,4 +65,17 @@ bool RepairedRtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
 
 const std::string& RepairedRtpStreamIdExtension::RepairedRtpStreamId() const {
   return rrid_;
+}
+
+std::optional<uint16_t> TransportSequenceNumberExtension::Parse(uint8_t* data, size_t size) {
+  if (size != kValueSizeBytes)
+    return std::nullopt;
+  return LoadUInt16BE(data);
+}
+
+bool TransportSequenceNumberExtension::Write(uint8_t* data, size_t size, uint16_t transport_sequence_number) {
+  if (size != kValueSizeBytes)
+    return false;
+  StoreUInt16BE(data, transport_sequence_number);
+  return true;
 }

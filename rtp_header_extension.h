@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <optional>
 #include <unordered_map>
 
 enum RTPHeaderExtensionType : int {
@@ -57,4 +58,11 @@ class RepairedRtpStreamIdExtension {
 
  private:
   std::string rrid_;
+};
+
+class TransportSequenceNumberExtension {
+ public:
+   static constexpr uint8_t kValueSizeBytes = 2;
+   static std::optional<uint16_t> Parse(uint8_t* data, size_t size);
+   static bool Write(uint8_t* data, size_t size, uint16_t transport_sequence_number);
 };
