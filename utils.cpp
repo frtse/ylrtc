@@ -11,7 +11,7 @@
 // clang-format on
 
 int64_t TimeMillis() {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 void DumpHex(const uint8_t* data, size_t size) {
