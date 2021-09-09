@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 
 #include "spdlog/spdlog.h"
+#include "transport_feedback.h"
 
 bool RtcpPacket::Parse(ByteReader* byte_reader) {
   if (!ParseCommonHeader(byte_reader))
@@ -373,14 +374,15 @@ bool RtcpCompound::Parse(uint8_t* data, int size) {
     RtcpPacket* packet = nullptr;
     RtcpCommonHeader* header = (RtcpCommonHeader*)byte_reader.CurrentData();
     if (header->packet_type == kRtcpTypeRtpfb) {
-      if (1 == header->count_or_format) {
+      if (header->count_or_format == kNack) {
         packet = new NackPacket;
-      } else {
+      } 
+      else if (header->count_or_format == kTwcc) {
+        packet = new TransportFeedback(false);
+      }
+      else {
         packet = new RtcpPacket;
       }
-
-      // if(15 == header->count_or_format)
-      // spdlog::info("Incomming TWCC packet.");
     } else if (header->packet_type == kRtcpTypeRr) {
       packet = new ReceiverReportPacket;
     } else {

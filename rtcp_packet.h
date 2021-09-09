@@ -25,7 +25,7 @@ enum RtcpType {
 
 enum FeedbackPsMessageType { kPli = 1, kFir = 4 };
 
-enum FeedbackRtpMessageType { kNack = 1 };
+enum FeedbackRtpMessageType { kNack = 1, kTwcc = 15 };
 
 //    0                   1           1       2                   3
 //    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
