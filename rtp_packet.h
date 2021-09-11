@@ -6,6 +6,7 @@
 #include <string_view>
 #include <type_traits>
 #include <vector>
+#include <algorithm>
 
 #include "rtp_payload_parser.h"
 
@@ -44,7 +45,6 @@ class RtpPacket {
 
   ~RtpPacket();
   bool Create(std::string_view codec, uint8_t* buffer, size_t size);
-  bool CreateFromExistingMemory(std::string_view codec, uint8_t* buffer, size_t size);
 
   void SetMarker(bool marker_bit);
   void SetPayloadType(uint8_t payload_type);
@@ -64,6 +64,16 @@ class RtpPacket {
   size_t HeaderSize() const;
   bool IsKeyFrame() const;
   const std::vector<ExtensionInfo>& GetExtensions();
+  template <typename Extension>
+  std::optional<typename Extension::value_type> GetExtension(uint8_t id) {
+    auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) {
+      return extension.id == id;
+    });
+
+    if (result == extension_entries_.end())
+      return std::nullopt;
+    return Extension::Parse(data_.get() + result->offset, result->length);
+  }
 
  private:
   ExtensionInfo& FindOrCreateExtensionInfo(int id);
@@ -79,8 +89,6 @@ class RtpPacket {
   size_t payload_size_;
   std::vector<ExtensionInfo> extension_entries_;
   size_t extensions_size_ = 0;  // Unaligned.
-  uint8_t* data_{nullptr};
-  size_t size_;
-  bool owned_memory_{false};
+  std::unique_ptr<uint8_t[]> data_;
   PayloadInfo payload_info_;
 };

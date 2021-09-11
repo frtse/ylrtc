@@ -21,7 +21,7 @@ std::string PublishStream::CreateAnswer() {
 
 void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
   std::shared_ptr<RtpPacket> rtp_packet = std::make_shared<RtpPacket>();
-  if (!rtp_packet->CreateFromExistingMemory("vp8", data, length))
+  if (!rtp_packet->Create("vp8", data, length))
     return;
   auto ssrc = GetRtpSsrc(data, length);
   if (!ssrc)

@@ -9,16 +9,14 @@
 #include "utils.h"
 
 RtpPacket::~RtpPacket() {
-  if (owned_memory_ && data_ != nullptr)
-    delete[] data_;
 }
 
 void RtpPacket::SetMarker(bool marker_bit) {
   marker_ = marker_bit;
   if (marker_) {
-    data_[1] = *(data_ + 1) | 0x80;
+    data_[1] = *(data_.get()+ 1) | 0x80;
   } else {
-    data_[1] = *(data_ + 1) & 0x7F;
+    data_[1] = *(data_.get() + 1) & 0x7F;
   }
 }
 
@@ -29,17 +27,17 @@ void RtpPacket::SetPayloadType(uint8_t payload_type) {
 
 void RtpPacket::SetSequenceNumber(uint16_t seq_no) {
   sequence_number_ = seq_no;
-  StoreUInt16BE(data_ + 2, seq_no);
+  StoreUInt16BE(data_.get() + 2, seq_no);
 }
 
 void RtpPacket::SetTimestamp(uint32_t timestamp) {
   timestamp_ = timestamp;
-  StoreUInt32BE(data_ + 4, timestamp);
+  StoreUInt32BE(data_.get() + 4, timestamp);
 }
 
 void RtpPacket::SetSsrc(uint32_t ssrc) {
   ssrc_ = ssrc;
-  StoreUInt32BE(data_ + 8, ssrc);
+  StoreUInt32BE(data_.get() + 8, ssrc);
 }
 
 bool RtpPacket::Marker() const {
@@ -183,24 +181,8 @@ bool RtpPacket::Create(std::string_view codec, uint8_t* buffer, size_t size) {
     payload_info_ = *result;
   if (payload_info_.frame_type == VideoFrameType::kVideoFrameKey)
     spdlog::debug("Recv key frame.");
-  data_ = new uint8_t[size];
-  memcpy(data_, buffer, size);
-  size_ = size;
-  owned_memory_ = true;
-  return true;
-}
-
-bool RtpPacket::CreateFromExistingMemory(std::string_view codec, uint8_t* buffer, size_t size) {
-  if (!Parse(buffer, size)) {
-    return false;
-  }
-
-  auto result = RtpPayloadParser::Parse(codec, buffer + payload_offset_, payload_size_);
-  if (result)
-    payload_info_ = *result;
-  data_ = buffer;
-  size_ = size;
-  owned_memory_ = false;
+  data_.reset(new uint8_t[size]);
+  memcpy(data_.get(), buffer, size);
   return true;
 }
 
@@ -209,7 +191,7 @@ size_t RtpPacket::Size() const {
 }
 
 uint8_t* RtpPacket::Data() const {
-  return data_;
+  return data_.get();
 }
 
 size_t RtpPacket::PayloadSize() const {
@@ -217,7 +199,7 @@ size_t RtpPacket::PayloadSize() const {
 }
 
 uint8_t* RtpPacket::Payload() const {
-  return data_ + payload_offset_;
+  return data_.get() + payload_offset_;
 }
 
 size_t RtpPacket::HeaderSize() const {

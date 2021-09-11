@@ -378,7 +378,7 @@ bool RtcpCompound::Parse(uint8_t* data, int size) {
         packet = new NackPacket;
       } 
       else if (header->count_or_format == kTwcc) {
-        packet = new TransportFeedback(false);
+        packet = new TransportFeedback();
       }
       else {
         packet = new RtcpPacket;

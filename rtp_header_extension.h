@@ -62,6 +62,7 @@ class RepairedRtpStreamIdExtension {
 
 class TransportSequenceNumberExtension {
  public:
+   using value_type = uint16_t;
    static constexpr uint8_t kValueSizeBytes = 2;
    static std::optional<uint16_t> Parse(uint8_t* data, size_t size);
    static bool Write(uint8_t* data, size_t size, uint16_t transport_sequence_number);
