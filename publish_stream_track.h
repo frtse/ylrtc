@@ -9,6 +9,7 @@
 #include "rtp_header_extension.h"
 #include "rtp_packet.h"
 #include "threads.h"
+#include "receive_side_twcc.h"
 
 class PublishStreamTrack : public NackRequester::Observer {
  public:
@@ -20,7 +21,7 @@ class PublishStreamTrack : public NackRequester::Observer {
     bool rtx_enabled{false};
     bool nack_enabled{false};
     std::string codec;
-    IdRtpExtensionTypeManager id_extension_manager_;
+    RtpExtensionTypeIdManager id_extension_manager;
   };
 
   class Observer {
@@ -29,7 +30,7 @@ class PublishStreamTrack : public NackRequester::Observer {
     virtual void OnPublishStreamTrackSendRtcpPacket(uint8_t* data, size_t size) = 0;
   };
 
-  PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer);
+  PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, ReceiveSideTWCC& bwe, Observer* observer);
   void ReceiveRtpPacket(uint8_t* data, size_t length);
 
  private:
@@ -38,5 +39,6 @@ class PublishStreamTrack : public NackRequester::Observer {
   Configuration configuration_;
   boost::asio::io_context& io_context_;
   std::shared_ptr<NackRequester> nack_request_;
+  ReceiveSideTWCC& receive_side_twcc_;
   Observer* observer_;
 };

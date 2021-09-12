@@ -33,13 +33,12 @@ enum RTPHeaderExtensionType : int {
   kRtpExtensionNumberOfExtensions  // Must be the last entity in the enum.
 };
 
-class IdRtpExtensionTypeManager {
+class RtpExtensionTypeIdManager {
  public:
   void Register(int id, const std::string& uri);
-  RTPHeaderExtensionType GetIdType(int id);
-
+  std::optional<int> GetTypeId(RTPHeaderExtensionType type);
  private:
-  std::unordered_map<int, RTPHeaderExtensionType> id_type_map_;
+  std::unordered_map<RTPHeaderExtensionType, int> type_id_map_;
 };
 
 class RtpStreamIdExtension {

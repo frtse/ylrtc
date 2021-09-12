@@ -6,8 +6,20 @@
 #include "rtp_utils.h"
 #include "subscribe_stream.h"
 #include "utils.h"
+#include "byte_buffer.h"
+#include "spdlog/spdlog.h"
 
-PublishStream::PublishStream(const std::string& stream_id, WebrtcStream::Observer* observer) : WebrtcStream(stream_id, observer) {}
+PublishStream::PublishStream(const std::string& stream_id, WebrtcStream::Observer* observer) : WebrtcStream(stream_id, observer) {
+  receive_side_twcc_.reset(new ReceiveSideTWCC(work_thread_->MessageLoop(), [this](std::vector<std::unique_ptr<RtcpPacket>> packets) {
+    uint8_t buffer[1500];
+    for (auto& packet : packets) {
+      ByteWriter byte_write(buffer, 1500);
+      packet->Serialize(&byte_write);
+      SendRtcp(byte_write.Data(), byte_write.Used());
+    }
+  }));
+  receive_side_twcc_->Init();
+}
 
 PublishStream::~PublishStream() {}
 
@@ -20,13 +32,9 @@ std::string PublishStream::CreateAnswer() {
 }
 
 void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
-  std::shared_ptr<RtpPacket> rtp_packet = std::make_shared<RtpPacket>();
-  if (!rtp_packet->Create("vp8", data, length))
-    return;
   auto ssrc = GetRtpSsrc(data, length);
   if (!ssrc)
     return;
-
   if (ssrc_track_map_.find(*ssrc) != ssrc_track_map_.end()) {
     ssrc_track_map_[*ssrc]->ReceiveRtpPacket(data, length);
   } else {
@@ -84,7 +92,7 @@ void PublishStream::SetLocalDescription() {
     auto& media_section = media_sections[i];
     if (media_section.find("ext") != media_section.end()) {
       for (auto& e : media_section.at("ext")) {
-        config.id_extension_manager_.Register(e.at("value"), e.at("uri"));
+        config.id_extension_manager.Register(e.at("value"), e.at("uri"));
       }
     }
     if (media_section.find("ssrcs") != media_section.end()) {
@@ -122,7 +130,7 @@ void PublishStream::SetLocalDescription() {
           config.nack_enabled = true;
       }
     }
-    std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), this);
+    std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), *receive_side_twcc_, this);
     tracks_.push_back(track);
     ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
     if (config.rtx_enabled)

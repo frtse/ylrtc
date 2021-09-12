@@ -24,19 +24,19 @@ std::unordered_map<std::string, RTPHeaderExtensionType> UriRTPHeaderExtensionMap
     {"http://www.webrtc.org/experiments/rtp-hdrext/color-space", kRtpExtensionColorSpace},
     {"http://www.webrtc.org/experiments/rtp-hdrext/video-frame-tracking-id", kRtpExtensionVideoFrameTrackingId}};
 
-void IdRtpExtensionTypeManager::Register(int id, const std::string& uri) {
+void RtpExtensionTypeIdManager::Register(int id, const std::string& uri) {
   auto result = UriRTPHeaderExtensionMap.find(uri);
   if (result != UriRTPHeaderExtensionMap.end()) {
-    id_type_map_[id] = result->second;
+    type_id_map_[result->second] = id;
   }
 }
 
-RTPHeaderExtensionType IdRtpExtensionTypeManager::GetIdType(int id) {
-  auto result = id_type_map_.find(id);
-  if (result != id_type_map_.end())
+std::optional<int> RtpExtensionTypeIdManager::GetTypeId(RTPHeaderExtensionType type) {
+  auto result = type_id_map_.find(type);
+  if (result != type_id_map_.end())
     return result->second;
   else
-    return kRtpExtensionNone;
+    return std::nullopt;
 }
 
 bool RtpStreamIdExtension::Parse(uint8_t* data, size_t size) {

@@ -6,9 +6,11 @@
 #include "rtcp_packet.h"
 #include "rtp_utils.h"
 #include "spdlog/spdlog.h"
+#include "utils.h"
 
-PublishStreamTrack::PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer)
-    : configuration_{configuration}, io_context_{io_context}, observer_{observer} {
+PublishStreamTrack::PublishStreamTrack(const Configuration& configuration
+  , boost::asio::io_context& io_context, ReceiveSideTWCC& bwe, Observer* observer)
+  : configuration_{configuration}, io_context_{io_context}, receive_side_twcc_{bwe}, observer_{observer} {
   if (configuration_.nack_enabled) {
     nack_request_.reset(new NackRequester(io_context, this));
     nack_request_->Init();
@@ -35,6 +37,13 @@ void PublishStreamTrack::ReceiveRtpPacket(uint8_t* data, size_t length) {
   std::shared_ptr<RtpPacket> rtp_packet = std::make_shared<RtpPacket>();
   if (!rtp_packet->Create(configuration_.codec, data, length))
     return;
+
+  auto id = configuration_.id_extension_manager.GetTypeId(RTPHeaderExtensionType::kRtpExtensionTransportSequenceNumber);
+  if (id) {
+    auto twsn = rtp_packet->GetExtension<TransportSequenceNumberExtension>(*id);
+    if (twsn)
+      receive_side_twcc_.IncomingPacket(TimeMillis(), *ssrc, *twsn);
+  }
   if (configuration_.nack_enabled) {
     if (is_rtx)
       nack_request_->OnReceivedPacket(rtp_packet->SequenceNumber(), rtp_packet->IsKeyFrame(), true);
