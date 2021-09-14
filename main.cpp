@@ -47,6 +47,14 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
+  boost::asio::signal_set signals(MainThread::GetInstance().MessageLoop(), SIGINT);
+  signals.async_wait([&](const boost::system::error_code &error, int signal_number) {
+    if (signal_number == SIGINT && !error) {
+      spdlog::info("Recv signal {}, Exit eventloop.", signal_number);
+      MainThread::GetInstance().MessageLoop().stop();
+    }
+  });
   MainThread::GetInstance().MessageLoop().run();
+  RoomManager::GetInstance().Clear();
   return EXIT_SUCCESS;
 }

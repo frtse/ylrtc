@@ -29,3 +29,10 @@ void RoomManager::DestroyRoom(const std::string& room_id) {
     id_room_map_.erase(result);
   }
 }
+
+void RoomManager::Clear() {
+  for (auto& i : id_room_map_) {
+    delete i.second;
+  }
+  id_room_map_.clear();
+}

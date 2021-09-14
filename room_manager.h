@@ -10,6 +10,7 @@ class RoomManager {
   Room* CreateRoom(const std::string& room_id);
   Room* GetRoomById(const std::string& room_id);
   void DestroyRoom(const std::string& room_id);
+  void Clear();
 
  private:
   RoomManager() = default;
