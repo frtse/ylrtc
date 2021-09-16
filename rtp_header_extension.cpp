@@ -39,32 +39,26 @@ std::optional<int> RtpExtensionTypeIdManager::GetTypeId(RTPHeaderExtensionType t
     return std::nullopt;
 }
 
-bool RtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
+std::optional<std::string> RtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
+  std::string rtp_stream_id;
   if (size == 0 || data[0] == 0)  // Valid string extension can't be empty.
-    return false;
+    return std::nullopt;
   const char* cstr = reinterpret_cast<const char*>(data);
   // If there is a \0 character in the middle of the `data`, treat it as end
   // of the string. Well-formed string extensions shouldn't contain it.
-  rid_.assign(cstr, strnlen(cstr, size));
-  return true;
+  rtp_stream_id.assign(cstr, strnlen(cstr, size));
+  return rtp_stream_id;
 }
 
-const std::string& RtpStreamIdExtension::RtpStreamId() const {
-  return rid_;
-}
-
-bool RepairedRtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
+std::optional<std::string> RepairedRtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
+  std::string repaired_rtp_stream_id;
   if (size == 0 || data[0] == 0)  // Valid string extension can't be empty.
-    return false;
+    return nullptr;
   const char* cstr = reinterpret_cast<const char*>(data);
   // If there is a \0 character in the middle of the `data`, treat it as end
   // of the string. Well-formed string extensions shouldn't contain it.
-  rrid_.assign(cstr, strnlen(cstr, size));
-  return true;
-}
-
-const std::string& RepairedRtpStreamIdExtension::RepairedRtpStreamId() const {
-  return rrid_;
+  repaired_rtp_stream_id.assign(cstr, strnlen(cstr, size));
+  return repaired_rtp_stream_id;
 }
 
 std::optional<uint16_t> TransportSequenceNumberExtension::Parse(uint8_t* data, size_t size) {

@@ -31,7 +31,8 @@ class PublishStreamTrack : public NackRequester::Observer {
   };
 
   PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, ReceiveSideTWCC& bwe, Observer* observer);
-  void ReceiveRtpPacket(uint8_t* data, size_t length);
+  void ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet);
+  const Configuration& GetConfiguration();
 
  private:
   void OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) override;

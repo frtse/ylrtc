@@ -43,18 +43,14 @@ class RtpExtensionTypeIdManager {
 
 class RtpStreamIdExtension {
  public:
-  bool Parse(uint8_t* data, size_t size);
-  const std::string& RtpStreamId() const;
-
+  std::optional<std::string> Parse(uint8_t* data, size_t size);
  private:
   std::string rid_;
 };
 
 class RepairedRtpStreamIdExtension {
  public:
-  bool Parse(uint8_t* data, size_t size);
-  const std::string& RepairedRtpStreamId() const;
-
+  std::optional<std::string> Parse(uint8_t* data, size_t size);
  private:
   std::string rrid_;
 };

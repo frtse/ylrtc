@@ -17,32 +17,23 @@ PublishStreamTrack::PublishStreamTrack(const Configuration& configuration
   }
 }
 
-void PublishStreamTrack::ReceiveRtpPacket(uint8_t* data, size_t length) {
-  auto ssrc = GetRtpSsrc(data, length);
-  if (!ssrc)
-    return;
+void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
+  uint32_t original_ssrc = rtp_packet->Ssrc();
   bool is_rtx = false;
-  if (configuration_.rtx_enabled && configuration_.rtx_ssrc == *ssrc) {
-    auto rtp_header_len = GetRtpHeaderLength(data, length);
-    if (!rtp_header_len)
-      return;
-    SetSequenceNumber(data, length, LoadUInt16BE(data + *rtp_header_len));
-    std::memmove(data + *rtp_header_len, data + *rtp_header_len + kRtxHeaderSize, length - *rtp_header_len - kRtxHeaderSize);
-    length -= kRtxHeaderSize;
-    SetRtpSsrc(data, length, configuration_.ssrc);
-    SetPayloadType(data, length, configuration_.payload_type);
+  if (configuration_.rtx_enabled && configuration_.rtx_ssrc == rtp_packet->Ssrc()) {
+    rtp_packet->RtxRepaire(LoadUInt16BE(rtp_packet->Payload()), configuration_.payload_type, configuration_.ssrc);
     is_rtx = true;
   }
 
-  std::shared_ptr<RtpPacket> rtp_packet = std::make_shared<RtpPacket>();
-  if (!rtp_packet->Create(configuration_.codec, data, length))
+  if (!rtp_packet->ParsePayload(configuration_.codec))
     return;
-
+  if (rtp_packet->IsKeyFrame())
+    spdlog::debug("Recv key frame.");
   auto id = configuration_.id_extension_manager.GetTypeId(RTPHeaderExtensionType::kRtpExtensionTransportSequenceNumber);
   if (id) {
     auto twsn = rtp_packet->GetExtension<TransportSequenceNumberExtension>(*id);
     if (twsn)
-      receive_side_twcc_.IncomingPacket(TimeMillis(), *ssrc, *twsn);
+      receive_side_twcc_.IncomingPacket(TimeMillis(), original_ssrc, *twsn);
   }
   if (configuration_.nack_enabled) {
     if (is_rtx)
@@ -51,6 +42,10 @@ void PublishStreamTrack::ReceiveRtpPacket(uint8_t* data, size_t length) {
       nack_request_->OnReceivedPacket(rtp_packet->SequenceNumber(), rtp_packet->IsKeyFrame());
   }
   observer_->OnPublishStreamTrackReceiveRtpPacket(rtp_packet);
+}
+
+const PublishStreamTrack::Configuration& PublishStreamTrack::GetConfiguration() {
+  return configuration_;
 }
 
 void PublishStreamTrack::OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) {

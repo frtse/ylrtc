@@ -171,16 +171,11 @@ RtpPacket::ExtensionInfo& RtpPacket::FindOrCreateExtensionInfo(int id) {
   return extension_entries_.back();
 }
 
-bool RtpPacket::Create(std::string_view codec, uint8_t* buffer, size_t size) {
+bool RtpPacket::Create(uint8_t* buffer, size_t size) {
   if (!Parse(buffer, size)) {
     return false;
   }
 
-  auto result = RtpPayloadParser::Parse(codec, buffer + payload_offset_, payload_size_);
-  if (result)
-    payload_info_ = *result;
-  if (payload_info_.frame_type == VideoFrameType::kVideoFrameKey)
-    spdlog::debug("Recv key frame.");
   data_.reset(new uint8_t[size]);
   memcpy(data_.get(), buffer, size);
   return true;
@@ -212,4 +207,28 @@ bool RtpPacket::IsKeyFrame() const {
 
 const std::vector<RtpPacket::ExtensionInfo>& RtpPacket::GetExtensions() {
   return extension_entries_;
+}
+
+void RtpPacket::RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint32_t ssrc) {
+  if (payload_size_ == 0)
+    return;
+  SetPayloadType(payload_type);
+  SetSequenceNumber(sequence_number);
+  SetSsrc(ssrc);
+  std::memmove(data_.get() + payload_offset_, data_.get() + payload_offset_ + kRtxHeaderSize, payload_size_ - kRtxHeaderSize);
+  if (padding_size_ != 0) {
+    padding_size_ += 2;
+    data_[payload_offset_ + payload_size_ + padding_size_ - 1] += 2;
+  }
+  payload_size_ -= kRtxHeaderSize;
+}
+
+bool RtpPacket::ParsePayload(std::string_view codec) {
+  if (payload_size_ == 0)
+    return true;
+  auto result = RtpPayloadParser::Parse(codec, data_.get() + payload_offset_, payload_size_);
+  if (!result)
+    return false;
+  payload_info_ = *result;
+  return true;
 }

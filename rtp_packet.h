@@ -44,7 +44,7 @@ class RtpPacket {
   };
 
   ~RtpPacket();
-  bool Create(std::string_view codec, uint8_t* buffer, size_t size);
+  bool Create(uint8_t* buffer, size_t size);
 
   void SetMarker(bool marker_bit);
   void SetPayloadType(uint8_t payload_type);
@@ -74,6 +74,8 @@ class RtpPacket {
       return std::nullopt;
     return Extension::Parse(data_.get() + result->offset, result->length);
   }
+  void RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint32_t ssrc);
+  bool ParsePayload(std::string_view codec);
 
  private:
   ExtensionInfo& FindOrCreateExtensionInfo(int id);

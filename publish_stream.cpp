@@ -32,13 +32,13 @@ std::string PublishStream::CreateAnswer() {
 }
 
 void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
-  auto ssrc = GetRtpSsrc(data, length);
-  if (!ssrc)
+  std::shared_ptr<RtpPacket> rtp_packet = std::make_shared<RtpPacket>();
+  if (!rtp_packet->Create(data, length))
     return;
-  if (ssrc_track_map_.find(*ssrc) != ssrc_track_map_.end()) {
-    ssrc_track_map_[*ssrc]->ReceiveRtpPacket(data, length);
+  if (ssrc_track_map_.find(rtp_packet->Ssrc()) != ssrc_track_map_.end()) {
+    ssrc_track_map_[rtp_packet->Ssrc()]->ReceiveRtpPacket(rtp_packet);
   } else {
-    spdlog::error("PublishStream: Unrecognized RTP packet. ssrc = {}.", *ssrc);
+    spdlog::error("PublishStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
   }
 }
 

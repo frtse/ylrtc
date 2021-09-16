@@ -20,17 +20,26 @@ class PublisheStream {
       streams: [this.mediaStream_]
     };
 
+    const transceiverSimulcastInit = {
+      direction: 'sendonly',
+      sendEncodings: [
+        {rid: 'q', active: true, scaleResolutionDownBy: 4.0},
+        {rid: 'h', active: true, scaleResolutionDownBy: 2.0},
+        {rid: 'f', active: true}],
+      streams: [this.mediaStream_]
+    };
+
     if (this.mediaStream_.getAudioTracks().length >
       0) {
       this.pc_.addTransceiver(
         this.mediaStream_.getAudioTracks()[0],
-          transceiverInit);
+        transceiverInit);
     }
     if (this.mediaStream_.getVideoTracks().length >
       0) {
       this.pc_.addTransceiver(
         this.mediaStream_.getVideoTracks()[0],
-          transceiverInit);
+        transceiverInit);
     }
 
     const offer = await this.pc_.createOffer();
