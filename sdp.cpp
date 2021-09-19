@@ -280,6 +280,21 @@ std::string Sdp::CreateSubscribeAnswer() {
         media_section["ssrcs"] = media_section_ssrcs_map_.at(media_section["type"]);
       if (media_section_ssrc_groups_map_.find(media_section["type"]) != media_section_ssrc_groups_map_.end())
         media_section["ssrcGroups"] = media_section_ssrc_groups_map_.at(media_section["type"]);
+      if (media_section.find("simulcast") != media_section.end()) {
+        auto& simulcast = media_section.at("simulcast");
+        if (simulcast.find("dir1") != simulcast.end())
+          simulcast.at("dir1") = "send";
+        if (simulcast.find("dir2") != simulcast.end())
+          simulcast.at("dir2") = "send";
+      }
+      if (media_section.find("rids") != media_section.end()) {
+        auto& rids = media_section.at("rids");
+        for (auto& rid : rids) {
+          if (rid.find("direction") != rid.end()) {
+            rid.at("direction") = "send";
+          }
+        }
+      }
     }
 
     return sdptransform::write(subscribe_anwser_sdp_);

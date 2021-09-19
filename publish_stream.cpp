@@ -177,13 +177,13 @@ void PublishStream::SetLocalDescription() {
           rid_configuration_map_.insert(std::make_pair(rid, config));
       }
     }
-
-    std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), *receive_side_twcc_, this);
-    tracks_.push_back(track);
-    if (has_ssrc)
+    if (has_ssrc) {
+      std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), *receive_side_twcc_, this);
+      tracks_.push_back(track);
       ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
-    if (config.rtx_enabled)
-      ssrc_track_map_.insert(std::make_pair(config.rtx_ssrc, track));
+      if (config.rtx_enabled)
+        ssrc_track_map_.insert(std::make_pair(config.rtx_ssrc, track));
+    }
     spdlog::debug(
         "PublishStreamTrack ssrc = {}, payload_type = {}"
         ", rtx_enabled = {}, rtx_ssrc = {}, rtx_payload_type = {}, nack_enabled = {}",
