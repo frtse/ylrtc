@@ -1,6 +1,7 @@
 #include "publish_stream.h"
 
-#include <iostream>
+#include <cassert>
+#include <algorithm>
 
 #include "rtcp_packet.h"
 #include "rtp_utils.h"
@@ -35,11 +36,48 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
   std::shared_ptr<RtpPacket> rtp_packet = std::make_shared<RtpPacket>();
   if (!rtp_packet->Create(data, length))
     return;
-  if (ssrc_track_map_.find(rtp_packet->Ssrc()) != ssrc_track_map_.end()) {
-    ssrc_track_map_[rtp_packet->Ssrc()]->ReceiveRtpPacket(rtp_packet);
-  } else {
-    spdlog::error("PublishStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
+  if (ssrc_track_map_.find(rtp_packet->Ssrc()) == ssrc_track_map_.end()) {
+    uint32_t mid_id = ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType::kRtpExtensionMid);
+    auto mid = rtp_packet->GetExtension<RtpMidExtension>(mid_id);
+    if (!mid)
+      return;
+    uint32_t rid_id = ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType::kRtpExtensionRtpStreamId);
+    auto rid = rtp_packet->GetExtension<RtpStreamIdExtension>(rid_id);
+    if (!rid) {
+      uint32_t rrid_id = ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType::kRtpExtensionRepairedRtpStreamId);
+      rid = rtp_packet->GetExtension<RepairedRtpStreamIdExtension>(rrid_id);
+      if (!rid)
+        return;
+    }
+    if (mid_rids_map_.find(*mid) != mid_rids_map_.end()) {
+      auto& rids = mid_rids_map_.at(*mid);
+      if (std::find(rids.begin(), rids.end(), *rid) == rids.end())
+        return;
+    }
+    if (rid_configuration_map_.find(*rid) == rid_configuration_map_.end())
+      return;
+    auto& config = rid_configuration_map_.at(*rid);
+    if (rtp_packet->PayloadType() == config.payload_type) {
+      config.ssrc = rtp_packet->Ssrc();
+      config.rid = *rid;
+      std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), *receive_side_twcc_, this);
+      tracks_.push_back(track);
+      ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
+    } else if (rtp_packet->PayloadType() == config.rtx_payload_type) {
+      for (auto track : tracks_) {
+        auto& track_config = track->Config();
+        if (track_config.payload_type == config.payload_type) {
+          track_config.rtx_ssrc = rtp_packet->Ssrc();
+          ssrc_track_map_.insert(std::make_pair(track_config.rtx_ssrc, track));
+        }
+      }
+    }
+    else {
+      spdlog::warn("Unknown RTP payload type.");
+      return;
+    }
   }
+  ssrc_track_map_[rtp_packet->Ssrc()]->ReceiveRtpPacket(rtp_packet);
 }
 
 void PublishStream::SendRequestkeyFrame() {
@@ -89,16 +127,14 @@ void PublishStream::SetLocalDescription() {
   auto media_sections = sdp_.GetMediaSections();
   for (int i = 0; i < media_sections.size(); ++i) {
     PublishStreamTrack::Configuration config;
+    bool has_ssrc = false;
     auto& media_section = media_sections[i];
-    if (media_section.find("ext") != media_section.end()) {
-      for (auto& e : media_section.at("ext")) {
-        config.id_extension_manager.Register(e.at("value"), e.at("uri"));
-      }
-    }
     if (media_section.find("ssrcs") != media_section.end()) {
       auto& ssrcs = media_section.at("ssrcs");
-      if (!ssrcs.empty())
+      if (!ssrcs.empty()) {
+        has_ssrc = true;
         config.ssrc = ssrcs[0].at("id");
+      }
     }
     if (media_section.find("rtp") != media_section.end()) {
       auto& rtpmaps = media_section.at("rtp");
@@ -130,12 +166,24 @@ void PublishStream::SetLocalDescription() {
           config.nack_enabled = true;
       }
     }
+    if (media_section.find("simulcast") != media_section.end()) {
+      auto& simulcast = media_section.at("simulcast");
+      if (simulcast.find("list1") != simulcast.end()) {
+        std::string send_rids = simulcast.at("list1");
+        auto result = StringSplit(send_rids, ";"); // TODO FIXME : example[1,2,3;~4,~5].
+        if (!result.empty() && media_section.find("mid") != media_section.end())
+          mid_rids_map_.insert(std::make_pair(media_section.at("mid"), result));
+        for (auto& rid : result)
+          rid_configuration_map_.insert(std::make_pair(rid, config));
+      }
+    }
+
     std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), *receive_side_twcc_, this);
     tracks_.push_back(track);
-    ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
+    if (has_ssrc)
+      ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
     if (config.rtx_enabled)
       ssrc_track_map_.insert(std::make_pair(config.rtx_ssrc, track));
-
     spdlog::debug(
         "PublishStreamTrack ssrc = {}, payload_type = {}"
         ", rtx_enabled = {}, rtx_ssrc = {}, rtx_payload_type = {}, nack_enabled = {}",

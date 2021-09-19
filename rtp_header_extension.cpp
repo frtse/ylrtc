@@ -1,5 +1,6 @@
 #include "rtp_header_extension.h"
 
+#include <cassert>
 #include "byte_buffer.h"
 
 std::unordered_map<std::string, RTPHeaderExtensionType> UriRTPHeaderExtensionMap = {
@@ -37,6 +38,30 @@ std::optional<int> RtpExtensionTypeIdManager::GetTypeId(RTPHeaderExtensionType t
     return result->second;
   else
     return std::nullopt;
+}
+
+uint32_t ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType type) {
+  if (extension_id_map_.find(type) == extension_id_map_.end())
+    assert(false);
+  return extension_id_map_.at(type);
+}
+
+std::unordered_map<RTPHeaderExtensionType, uint32_t> ServerSupportRtpExtensionIdMap::extension_id_map_ = {
+  {kRtpExtensionMid, 1},
+  {kRtpExtensionRtpStreamId, 2},
+  {kRtpExtensionRepairedRtpStreamId, 3},
+  {kRtpExtensionTransportSequenceNumber, 4}
+};
+
+std::optional<std::string> RtpMidExtension::Parse(uint8_t* data, size_t size) {
+  std::string mid;
+  if (size == 0 || data[0] == 0)  // Valid string extension can't be empty.
+    return std::nullopt;
+  const char* cstr = reinterpret_cast<const char*>(data);
+  // If there is a \0 character in the middle of the `data`, treat it as end
+  // of the string. Well-formed string extensions shouldn't contain it.
+  mid.assign(cstr, strnlen(cstr, size));
+  return mid;
 }
 
 std::optional<std::string> RtpStreamIdExtension::Parse(uint8_t* data, size_t size) {

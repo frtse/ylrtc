@@ -3,6 +3,8 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <string>
+#include <optional>
 
 #include "publish_stream_track.h"
 #include "rtp_packet.h"
@@ -31,4 +33,6 @@ class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer, 
   std::vector<std::shared_ptr<PublishStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<PublishStreamTrack>> ssrc_track_map_;
   std::shared_ptr<ReceiveSideTWCC> receive_side_twcc_;
+  std::unordered_map<std::string, std::vector<std::string>> mid_rids_map_;
+  std::unordered_map<std::string, PublishStreamTrack::Configuration> rid_configuration_map_;
 };

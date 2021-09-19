@@ -39,7 +39,7 @@ class PublisheStream {
       0) {
       this.pc_.addTransceiver(
         this.mediaStream_.getVideoTracks()[0],
-        transceiverInit);
+        transceiverSimulcastInit);
     }
 
     const offer = await this.pc_.createOffer();

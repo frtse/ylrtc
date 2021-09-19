@@ -33,6 +33,7 @@ enum RTPHeaderExtensionType : int {
   kRtpExtensionNumberOfExtensions  // Must be the last entity in the enum.
 };
 
+// TODO: If it can be determined that the server decides to [rtp extension id map], remove this code.
 class RtpExtensionTypeIdManager {
  public:
   void Register(int id, const std::string& uri);
@@ -41,18 +42,29 @@ class RtpExtensionTypeIdManager {
   std::unordered_map<RTPHeaderExtensionType, int> type_id_map_;
 };
 
+class ServerSupportRtpExtensionIdMap {
+ public:
+  static uint32_t GetIdByType(RTPHeaderExtensionType type);
+ private:
+  static std::unordered_map<RTPHeaderExtensionType, uint32_t> extension_id_map_;
+};
+
+class RtpMidExtension {
+ public:
+  using value_type = std::string;
+  static std::optional<std::string> Parse(uint8_t* data, size_t size);
+};
+
 class RtpStreamIdExtension {
  public:
-  std::optional<std::string> Parse(uint8_t* data, size_t size);
- private:
-  std::string rid_;
+  using value_type = std::string;
+  static std::optional<std::string> Parse(uint8_t* data, size_t size);
 };
 
 class RepairedRtpStreamIdExtension {
  public:
-  std::optional<std::string> Parse(uint8_t* data, size_t size);
- private:
-  std::string rrid_;
+  using value_type = std::string;
+  static std::optional<std::string> Parse(uint8_t* data, size_t size);
 };
 
 class TransportSequenceNumberExtension {

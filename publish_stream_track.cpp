@@ -29,22 +29,22 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
     return;
   if (rtp_packet->IsKeyFrame())
     spdlog::debug("Recv key frame.");
-  auto id = configuration_.id_extension_manager.GetTypeId(RTPHeaderExtensionType::kRtpExtensionTransportSequenceNumber);
-  if (id) {
-    auto twsn = rtp_packet->GetExtension<TransportSequenceNumberExtension>(*id);
-    if (twsn)
-      receive_side_twcc_.IncomingPacket(TimeMillis(), original_ssrc, *twsn);
-  }
+  // TODO : Move this to PublishStream.
+  uint32_t id = ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType::kRtpExtensionTransportSequenceNumber);
+  auto twsn = rtp_packet->GetExtension<TransportSequenceNumberExtension>(id);
+  if (twsn)
+    receive_side_twcc_.IncomingPacket(TimeMillis(), original_ssrc, *twsn);
   if (configuration_.nack_enabled) {
     if (is_rtx)
       nack_request_->OnReceivedPacket(rtp_packet->SequenceNumber(), rtp_packet->IsKeyFrame(), true);
     else
       nack_request_->OnReceivedPacket(rtp_packet->SequenceNumber(), rtp_packet->IsKeyFrame());
   }
+
   observer_->OnPublishStreamTrackReceiveRtpPacket(rtp_packet);
 }
 
-const PublishStreamTrack::Configuration& PublishStreamTrack::GetConfiguration() {
+PublishStreamTrack::Configuration& PublishStreamTrack::Config() {
   return configuration_;
 }
 

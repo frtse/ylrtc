@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
+#include <unordered_map>
 
 #include "boost/asio.hpp"
 #include "nack_requester.h"
@@ -21,7 +23,7 @@ class PublishStreamTrack : public NackRequester::Observer {
     bool rtx_enabled{false};
     bool nack_enabled{false};
     std::string codec;
-    RtpExtensionTypeIdManager id_extension_manager;
+    std::string rid;
   };
 
   class Observer {
@@ -32,7 +34,7 @@ class PublishStreamTrack : public NackRequester::Observer {
 
   PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, ReceiveSideTWCC& bwe, Observer* observer);
   void ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet);
-  const Configuration& GetConfiguration();
+  Configuration& Config();
 
  private:
   void OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) override;

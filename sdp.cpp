@@ -30,10 +30,36 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
       return false;
     }
 
-    auto media = publish_offer_sdp.at("media");
+    auto& media = publish_offer_sdp.at("media");
     for (int i = 0; i < media.size(); ++i) {
       auto& media_section = media[i];
-
+      media_section.erase("ext");
+      // TODO: 
+      nlohmann::json extensions = nlohmann::json::array();
+      extensions[0]["value"] = 1;
+      extensions[0]["direction"] = "";
+      extensions[0]["encrypt-uri"] = "";
+      extensions[0]["config"] = "";
+      extensions[0]["uri"] = "urn:ietf:params:rtp-hdrext:sdes:mid";
+      extensions[1]["value"] = 2;
+      extensions[1]["direction"] = "";
+      extensions[1]["encrypt-uri"] = "";
+      extensions[1]["config"] = "";
+      extensions[1]["uri"] = "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id";
+      extensions[2]["value"] = 3;
+      extensions[2]["direction"] = "";
+      extensions[2]["encrypt-uri"] = "";
+      extensions[2]["config"] = "";
+      extensions[2]["uri"] = "urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id";
+      // TODO 
+      /*
+      extensions[3]["value"] = 4;
+      extensions[3]["direction"] = "";
+      extensions[3]["encrypt-uri"] = "";
+      extensions[3]["config"] = "";
+      extensions[3]["uri"] = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
+      */
+      media_section["ext"] = extensions;
       if (media_section.find("direction") == media_section.end() || media_section.at("direction") != "sendonly")
         return false;
       std::string media_type = media_section.at("type");
@@ -60,6 +86,7 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
     if (remote_ice_ufrag_.empty() || remote_ice_pwd_.empty() || remote_fingerprint_type_.empty() || remote_fingerprint_hash_.empty() || remote_dtls_setup_.empty())
       return false;
     publish_offer_sdp_ = publish_offer_sdp;
+    spdlog::debug("{}", publish_offer_sdp_.dump());
     return true;
   } catch (...) {
     return false;
