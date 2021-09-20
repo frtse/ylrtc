@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <optional>
 
+constexpr uint32_t kSimulcastSubscribeVideoSsrc = 9527;
+constexpr uint32_t kSimulcastSubscribeVideoRtxSsrc = 9526;
 constexpr size_t kMinRtpPacketLen = 12;
 constexpr uint8_t kRtpVersion = 2;
 constexpr uint16_t kOneByteExtensionProfileId = 0xBEDE;

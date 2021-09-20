@@ -41,7 +41,10 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
       nack_request_->OnReceivedPacket(rtp_packet->SequenceNumber(), rtp_packet->IsKeyFrame());
   }
 
-  observer_->OnPublishStreamTrackReceiveRtpPacket(rtp_packet);
+  if (!configuration_.rid.empty())
+    rtp_packet->SetSsrc(kSimulcastSubscribeVideoSsrc);
+  if (observer_)
+    observer_->OnPublishStreamTrackReceiveRtpPacket(rtp_packet);
 }
 
 PublishStreamTrack::Configuration& PublishStreamTrack::Config() {
@@ -56,7 +59,8 @@ void PublishStreamTrack::OnNackRequesterRequestNack(const std::vector<uint16_t>&
   uint8_t buffer[1500];
   ByteWriter byte_write(buffer, 1500);
   nack.Serialize(&byte_write);
-  observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
+  if (observer_)
+    observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
 }
 
 void PublishStreamTrack::OnNackRequesterRequestKeyFrame() {
@@ -66,5 +70,24 @@ void PublishStreamTrack::OnNackRequesterRequestKeyFrame() {
   uint8_t buffer[1500];
   ByteWriter byte_write(buffer, 1500);
   fir.Serialize(&byte_write);
-  observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
+  if (observer_)
+    observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
+}
+
+void PublishStreamTrack::SendRequestkeyFrame() {
+    // RtcpPliPacket pli;
+    // pli.SetSenderSsrc(configuration_.ssrc);
+    // pli.SetMediaSsrc(configuration_.ssrc);
+    // uint8_t buffer[1500];
+    // ByteWriter byte_write(buffer, 1500);
+    // pli.Serialize(&byte_write);
+    // SendRtcp(byte_write.Data(), byte_write.Used());
+    RtcpFirPacket fir;
+    fir.SetSenderSsrc(configuration_.ssrc);
+    fir.AddFciEntry(configuration_.ssrc, 111); //TODO: 111
+    uint8_t buffer[1500];
+    ByteWriter byte_write(buffer, 1500);
+    fir.Serialize(&byte_write);
+    if (observer_)
+      observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
 }

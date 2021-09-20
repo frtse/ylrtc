@@ -24,6 +24,7 @@ class PublishStreamTrack : public NackRequester::Observer {
     bool nack_enabled{false};
     std::string codec;
     std::string rid;
+    bool audio{false};
   };
 
   class Observer {
@@ -35,6 +36,7 @@ class PublishStreamTrack : public NackRequester::Observer {
   PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, ReceiveSideTWCC& bwe, Observer* observer);
   void ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet);
   Configuration& Config();
+  void SendRequestkeyFrame();
 
  private:
   void OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) override;

@@ -83,23 +83,11 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
 void PublishStream::SendRequestkeyFrame() {
   auto self(shared_from_this());
   work_thread_->PostAsync([self, this] {
-    auto video_ssrc = sdp_.GetPrimarySsrc("video");
-    if (!video_ssrc)
-      return;
-    // RtcpPliPacket pli;
-    // pli.SetSenderSsrc(*video_ssrc);
-    // pli.SetMediaSsrc(*video_ssrc);
-    // uint8_t buffer[1500];
-    // ByteWriter byte_write(buffer, 1500);
-    // pli.Serialize(&byte_write);
-    // SendRtcp(byte_write.Data(), byte_write.Used());
-    RtcpFirPacket fir;
-    fir.SetSenderSsrc(*video_ssrc);
-    fir.AddFciEntry(*video_ssrc, 111);
-    uint8_t buffer[1500];
-    ByteWriter byte_write(buffer, 1500);
-    fir.Serialize(&byte_write);
-    SendRtcp(byte_write.Data(), byte_write.Used());
+    for (auto track : tracks_) {
+      auto& config = track->Config();
+      if (!config.audio)
+        track->SendRequestkeyFrame();
+    }
   });
 }
 
@@ -129,6 +117,8 @@ void PublishStream::SetLocalDescription() {
     PublishStreamTrack::Configuration config;
     bool has_ssrc = false;
     auto& media_section = media_sections[i];
+    if (media_section.at("type") == "audio")
+      config.audio = true;
     if (media_section.find("ssrcs") != media_section.end()) {
       auto& ssrcs = media_section.at("ssrcs");
       if (!ssrcs.empty()) {

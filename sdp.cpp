@@ -1,10 +1,10 @@
 #include "sdp.h"
 
-#include <iostream>
 #include <regex>
 #include <string>
 
 #include "spdlog/spdlog.h"
+#include "rtp_utils.h"
 
 Sdp::Sdp() : local_dtls_setup_{"active"} {}
 
@@ -86,7 +86,6 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
     if (remote_ice_ufrag_.empty() || remote_ice_pwd_.empty() || remote_fingerprint_type_.empty() || remote_fingerprint_hash_.empty() || remote_dtls_setup_.empty())
       return false;
     publish_offer_sdp_ = publish_offer_sdp;
-    spdlog::debug("{}", publish_offer_sdp_.dump());
     return true;
   } catch (...) {
     return false;
@@ -295,10 +294,39 @@ std::string Sdp::CreateSubscribeAnswer() {
           }
         }
       }
+      if (media_section.find("simulcast") != media_section.end()) {
+        media_section.erase("ssrcs");
+        media_section.erase("ssrcGroups");
+        std::string msid = media_section.at("msid");
+        auto pos = msid.find(" ");
+        if (pos == std::string::npos)
+          return "";
+        std::string cname = msid.substr(0, pos);
+        nlohmann::json ssrcs = nlohmann::json::array();
+        nlohmann::json ssrc;
+        ssrc["id"] = kSimulcastSubscribeVideoSsrc;
+        ssrc["attribute"] = "cname";
+        ssrc["value"] = cname;
+        ssrcs.push_back(ssrc);
+        nlohmann::json rtx_ssrc;
+        rtx_ssrc["id"] = kSimulcastSubscribeVideoRtxSsrc;
+        rtx_ssrc["attribute"] = "cname";
+        rtx_ssrc["value"] = cname;
+        ssrcs.push_back(rtx_ssrc);
+        media_section["ssrcs"] = ssrcs;
+        nlohmann::json ssrc_groups = nlohmann::json::array();
+        nlohmann::json ssrc_group;
+        ssrc_group["semantics"] = "FID";
+        ssrc_group["ssrcs"] = std::to_string(kSimulcastSubscribeVideoSsrc) + " " + std::to_string(kSimulcastSubscribeVideoRtxSsrc);
+        ssrc_groups.push_back(ssrc_group);
+        media_section["ssrcGroups"] = ssrc_groups;
+      }
+      media_section.erase("simulcast");
+      media_section.erase("rids");
     }
-
     return sdptransform::write(subscribe_anwser_sdp_);
   } catch (...) {
+    spdlog::error("Create subscribe answer failed.");
     return "";
   }
 }
