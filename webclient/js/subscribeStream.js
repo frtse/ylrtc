@@ -22,7 +22,7 @@ class SubscribeStream extends EventDispatcher {
     this.pc_ = null;
     this.subscribeStreamId_ = '';
     this.publishStreamId_ = '';
-    this.mediaStream_ = null;
+    this.mediaStream_ = new MediaStream();
   }
 
   Id() {
@@ -91,6 +91,6 @@ class SubscribeStream extends EventDispatcher {
   }
 
   _ontrack(e) {
-    this.mediaStream_ = e.streams[0];
+    this.mediaStream_.addTrack(e.track);
   }
 };
