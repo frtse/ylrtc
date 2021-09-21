@@ -91,6 +91,7 @@ class SubscribeStream extends EventDispatcher {
   }
 
   _ontrack(e) {
+    //https://webrtc.org/getting-started/remote-streams
     this.mediaStream_.addTrack(e.track);
   }
 };
