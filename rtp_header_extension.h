@@ -7,6 +7,8 @@
 #include <optional>
 #include <unordered_map>
 
+#include "sdptransform/json.hpp"
+
 enum RTPHeaderExtensionType : int {
   kRtpExtensionNone,
   kRtpExtensionTransmissionTimeOffset,
@@ -45,6 +47,7 @@ class RtpExtensionTypeIdManager {
 class ServerSupportRtpExtensionIdMap {
  public:
   static uint32_t GetIdByType(RTPHeaderExtensionType type);
+  static nlohmann::json CreateSdpRtpExtensions(const std::string& media_type);
  private:
   static std::unordered_map<RTPHeaderExtensionType, uint32_t> extension_id_map_;
 };

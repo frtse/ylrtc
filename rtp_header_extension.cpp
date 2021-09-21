@@ -40,18 +40,55 @@ std::optional<int> RtpExtensionTypeIdManager::GetTypeId(RTPHeaderExtensionType t
     return std::nullopt;
 }
 
+std::unordered_map<RTPHeaderExtensionType, uint32_t> ServerSupportRtpExtensionIdMap::extension_id_map_ = {
+  {kRtpExtensionMid, 1},
+  {kRtpExtensionRtpStreamId, 2},
+  {kRtpExtensionRepairedRtpStreamId, 3},
+  {kRtpExtensionTransportSequenceNumber, 4},
+  {kRtpExtensionAudioLevel, 5}
+};
+
 uint32_t ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType type) {
   if (extension_id_map_.find(type) == extension_id_map_.end())
     assert(false);
   return extension_id_map_.at(type);
 }
 
-std::unordered_map<RTPHeaderExtensionType, uint32_t> ServerSupportRtpExtensionIdMap::extension_id_map_ = {
-  {kRtpExtensionMid, 1},
-  {kRtpExtensionRtpStreamId, 2},
-  {kRtpExtensionRepairedRtpStreamId, 3},
-  {kRtpExtensionTransportSequenceNumber, 4}
-};
+nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std::string& media_type) {
+  assert(media_type == "video" || media_type == "audio");
+  nlohmann::json extensions = nlohmann::json::array();
+  extensions[0]["value"] = 1;
+  extensions[0]["direction"] = "";
+  extensions[0]["encrypt-uri"] = "";
+  extensions[0]["config"] = "";
+  extensions[0]["uri"] = "urn:ietf:params:rtp-hdrext:sdes:mid";
+  extensions[1]["value"] = 2;
+  extensions[1]["direction"] = "";
+  extensions[1]["encrypt-uri"] = "";
+  extensions[1]["config"] = "";
+  extensions[1]["uri"] = "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id";
+  extensions[2]["value"] = 3;
+  extensions[2]["direction"] = "";
+  extensions[2]["encrypt-uri"] = "";
+  extensions[2]["config"] = "";
+  extensions[2]["uri"] = "urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id";
+  // TODO 
+  /*
+  extensions[3]["value"] = 4;
+  extensions[3]["direction"] = "";
+  extensions[3]["encrypt-uri"] = "";
+  extensions[3]["config"] = "";
+  extensions[3]["uri"] = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
+  */
+  if (media_type == "audio") {
+    extensions[3]["value"] = 5;
+    extensions[3]["direction"] = "";
+    extensions[3]["encrypt-uri"] = "";
+    extensions[3]["config"] = "";
+    extensions[3]["uri"] = "urn:ietf:params:rtp-hdrext:ssrc-audio-level";
+  }
+  return extensions;
+}
 
 std::optional<std::string> RtpMidExtension::Parse(uint8_t* data, size_t size) {
   std::string mid;
