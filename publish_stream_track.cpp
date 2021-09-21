@@ -75,19 +75,23 @@ void PublishStreamTrack::OnNackRequesterRequestKeyFrame() {
 }
 
 void PublishStreamTrack::SendRequestkeyFrame() {
-    // RtcpPliPacket pli;
-    // pli.SetSenderSsrc(configuration_.ssrc);
-    // pli.SetMediaSsrc(configuration_.ssrc);
-    // uint8_t buffer[1500];
-    // ByteWriter byte_write(buffer, 1500);
-    // pli.Serialize(&byte_write);
-    // SendRtcp(byte_write.Data(), byte_write.Used());
+  uint8_t buffer[1500];
+  ByteWriter byte_write(buffer, 1500);
+  if (configuration_.rtcpfb_pli) {
+    RtcpPliPacket pli;
+    pli.SetSenderSsrc(configuration_.ssrc);
+    pli.SetMediaSsrc(configuration_.ssrc);
+    pli.Serialize(&byte_write);
+  }
+  else if (configuration_.rtcpfb_fir) {
     RtcpFirPacket fir;
     fir.SetSenderSsrc(configuration_.ssrc);
-    fir.AddFciEntry(configuration_.ssrc, 111); //TODO: 111
-    uint8_t buffer[1500];
-    ByteWriter byte_write(buffer, 1500);
+    fir.AddFciEntry(configuration_.ssrc, fir_seq_num_++);
     fir.Serialize(&byte_write);
-    if (observer_)
-      observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
+  }
+  else {
+    return;
+  }
+  if (observer_)
+    observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
 }

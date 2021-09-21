@@ -152,8 +152,19 @@ void PublishStream::SetLocalDescription() {
     if (media_section.find("rtcpFb") != media_section.end()) {
       auto& rtcpFbs = media_section.at("rtcpFb");
       for (auto& rtcpFb : rtcpFbs) {
-        if (rtcpFb.at("payload") == std::to_string(config.payload_type) && rtcpFb.at("type") == "nack" && rtcpFb.find("subtype") == rtcpFb.end())
-          config.nack_enabled = true;
+        if (rtcpFb.find("payload") == rtcpFb.end() || rtcpFb.find("type") == rtcpFb.end())
+          continue;
+
+        if (rtcpFb.find("subtype") == rtcpFb.end()) {
+          if (rtcpFb.at("payload") == std::to_string(config.payload_type) && rtcpFb.at("type") == "nack")
+            config.nack_enabled = true;
+        }
+        else {
+          if (rtcpFb.at("subtype") == "fir")
+            config.rtcpfb_fir = true;
+          else if (rtcpFb.at("subtype") == "pli")
+            config.rtcpfb_pli = true;
+        }
       }
     }
     if (media_section.find("simulcast") != media_section.end()) {

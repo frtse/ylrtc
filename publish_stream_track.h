@@ -25,6 +25,8 @@ class PublishStreamTrack : public NackRequester::Observer {
     std::string codec;
     std::string rid;
     bool audio{false};
+    bool rtcpfb_pli{false};
+    bool rtcpfb_fir{false};
   };
 
   class Observer {
@@ -45,5 +47,6 @@ class PublishStreamTrack : public NackRequester::Observer {
   boost::asio::io_context& io_context_;
   std::shared_ptr<NackRequester> nack_request_;
   ReceiveSideTWCC& receive_side_twcc_;
+  uint8_t fir_seq_num_{0};
   Observer* observer_;
 };
