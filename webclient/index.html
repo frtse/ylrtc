@@ -114,7 +114,7 @@
     localPlayer.play();
     publisheStream = client.CreatePublisheStream();
     const simulcast = false;
-    let audioRtpEncodingParameters = [{rid: 'q', active: true, maxBitrate: 64000}];
+    let audioRtpEncodingParameters = [{maxBitrate: 64000}];
     let videoRtpEncodingParameters = null;
     if (simulcast) {
     videoRtpEncodingParameters = [{rid: 'q', active: true, maxBitrate: 100000},
@@ -122,7 +122,7 @@
                                   {rid: 'f', active: true, maxBitrate: 900000}];
     }
     else {
-      videoRtpEncodingParameters = [{rid: 'q', active: true, maxBitrate: 200000}];
+      videoRtpEncodingParameters = [{ maxBitrate: 100000}];
     }
     await publisheStream.publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters);
   });
