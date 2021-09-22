@@ -117,9 +117,9 @@
     let audioRtpEncodingParameters = [{maxBitrate: 64000}];
     let videoRtpEncodingParameters = null;
     if (simulcast) {
-    videoRtpEncodingParameters = [{rid: 'q', active: true, maxBitrate: 100000},
-                                  {rid: 'h', active: true, maxBitrate: 300000},
-                                  {rid: 'f', active: true, maxBitrate: 900000}];
+      videoRtpEncodingParameters = [{rid: 'q', active: true, maxBitrate: 100000},
+                                    {rid: 'h', active: true, maxBitrate: 300000},
+                                    {rid: 'f', active: true, maxBitrate: 900000}];
     }
     else {
       videoRtpEncodingParameters = [{ maxBitrate: 100000, maxFramerate: 5}];
