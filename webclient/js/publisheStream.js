@@ -109,4 +109,15 @@ class PublisheStream {
     else
       throw "Invalid type";
   }
+  
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/getStats
+   */
+  async getStats() {
+    if (this.pc_) {
+      return this.pc_.getStats();
+    } else {
+      throw "PeerConnection is null";
+    }
+  }
 };
