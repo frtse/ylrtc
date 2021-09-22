@@ -113,7 +113,18 @@
     localPlayer.srcObject = device.mediaStream();
     localPlayer.play();
     publisheStream = client.CreatePublisheStream();
-    await publisheStream.publish(device);
+    const simulcast = false;
+    let audioRtpEncodingParameters = [{rid: 'q', active: true, maxBitrate: 64000}];
+    let videoRtpEncodingParameters = null;
+    if (simulcast) {
+    videoRtpEncodingParameters = [{rid: 'q', active: true, maxBitrate: 100000},
+                                  {rid: 'h', active: true, maxBitrate: 300000},
+                                  {rid: 'f', active: true, maxBitrate: 900000}];
+    }
+    else {
+      videoRtpEncodingParameters = [{rid: 'q', active: true, maxBitrate: 200000}];
+    }
+    await publisheStream.publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters);
   });
 
   stopPublish.addEventListener('click', () => {

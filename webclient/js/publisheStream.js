@@ -10,36 +10,46 @@ class PublisheStream {
     return this.streamId_;
   }
 
-  async publish(device) {
+  /**
+   * Publish stream.
+   * @param {*} device Device
+   * @param {*} videoRtpEncodingParameters RTCRtpEncodingParameters https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpEncodingParameters
+   * @param {*} audioRtpEncodingParameters RTCRtpEncodingParameters https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpEncodingParameters
+   */
+  async publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters) {
     this.mediaStream_ = device.mediaStream();
     const configuration = {};
     this.pc_ = new RTCPeerConnection(configuration);
 
-    const transceiverInit = {
+    const audioTransceiverInit = {
       direction: 'sendonly',
+      sendEncodings: [{rid: 'q', active: true, maxBitrate: 64000}],
       streams: [this.mediaStream_]
     };
 
-    const transceiverSimulcastInit = {
+    if (audioRtpEncodingParameters !== null)
+      audioTransceiverInit.sendEncodings = audioRtpEncodingParameters;
+
+    const videoTransceiverInit = {
       direction: 'sendonly',
-      sendEncodings: [
-        {rid: 'q', active: true, scaleResolutionDownBy: 4.0},
-        {rid: 'h', active: true, scaleResolutionDownBy: 2.0},
-        {rid: 'f', active: true}],
+      sendEncodings: [{rid: 'q', active: true, maxBitrate: 200000}],
       streams: [this.mediaStream_]
     };
+
+    if (videoRtpEncodingParameters !== null)
+      videoTransceiverInit.sendEncodings = videoRtpEncodingParameters;
 
     if (this.mediaStream_.getAudioTracks().length >
       0) {
       this.pc_.addTransceiver(
         this.mediaStream_.getAudioTracks()[0],
-        transceiverInit);
+        audioTransceiverInit);
     }
     if (this.mediaStream_.getVideoTracks().length >
       0) {
       this.pc_.addTransceiver(
         this.mediaStream_.getVideoTracks()[0],
-        transceiverSimulcastInit);
+        videoTransceiverInit);
     }
 
     const offer = await this.pc_.createOffer();
