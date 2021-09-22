@@ -122,7 +122,7 @@
                                   {rid: 'f', active: true, maxBitrate: 900000}];
     }
     else {
-      videoRtpEncodingParameters = [{ maxBitrate: 100000}];
+      videoRtpEncodingParameters = [{ maxBitrate: 100000, maxFramerate: 5}];
     }
     await publisheStream.publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters);
   });
