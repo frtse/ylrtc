@@ -56,20 +56,20 @@ void SubscribeStreamTrack::ReceiveReceiverReport(const ReportBlock& report_block
   }
 }
 
-std::unique_ptr<SenderReportPacket> SubscribeStreamTrack::BuildSr() {
+std::optional<SenderReportPacket> SubscribeStreamTrack::BuildSr() {
   if (last_send_timestamp_ == -1)
-    return nullptr;
+    return std::nullopt;
   int now_millis = TimeMillis();
   auto ntp = NtpTime::CreateFromMillis(now_millis);
-  auto sr = std::make_unique<SenderReportPacket>();
+  SenderReportPacket sr;
   auto diff_in_millis = now_millis - last_send_timestamp_;
   auto diff_in_clockrate = diff_in_millis * configuration_.clock_rate / 1000;
-  sr->SetSenderSsrc(configuration_.ssrc);
-  sr->SetNtpSeconds(ntp.Seconds());
-  sr->SetNtpFractions(ntp.Fractions());
-  sr->SetRtpTimestamp(last_rtp_timestamp_ + diff_in_clockrate);
-  sr->SetSendPacketCount(packets_sent_);
-  sr->SendOctets(media_bytes_sent_);
+  sr.SetSenderSsrc(configuration_.ssrc);
+  sr.SetNtpSeconds(ntp.Seconds());
+  sr.SetNtpFractions(ntp.Fractions());
+  sr.SetRtpTimestamp(last_rtp_timestamp_ + diff_in_clockrate);
+  sr.SetSendPacketCount(packets_sent_);
+  sr.SendOctets(media_bytes_sent_);
   return sr;
 }
 

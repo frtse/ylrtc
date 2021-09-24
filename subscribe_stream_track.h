@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 
 #include "boost/asio.hpp"
 #include "random.h"
@@ -39,7 +40,7 @@ class SubscribeStreamTrack : public Timer::Listener, public std::enable_shared_f
   void ReceiveReceiverReport(const ReportBlock& report_block);
 
  private:
-  std::unique_ptr<SenderReportPacket> BuildSr();
+  std::optional<SenderReportPacket> BuildSr();
   void OnTimerTimeout() override;
   Configuration configuration_;
   boost::asio::io_context& io_context_;
