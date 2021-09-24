@@ -73,7 +73,7 @@ struct ReportBlock {
   static const size_t kLength = 24;
   uint32_t source_ssrc;
   uint8_t fraction_lost;
-  uint32_t cumulative_lost;  // TODO FIXME :Signed 24-bit value
+  uint32_t cumulative_lost;  // Signed 24-bit value.
   uint32_t extended_high_seq_num;
   uint32_t jitter;
   uint32_t last_sr;
