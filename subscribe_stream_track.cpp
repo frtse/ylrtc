@@ -92,7 +92,8 @@ void SubscribeStreamTrack::OnTimerTimeout() {
     if (rate) {
       int64_t send_bitrate_kbit = *rate / 1000;
       if (send_bitrate_kbit != 0) {
-        min_interval = std::min(360000 / send_bitrate_kbit, report_interval_);
+        const int64_t millisecs_per_sec = 1000;
+        min_interval = std::min(360 * millisecs_per_sec / send_bitrate_kbit, report_interval_);
       }
     }
   }
