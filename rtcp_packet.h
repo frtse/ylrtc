@@ -69,11 +69,30 @@ class RtcpPacket {
   uint32_t sender_ssrc_ = 0;
 };
 
+// From RFC 3550, RTP: A Transport Protocol for Real-Time Applications.
+//
+// RTCP report block (RFC 3550).
+//
+//     0                   1                   2                   3
+//     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+//  0 |                 SSRC_1 (SSRC of first source)                 |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  4 | fraction lost |       cumulative number of packets lost       |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  8 |           extended highest sequence number received           |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 12 |                      interarrival jitter                      |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 16 |                         last SR (LSR)                         |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 20 |                   delay since last SR (DLSR)                  |
+// 24 +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 struct ReportBlock {
   static const size_t kLength = 24;
   uint32_t source_ssrc;
   uint8_t fraction_lost;
-  uint32_t cumulative_lost;  // Signed 24-bit value.
+  uint32_t cumulative_lost; // Signed 24-bit value.
   uint32_t extended_high_seq_num;
   uint32_t jitter;
   uint32_t last_sr;
