@@ -91,87 +91,23 @@ class RtcpPacket {
 struct ReportBlock {
  public:
   static constexpr size_t kLength = 24;
-  void SetMediaSsrc(uint32_t ssrc) {
-     source_ssrc_ = ssrc;
-  }
-  void SetFractionLost(uint8_t fraction_lost) {
-    fraction_lost_ = fraction_lost;
-  }
-  void SetCumulativeLost(uint32_t cumulative_lost) {
-    cumulative_lost_ = cumulative_lost;
-  }
-  void SetExtHighestSeqNum(uint32_t ext_highest_seq_num) {
-    extended_high_seq_num_ = ext_highest_seq_num;
-  }
-  void SetJitter(uint32_t jitter) {
-    jitter_ = jitter;
-  }
-  void SetLastSr(uint32_t last_sr) {
-    last_sr_ = last_sr;
-  }
-  void SetDelayLastSr(uint32_t delay_last_sr) {
-    delay_since_last_sr_ = delay_last_sr;
-  }
+  void SetMediaSsrc(uint32_t ssrc);
+  void SetFractionLost(uint8_t fraction_lost);
+  void SetCumulativeLost(uint32_t cumulative_lost);
+  void SetExtHighestSeqNum(uint32_t ext_highest_seq_num);
+  void SetJitter(uint32_t jitter);
+  void SetLastSr(uint32_t last_sr);
+  void SetDelayLastSr(uint32_t delay_last_sr);
 
-  uint32_t MediaSsrc() const {
-    return source_ssrc_;
-  }
-  uint8_t FractionLost() const {
-    return fraction_lost_;
-  }
-  uint32_t CumulativeLost() const {
-    return cumulative_lost_;
-  }
-  uint32_t ExtHighestSeqNum() const {
-    return extended_high_seq_num_;
-  }
-  uint32_t Jitter() const {
-    return jitter_;
-  }
-  uint32_t LastSr() const {
-    return last_sr_;
-  }
-  uint32_t DelayLastSr() const {
-    return delay_since_last_sr_;
-  }
-  bool Parse(ByteReader* byte_reader) {
-    if (!byte_reader) // TODO assert
-      return false;
-    if (!byte_reader->ReadUInt32(&source_ssrc_))
-      return false;
-    if (!byte_reader->ReadUInt8(&fraction_lost_))
-      return false;
-    if (!byte_reader->ReadUInt24(&cumulative_lost_))
-      return false;
-    if (!byte_reader->ReadUInt32(&extended_high_seq_num_))
-      return false;
-    if (!byte_reader->ReadUInt32(&jitter_))
-      return false;
-    if (!byte_reader->ReadUInt32(&last_sr_))
-      return false;
-    if (!byte_reader->ReadUInt32(&delay_since_last_sr_))
-      return false;
-    return true;
-  }
-  bool Serialize(ByteWriter* byte_writer) {
-    if (!byte_writer) // TODO assert
-      return false;
-    if (!byte_writer->WriteUInt32(source_ssrc_))
-      return false;
-    if (!byte_writer->WriteUInt8(fraction_lost_))
-      return false;
-    if (!byte_writer->WriteUInt24(cumulative_lost_))
-      return false;
-    if (!byte_writer->WriteUInt32(extended_high_seq_num_))
-      return false;
-    if (!byte_writer->WriteUInt32(jitter_))
-      return false;
-    if (!byte_writer->WriteUInt32(last_sr_))
-      return false;
-    if (!byte_writer->WriteUInt32(delay_since_last_sr_))
-      return false;
-    return true;
-  }
+  uint32_t MediaSsrc() const;
+  uint8_t FractionLost() const;
+  uint32_t CumulativeLost() const;
+  uint32_t ExtHighestSeqNum() const;
+  uint32_t Jitter() const;
+  uint32_t LastSr() const;
+  uint32_t DelayLastSr() const;
+  bool Parse(ByteReader* byte_reader);
+  bool Serialize(ByteWriter* byte_writer);
  private:
   uint32_t source_ssrc_{0};     // 32 bits
   uint8_t fraction_lost_{0};    // 8 bits representing a fixed point value 0..1

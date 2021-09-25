@@ -122,6 +122,102 @@ bool RtcpPacket::SerializeCommonHeader(ByteWriter* byte_writer) {
   return true;
 }
 
+void ReportBlock::SetMediaSsrc(uint32_t ssrc) {
+    source_ssrc_ = ssrc;
+}
+
+void ReportBlock::SetFractionLost(uint8_t fraction_lost) {
+  fraction_lost_ = fraction_lost;
+}
+
+void ReportBlock::SetCumulativeLost(uint32_t cumulative_lost) {
+  cumulative_lost_ = cumulative_lost;
+}
+
+void ReportBlock::SetExtHighestSeqNum(uint32_t ext_highest_seq_num) {
+  extended_high_seq_num_ = ext_highest_seq_num;
+}
+
+void ReportBlock::SetJitter(uint32_t jitter) {
+  jitter_ = jitter;
+}
+
+void ReportBlock::SetLastSr(uint32_t last_sr) {
+  last_sr_ = last_sr;
+}
+
+void ReportBlock::SetDelayLastSr(uint32_t delay_last_sr) {
+  delay_since_last_sr_ = delay_last_sr;
+}
+
+uint32_t ReportBlock::MediaSsrc() const {
+  return source_ssrc_;
+}
+
+uint8_t ReportBlock::FractionLost() const {
+  return fraction_lost_;
+}
+
+uint32_t ReportBlock::CumulativeLost() const {
+  return cumulative_lost_;
+}
+
+uint32_t ReportBlock::ExtHighestSeqNum() const {
+  return extended_high_seq_num_;
+}
+
+uint32_t ReportBlock::Jitter() const {
+  return jitter_;
+}
+
+uint32_t ReportBlock::LastSr() const {
+  return last_sr_;
+}
+
+uint32_t ReportBlock::DelayLastSr() const {
+  return delay_since_last_sr_;
+}
+
+bool ReportBlock::Parse(ByteReader* byte_reader) {
+  if (!byte_reader) // TODO assert
+    return false;
+  if (!byte_reader->ReadUInt32(&source_ssrc_))
+    return false;
+  if (!byte_reader->ReadUInt8(&fraction_lost_))
+    return false;
+  if (!byte_reader->ReadUInt24(&cumulative_lost_))
+    return false;
+  if (!byte_reader->ReadUInt32(&extended_high_seq_num_))
+    return false;
+  if (!byte_reader->ReadUInt32(&jitter_))
+    return false;
+  if (!byte_reader->ReadUInt32(&last_sr_))
+    return false;
+  if (!byte_reader->ReadUInt32(&delay_since_last_sr_))
+    return false;
+  return true;
+}
+
+bool ReportBlock::Serialize(ByteWriter* byte_writer) {
+  if (!byte_writer) // TODO assert
+    return false;
+  if (!byte_writer->WriteUInt32(source_ssrc_))
+    return false;
+  if (!byte_writer->WriteUInt8(fraction_lost_))
+    return false;
+  if (!byte_writer->WriteUInt24(cumulative_lost_))
+    return false;
+  if (!byte_writer->WriteUInt32(extended_high_seq_num_))
+    return false;
+  if (!byte_writer->WriteUInt32(jitter_))
+    return false;
+  if (!byte_writer->WriteUInt32(last_sr_))
+    return false;
+  if (!byte_writer->WriteUInt32(delay_since_last_sr_))
+    return false;
+  return true;
+}
+
 bool SenderReportPacket::Serialize(ByteWriter* byte_writer) {
   header_.count_or_format = 0;
   header_.packet_type = kRtcpTypeSr;
