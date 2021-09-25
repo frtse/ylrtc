@@ -114,7 +114,31 @@ class SeqNumUnwrapper {
     return last_unwrapped_;
   }
 
+  // Get the unwrapped value, but don't update the internal state.
+  int64_t UnwrapWithoutUpdate(T value) {
+    last_without_update_value_ = value;
+    if (!last_value_) {
+      return value;
+    } else {
+      int64_t unwrapped = 0;
+      unwrapped += ForwardDiff<T, M>(*last_value_, value);
+
+      if (!AheadOrAt<T, M>(value, *last_value_)) {
+        constexpr int64_t kBackwardAdjustment = M == 0 ? int64_t{std::numeric_limits<T>::max()} + 1 : M;
+        unwrapped -= kBackwardAdjustment;
+      }
+
+      return unwrapped;
+    }
+  }
+  // Only update the internal state to the specified last (unwrapped) value.
+  void UpdateLast(int64_t last_value) {
+    if (last_without_update_value_)
+      last_value_ = last_without_update_value_;
+    last_unwrapped_ = last_value;
+  }
  private:
   int64_t last_unwrapped_ = 0;
   std::optional<T> last_value_;
+  std::optional<T> last_without_update_value_;
 };

@@ -109,7 +109,30 @@ void PublishStream::UnregisterDataObserver(std::shared_ptr<SubscribeStream> obse
   });
 }
 
-void PublishStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {}
+void PublishStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
+  RtcpCompound rtcp_compound;
+  if (!rtcp_compound.Parse(data, length)) {
+    spdlog::warn("Failed to parse compound rtcp.");
+    return;
+  }
+  auto rtcp_packets = rtcp_compound.GetRtcpPackets();
+  for (auto p : rtcp_packets) {
+    spdlog::debug("rtcp -----------------{}", p->Type());
+    if (p->Type() == kRtcpTypeRtpfb) {
+      if (p->Format() == 1) {
+        // nack.
+      } else if (p->Format() == 15) {
+        // twcc.
+      } else {
+        spdlog::debug("fb format = {}", p->Format());
+      }
+    } else if (p->Type() == kRtcpTypeRr) {
+      // rr
+    } else if (p->Type() == kRtcpTypeXr) {
+      spdlog::debug("Xr-------------------------");
+    }
+  }
+}
 
 void PublishStream::SetLocalDescription() {
   auto media_sections = sdp_.GetMediaSections();
@@ -131,6 +154,7 @@ void PublishStream::SetLocalDescription() {
       if (!rtpmaps.empty()) {
         config.payload_type = rtpmaps[0].at("payload");
         config.codec = StringToLower(rtpmaps[0].at("codec"));
+        config.clock_rate = rtpmaps[0].at("rate");
       }
       for (auto& rtpmap : rtpmaps) {
         if (rtpmap.at("codec") == "rtx") {
@@ -180,6 +204,7 @@ void PublishStream::SetLocalDescription() {
     }
     if (has_ssrc) {
       std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), *receive_side_twcc_, this);
+      track->Init();
       tracks_.push_back(track);
       ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
       if (config.rtx_enabled)

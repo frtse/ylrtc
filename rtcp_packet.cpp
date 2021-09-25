@@ -172,19 +172,7 @@ bool ReceiverReportPacket::Parse(ByteReader* byte_reader) {
     return false;
   for (int i = 0; i < Count(); ++i) {
     ReportBlock block;
-    if (!byte_reader->ReadUInt32(&block.source_ssrc))
-      return false;
-    if (!byte_reader->ReadUInt8(&block.fraction_lost))
-      return false;
-    if (!byte_reader->ReadUInt24(&block.cumulative_lost))
-      return false;
-    if (!byte_reader->ReadUInt32(&block.extended_high_seq_num))
-      return false;
-    if (!byte_reader->ReadUInt32(&block.jitter))
-      return false;
-    if (!byte_reader->ReadUInt32(&block.last_sr))
-      return false;
-    if (!byte_reader->ReadUInt32(&block.delay_since_last_sr))
+    if (!block.Parse(byte_reader))
       return false;
     report_blocks_.push_back(block);
   }
@@ -203,19 +191,7 @@ bool ReceiverReportPacket::Serialize(ByteWriter* byte_writer) {
     return false;
   for (int i = 0; i < report_blocks_.size(); ++i) {
     ReportBlock block;
-    if (!byte_writer->WriteUInt32(block.source_ssrc))
-      return false;
-    if (!byte_writer->WriteUInt8(block.fraction_lost))
-      return false;
-    if (!byte_writer->WriteUInt24(block.cumulative_lost))
-      return false;
-    if (!byte_writer->WriteUInt32(block.extended_high_seq_num))
-      return false;
-    if (!byte_writer->WriteUInt32(block.jitter))
-      return false;
-    if (!byte_writer->WriteUInt32(block.last_sr))
-      return false;
-    if (!byte_writer->WriteUInt32(block.delay_since_last_sr))
+    if (!block.Serialize(byte_writer))
       return false;
   }
   return true;

@@ -41,8 +41,8 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
       ReceiverReportPacket* rr = dynamic_cast<ReceiverReportPacket*>(p);
       auto report_blocks = rr->GetReportBlocks();
       for (auto block : report_blocks) {
-        // When RTX is enabled, the RR packet of RTX is ignored.
-        auto stream_iter = ssrc_track_map_.find(block.source_ssrc);
+        // TODO: When RTX is enabled, the RR packet of RTX is ignored. Fix!!.
+        auto stream_iter = ssrc_track_map_.find(block.MediaSsrc());
         if (stream_iter != ssrc_track_map_.end())
           stream_iter->second->ReceiveReceiverReport(block);
       }

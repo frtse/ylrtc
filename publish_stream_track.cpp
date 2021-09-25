@@ -10,11 +10,21 @@
 
 PublishStreamTrack::PublishStreamTrack(const Configuration& configuration
   , boost::asio::io_context& io_context, ReceiveSideTWCC& bwe, Observer* observer)
-  : configuration_{configuration}, io_context_{io_context}, receive_side_twcc_{bwe}, observer_{observer} {
+  : configuration_{configuration}
+  , receive_statistician_{configuration_.ssrc, configuration_.clock_rate}
+  , io_context_{io_context}
+  , receive_side_twcc_{bwe}
+  , observer_{observer} {
   if (configuration_.nack_enabled) {
     nack_request_.reset(new NackRequester(io_context, this));
     nack_request_->Init();
   }
+  report_interval_ = configuration_.audio ? kDefaultAudioReportInterval : kDefaultVideoReportInterval;
+}
+
+void PublishStreamTrack::Init() {
+  rtcp_timer_.reset(new Timer(io_context_, shared_from_this()));
+  rtcp_timer_->AsyncWait(report_interval_);
 }
 
 void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
@@ -25,6 +35,7 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
     is_rtx = true;
   }
 
+  receive_statistician_.ReceivePacket(rtp_packet); // TODO: Separate RTX.
   if (!rtp_packet->ParsePayload(configuration_.codec))
     return;
   if (rtp_packet->IsKeyFrame())
@@ -72,6 +83,40 @@ void PublishStreamTrack::OnNackRequesterRequestKeyFrame() {
   fir.Serialize(&byte_write);
   if (observer_)
     observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
+}
+
+void PublishStreamTrack::OnTimerTimeout() {
+  ReceiverReportPacket rr;
+  std::vector<ReportBlock> report_blocks;
+  receive_statistician_.MaybeAppendReportBlockAndReset(report_blocks);
+  if (!report_blocks.empty()) {
+    rr.SetReportBlocks(std::move(report_blocks));
+    uint8_t buffer[1500];
+    ByteWriter byte_write(buffer, 1500);
+    if (rr.Serialize(&byte_write)) {
+      if (observer_)
+        observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
+    }
+  }
+  // generate next time to send an RTCP report
+  int64_t min_interval = report_interval_;
+
+  if (!configuration_.audio) {
+    // Calculate bandwidth for video; 360 / send bandwidth in kbit/s.
+    auto rate = receive_statistician_.BitrateReceived();
+    if (rate) {
+      int64_t send_bitrate_kbit = rate / 1000;
+      if (send_bitrate_kbit != 0) {
+        const int64_t millisecs_per_sec = 1000;
+        min_interval = std::min(360 * millisecs_per_sec / send_bitrate_kbit, report_interval_);
+      }
+    }
+  }
+
+  // The interval between RTCP packets is varied randomly over the
+  // range [1/2,3/2] times the calculated interval.
+  int64_t time_to_next = random_.RandomNumber(min_interval * 1 / 2, min_interval * 3 / 2);
+  rtcp_timer_->AsyncWait(time_to_next);
 }
 
 void PublishStreamTrack::SendRequestkeyFrame() {

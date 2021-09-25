@@ -49,8 +49,8 @@ void SubscribeStreamTrack::ReceiveReceiverReport(const ReportBlock& report_block
   uint64_t now = TimeMillis();
   NtpTime ntp = NtpTime::CreateFromMillis(now);
   uint32_t compact_ntp = ntp.ToCompactNtp();
-  if (report_block.last_sr != 0) {
-    uint32_t rtp_compact_ntp = compact_ntp - report_block.delay_since_last_sr - report_block.last_sr;
+  if (report_block.LastSr() != 0) {
+    uint32_t rtp_compact_ntp = compact_ntp - report_block.DelayLastSr() - report_block.LastSr();
     rtt_millis_ = NtpTime::CreateFromCompactNtp(rtp_compact_ntp).ToMillis();
     rtp_packet_history_.SetRtt(rtt_millis_);
   }
