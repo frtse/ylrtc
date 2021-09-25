@@ -190,8 +190,7 @@ bool ReceiverReportPacket::Serialize(ByteWriter* byte_writer) {
   if (!byte_writer->WriteUInt32(sender_ssrc_))
     return false;
   for (int i = 0; i < report_blocks_.size(); ++i) {
-    ReportBlock block;
-    if (!block.Serialize(byte_writer))
+    if (!report_blocks_[i].Serialize(byte_writer))
       return false;
   }
   return true;
