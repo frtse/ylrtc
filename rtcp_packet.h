@@ -362,7 +362,6 @@ struct ReceiveTimeInfo {
   uint32_t delay_since_last_rr;
 };
 
-// DLRR Report Block: Delay since the Last Receiver Report (RFC 3611).
 class DlrrBlockContext {
  public:
   static const uint8_t kBlockType = 5;
@@ -409,7 +408,7 @@ class XrPacket : public RtcpPacket {
   static constexpr size_t kMaxNumberOfDlrrItems = 50;
   static constexpr uint8_t kBlockTypeRrtr = 4;
   static constexpr uint8_t kBlockTypeDlrr = 5;
-  static constexpr uint16_t kBlockHeaderIn32Bits = 1;
+  static constexpr uint16_t kBlockHeaderIn32Bits = 2;
 
   bool Parse(ByteReader* byte_reader) override;
   bool Serialize(ByteWriter* byte_writer) override;

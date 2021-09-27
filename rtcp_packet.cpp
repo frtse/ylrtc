@@ -562,10 +562,22 @@ bool XrPacket::Serialize(ByteWriter* byte_writer) {
   if (!byte_writer->WriteUInt32(sender_ssrc_))
     return false;
   if (rrtr_block_) {
+    if (!byte_writer->WriteUInt8(kBlockTypeRrtr))
+      return false;
+    if (!byte_writer->Consume(1))
+      return false;
+    if (!byte_writer->WriteUInt16(rrtr_block_->SizeIn32bits()))
+      return false;
     if (!rrtr_block_->Serialize(byte_writer))
       return false;
   }
   if (dlrr_block_) {
+    if (!byte_writer->WriteUInt8(kBlockTypeDlrr))
+      return false;
+    if (!byte_writer->Consume(1))
+      return false;
+    if (!byte_writer->WriteUInt16(dlrr_block_->SizeIn32bits()))
+      return false;
     if (!dlrr_block_->Serialize(byte_writer))
       return false;
   }
