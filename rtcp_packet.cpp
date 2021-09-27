@@ -438,6 +438,112 @@ bool NackPacket::Parse(ByteReader* byte_reader) {
   return true;
 }
 
+bool Rrtr::Parse(ByteReader* byte_reader) {
+  uint8_t block_type = 0;
+  uint16_t block_length = 0;
+  uint32_t seconds = 0;
+  uint32_t fraction = 0;
+
+  if (!byte_reader) // TODO: assert.
+    return false;
+  if (byte_reader->ReadUInt8(&block_type))
+    return false;
+  if (block_type != kBlockType)
+    return false;
+  if (!byte_reader->Consume(1)) // Reserved.
+    return false;
+  if (!byte_reader->ReadUInt16(&block_length))
+    return false;
+  if (block_length != kBlockLength)
+    return false;
+  if (!byte_reader->ReadUInt32(&seconds))
+    return false;
+  if (!byte_reader->ReadUInt32(&fraction))
+    return false;
+  ntp_ = NtpTime(seconds, fraction);
+  return true;
+}
+
+bool Rrtr::Serialize(ByteWriter* byte_writer) const {
+  const uint8_t kReserved = 0;
+  if (!byte_writer) // TODO: assert.
+    return false;
+  if (!ntp_)
+    return false;
+  if (!byte_writer->WriteUInt8(kBlockType))
+    return false;
+  if (!byte_writer->WriteUInt8(kReserved))
+    return false;
+  if (!byte_writer->WriteUInt16(kBlockLength))
+    return false;
+  if (!byte_writer->WriteUInt32(ntp_->Seconds()))
+    return false;
+  if (!byte_writer->WriteUInt32(ntp_->Fractions()))
+    return false;
+  return true;
+}
+
+bool Dlrr::Parse(ByteReader* byte_reader) {
+  uint8_t block_type = 0;
+  uint16_t block_length = 0;
+  if (!byte_reader) // TODO: assert.
+    return false;
+  if (!byte_reader->ReadUInt8(&block_type))
+    return false;
+  if (block_type != kBlockType)
+    return false;
+  if (!byte_reader->Consume(1)) // Reserved.
+    return false;
+  if (!byte_reader->ReadUInt16(&block_length))
+    return false;
+  if (block_length % 3 != 0) {
+    spdlog::warn("Invalid size for dlrr block.");
+    return false;
+  }
+  size_t blocks_count = block_length / 3;
+  sub_blocks_.clear();
+  for (int i = 0; i < blocks_count; ++i) {
+    ReceiveTimeInfo info;
+    if (!byte_reader->ReadUInt32(&info.ssrc))
+      return false;
+    if (!byte_reader->ReadUInt32(&info.last_rr))
+      return false;
+    if (!byte_reader->ReadUInt32(&info.delay_since_last_rr))
+      return false;
+    sub_blocks_.push_back(info);
+  }
+  return true;
+}
+
+size_t Dlrr::BlockLength() const {
+  if (sub_blocks_.empty())
+    return 0;
+  return kBlockHeaderLength + kSubBlockLength * sub_blocks_.size();
+}
+
+bool Dlrr::Serialize(ByteWriter* byte_writer) const {
+  if (sub_blocks_.empty())  // No subblocks, no need to write header either.
+    return false;
+  if (!byte_writer) // TODO: assert.
+    return false;
+  const uint8_t kReserved = 0;
+  if (!byte_writer->WriteUInt8(kBlockType))
+    return false;
+  if (!byte_writer->WriteUInt8(kReserved))
+    return false;
+  if (!byte_writer->WriteUInt16(3 * sub_blocks_.size()))
+    return false;
+  for (const auto& sub_block : sub_blocks_) {
+    if (!byte_writer->WriteUInt32(sub_block.ssrc))
+      return false;
+    if (!byte_writer->WriteUInt32(sub_block.last_rr))
+      return false;
+    if (!byte_writer->WriteUInt32(sub_block.delay_since_last_rr))
+      return false;
+  }
+  return true;
+}
+
 bool RtcpCompound::Parse(uint8_t* data, int size) {
   ByteReader byte_reader(data, size);
 

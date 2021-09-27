@@ -3,8 +3,10 @@
 #include <cstddef>
 #include <set>
 #include <vector>
+#include <optional>
 
 #include "byte_buffer.h"
+#include "utils.h"
 
 constexpr int32_t kDefaultVideoReportInterval = 1000;  // millis.
 constexpr int32_t kDefaultAudioReportInterval = 5000;  // millis.
@@ -313,6 +315,130 @@ class NackPacket : public RtcpCommonFeedback {
   };
   static constexpr size_t kNackItemLength = 4;
   std::vector<uint16_t> packet_lost_sequence_numbers_;
+};
+
+// Receiver Reference Time Report Block (RFC 3611).
+//
+//   0                   1                   2                   3
+//   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |     BT=4      |   reserved    |       block length = 2        |
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |              NTP timestamp, most significant word             |
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |             NTP timestamp, least significant word             |
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+class Rrtr {
+ public:
+  static const uint8_t kBlockType = 4;
+  static const uint16_t kBlockLength = 2;
+  static const size_t kLength = 4 * (kBlockLength + 1);  // 12
+
+  Rrtr() {}
+  bool Parse(ByteReader* byte_reader);
+
+  bool Serialize(ByteWriter* byte_writer) const;
+
+  void SetNtp(NtpTime ntp) { ntp_ = ntp; }
+
+  std::optional<NtpTime> Ntp() const { return ntp_; }
+
+ private:
+  std::optional<NtpTime> ntp_;
+};
+
+// DLRR Report Block (RFC 3611).
+//
+//   0                   1                   2                   3
+//   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |     BT=5      |   reserved    |         block length          |
+//  +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+//  |                 SSRC_1 (SSRC of first receiver)               | sub-
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ block
+//  |                         last RR (LRR)                         |   1
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |                   delay since last RR (DLRR)                  |
+//  +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+//  |                 SSRC_2 (SSRC of second receiver)              | sub-
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ block
+//  :                               ...                             :   2
+
+struct ReceiveTimeInfo {
+  // RFC 3611 4.5
+  ReceiveTimeInfo() : ssrc(0), last_rr(0), delay_since_last_rr(0) {}
+  ReceiveTimeInfo(uint32_t ssrc, uint32_t last_rr, uint32_t delay)
+      : ssrc(ssrc), last_rr(last_rr), delay_since_last_rr(delay) {}
+  uint32_t ssrc;
+  uint32_t last_rr;
+  uint32_t delay_since_last_rr;
+};
+
+// DLRR Report Block: Delay since the Last Receiver Report (RFC 3611).
+class Dlrr {
+ public:
+  static const uint8_t kBlockType = 5;
+
+  // Dlrr without items treated same as no dlrr block.
+  explicit operator bool() const { return !sub_blocks_.empty(); }
+
+  bool Parse(ByteReader* byte_reader);
+
+  size_t BlockLength() const;
+  bool Serialize(ByteWriter* byte_writer) const;
+
+  void ClearItems() { sub_blocks_.clear(); }
+  void AddDlrrItem(const ReceiveTimeInfo& time_info) {
+    sub_blocks_.push_back(time_info);
+  }
+
+  const std::vector<ReceiveTimeInfo>& sub_blocks() const { return sub_blocks_; }
+
+ private:
+  static const size_t kBlockHeaderLength = 4;
+  static const size_t kSubBlockLength = 12;
+
+  std::vector<ReceiveTimeInfo> sub_blocks_;
+};
+
+// From RFC 3611: RTP Control Protocol Extended Reports (RTCP XR).
+//
+// Format for XR packets:
+//
+//   0                   1                   2                   3
+//   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |V=2|P|reserved |   PT=XR=207   |             length            |
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |                              SSRC                             |
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  :                         report blocks                         :
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// Extended report block:
+//   0                   1                   2                   3
+//   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |  Block Type   |   reserved    |         block length          |
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  :             type-specific block contents                      :
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+class XrPacket : public RtcpPacket {
+ public:
+  bool Parse(ByteReader* byte_reader) override {
+    if (!ParseCommonHeader(byte_reader))
+      return false;
+
+    int payload_len = header_.length * 4;
+    if (!byte_reader->Consume(payload_len))
+      return false;
+
+    return true;
+  }
+
+  bool Serialize(ByteWriter* byte_writer) override {
+    return true;
+  };
 };
 
 class RtcpCompound {
