@@ -318,42 +318,30 @@ class NackPacket : public RtcpCommonFeedback {
 };
 
 // Receiver Reference Time Report Block (RFC 3611).
-//
-//   0                   1                   2                   3
-//   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//  |     BT=4      |   reserved    |       block length = 2        |
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //  |              NTP timestamp, most significant word             |
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //  |             NTP timestamp, least significant word             |
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-class Rrtr {
+class RrtrBlockContext {
  public:
-  static const uint8_t kBlockType = 4;
-  static const uint16_t kBlockLength = 2;
-  static const size_t kLength = 4 * (kBlockLength + 1);  // 12
-
-  Rrtr() {}
+  RrtrBlockContext() {}
   bool Parse(ByteReader* byte_reader);
 
   bool Serialize(ByteWriter* byte_writer) const;
 
   void SetNtp(NtpTime ntp) { ntp_ = ntp; }
 
+  uint16_t SizeIn32bits() const;
+
   std::optional<NtpTime> Ntp() const { return ntp_; }
 
  private:
+  static const uint16_t kBlockLength = 8;
   std::optional<NtpTime> ntp_;
 };
 
 // DLRR Report Block (RFC 3611).
-//
-//   0                   1                   2                   3
-//   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//  |     BT=5      |   reserved    |         block length          |
-//  +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 //  |                 SSRC_1 (SSRC of first receiver)               | sub-
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ block
 //  |                         last RR (LRR)                         |   1
@@ -375,29 +363,22 @@ struct ReceiveTimeInfo {
 };
 
 // DLRR Report Block: Delay since the Last Receiver Report (RFC 3611).
-class Dlrr {
+class DlrrBlockContext {
  public:
   static const uint8_t kBlockType = 5;
 
-  // Dlrr without items treated same as no dlrr block.
-  explicit operator bool() const { return !sub_blocks_.empty(); }
-
-  bool Parse(ByteReader* byte_reader);
-
-  size_t BlockLength() const;
+  bool Parse(ByteReader* byte_reader, uint16_t block_length);
   bool Serialize(ByteWriter* byte_writer) const;
+  uint16_t SizeIn32bits() const;
 
-  void ClearItems() { sub_blocks_.clear(); }
   void AddDlrrItem(const ReceiveTimeInfo& time_info) {
     sub_blocks_.push_back(time_info);
   }
 
-  const std::vector<ReceiveTimeInfo>& sub_blocks() const { return sub_blocks_; }
+  const std::vector<ReceiveTimeInfo>& SubBlocks() const { return sub_blocks_; }
 
  private:
-  static const size_t kBlockHeaderLength = 4;
   static const size_t kSubBlockLength = 12;
-
   std::vector<ReceiveTimeInfo> sub_blocks_;
 };
 
@@ -425,20 +406,19 @@ class Dlrr {
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class XrPacket : public RtcpPacket {
  public:
-  bool Parse(ByteReader* byte_reader) override {
-    if (!ParseCommonHeader(byte_reader))
-      return false;
+  static constexpr size_t kMaxNumberOfDlrrItems = 50;
+  static constexpr uint8_t kBlockTypeRrtr = 4;
+  static constexpr uint8_t kBlockTypeDlrr = 5;
+  static constexpr uint16_t kBlockHeaderIn32Bits = 1;
 
-    int payload_len = header_.length * 4;
-    if (!byte_reader->Consume(payload_len))
-      return false;
-
-    return true;
-  }
-
-  bool Serialize(ByteWriter* byte_writer) override {
-    return true;
-  };
+  bool Parse(ByteReader* byte_reader) override;
+  bool Serialize(ByteWriter* byte_writer) override;
+  void SetRrtr(const RrtrBlockContext& rrtr);
+  void SetDlrr(const DlrrBlockContext& dlrr);
+ private:
+  static constexpr size_t kXrBaseLength = 4;
+  std::optional<RrtrBlockContext> rrtr_block_;
+  std::optional<DlrrBlockContext> dlrr_block_;
 };
 
 class RtcpCompound {

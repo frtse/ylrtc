@@ -438,23 +438,10 @@ bool NackPacket::Parse(ByteReader* byte_reader) {
   return true;
 }
 
-bool Rrtr::Parse(ByteReader* byte_reader) {
-  uint8_t block_type = 0;
-  uint16_t block_length = 0;
+bool RrtrBlockContext::Parse(ByteReader* byte_reader) {
   uint32_t seconds = 0;
   uint32_t fraction = 0;
-
-  if (!byte_reader) // TODO: assert.
-    return false;
-  if (byte_reader->ReadUInt8(&block_type))
-    return false;
-  if (block_type != kBlockType)
-    return false;
-  if (!byte_reader->Consume(1)) // Reserved.
-    return false;
-  if (!byte_reader->ReadUInt16(&block_length))
-    return false;
-  if (block_length != kBlockLength)
+  if (!byte_reader)
     return false;
   if (!byte_reader->ReadUInt32(&seconds))
     return false;
@@ -464,17 +451,10 @@ bool Rrtr::Parse(ByteReader* byte_reader) {
   return true;
 }
 
-bool Rrtr::Serialize(ByteWriter* byte_writer) const {
-  const uint8_t kReserved = 0;
-  if (!byte_writer) // TODO: assert.
+bool RrtrBlockContext::Serialize(ByteWriter* byte_writer) const {
+  if (!byte_writer)
     return false;
   if (!ntp_)
-    return false;
-  if (!byte_writer->WriteUInt8(kBlockType))
-    return false;
-  if (!byte_writer->WriteUInt8(kReserved))
-    return false;
-  if (!byte_writer->WriteUInt16(kBlockLength))
     return false;
   if (!byte_writer->WriteUInt32(ntp_->Seconds()))
     return false;
@@ -483,18 +463,12 @@ bool Rrtr::Serialize(ByteWriter* byte_writer) const {
   return true;
 }
 
-bool Dlrr::Parse(ByteReader* byte_reader) {
-  uint8_t block_type = 0;
-  uint16_t block_length = 0;
-  if (!byte_reader) // TODO: assert.
-    return false;
-  if (!byte_reader->ReadUInt8(&block_type))
-    return false;
-  if (block_type != kBlockType)
-    return false;
-  if (!byte_reader->Consume(1)) // Reserved.
-    return false;
-  if (!byte_reader->ReadUInt16(&block_length))
+uint16_t RrtrBlockContext::SizeIn32bits() const {
+  return kBlockLength / 4;
+}
+
+bool DlrrBlockContext::Parse(ByteReader* byte_reader, uint16_t block_length) {
+  if (!byte_reader)
     return false;
   if (block_length % 3 != 0) {
     spdlog::warn("Invalid size for dlrr block.");
@@ -515,23 +489,8 @@ bool Dlrr::Parse(ByteReader* byte_reader) {
   return true;
 }
 
-size_t Dlrr::BlockLength() const {
-  if (sub_blocks_.empty())
-    return 0;
-  return kBlockHeaderLength + kSubBlockLength * sub_blocks_.size();
-}
-
-bool Dlrr::Serialize(ByteWriter* byte_writer) const {
-  if (sub_blocks_.empty())  // No subblocks, no need to write header either.
-    return false;
-  if (!byte_writer) // TODO: assert.
-    return false;
-  const uint8_t kReserved = 0;
-  if (!byte_writer->WriteUInt8(kBlockType))
-    return false;
-  if (!byte_writer->WriteUInt8(kReserved))
-    return false;
-  if (!byte_writer->WriteUInt16(3 * sub_blocks_.size()))
+bool DlrrBlockContext::Serialize(ByteWriter* byte_writer) const {
+  if (!byte_writer)
     return false;
   for (const auto& sub_block : sub_blocks_) {
     if (!byte_writer->WriteUInt32(sub_block.ssrc))
@@ -542,6 +501,83 @@ bool Dlrr::Serialize(ByteWriter* byte_writer) const {
       return false;
   }
   return true;
+}
+
+uint16_t DlrrBlockContext::SizeIn32bits() const {
+  return kSubBlockLength * sub_blocks_.size() / 4;
+}
+
+bool XrPacket::Parse(ByteReader* byte_reader) {
+  if (!ParseCommonHeader(byte_reader))
+    return false;
+  if (!byte_reader->ReadUInt32(&sender_ssrc_))
+    return false;
+  byte_reader->CurrentData();
+  int payload_len = header_.length * 4;
+  payload_len -= 4;// sender ssrc.
+  while (payload_len >= kXrBaseLength) {
+    uint8_t block_type = 0;
+    uint16_t block_length = 0;
+    if (!byte_reader->ReadUInt8(&block_type))
+      return false;
+    if (!byte_reader->Consume(1)) // reserved.
+      return false;
+    if (!byte_reader->ReadUInt16(&block_length))
+      return false;
+    switch (block_type) {
+      case kBlockTypeRrtr: {
+        RrtrBlockContext rrtr;
+        if (!rrtr.Parse(byte_reader))
+          return false;
+        rrtr_block_ = rrtr;
+        break;
+      }
+    case kBlockTypeDlrr: {
+        DlrrBlockContext dlrr;
+        if (!dlrr.Parse(byte_reader, block_length))
+          return false;
+        dlrr_block_ = dlrr;
+        break;
+      }
+    default: {
+        spdlog::warn("Unknown blocl type.");
+        if (byte_reader->Consume(block_length * 4))
+          return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool XrPacket::Serialize(ByteWriter* byte_writer) {
+  if (rrtr_block_)
+    header_.length += (rrtr_block_->SizeIn32bits() + kBlockHeaderIn32Bits);
+  if (dlrr_block_)
+    header_.length += (dlrr_block_->SizeIn32bits() + kBlockHeaderIn32Bits);
+  header_.packet_type = kRtcpTypeXr;
+  header_.version = 2;
+  header_.padding = 0;
+  if (!SerializeCommonHeader(byte_writer))
+    return false;
+  if (!byte_writer->WriteUInt32(sender_ssrc_))
+    return false;
+  if (rrtr_block_) {
+    if (!rrtr_block_->Serialize(byte_writer))
+      return false;
+  }
+  if (dlrr_block_) {
+    if (!dlrr_block_->Serialize(byte_writer))
+      return false;
+  }
+  return true;
+};
+
+void XrPacket::SetRrtr(const RrtrBlockContext& rrtr) {
+  rrtr_block_.emplace(rrtr);
+}
+
+void XrPacket::SetDlrr(const DlrrBlockContext& dlrr) {
+  dlrr_block_.emplace(dlrr);
 }
 
 bool RtcpCompound::Parse(uint8_t* data, int size) {
