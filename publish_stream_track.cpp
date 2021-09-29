@@ -97,6 +97,16 @@ void PublishStreamTrack::OnTimerTimeout() {
       if (observer_)
         observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
     }
+    XrPacket xr;
+    RrtrBlockContext rrtr_contex;
+    rrtr_contex.SetNtp(NtpTime::CreateFromMillis(TimeMillis()));
+    xr.SetRrtr(rrtr_contex);
+    xr.SetSenderSsrc(configuration_.ssrc);
+    ByteWriter byte_write_xr(buffer, 1500);
+    if (xr.Serialize(&byte_write_xr)) {
+      if (observer_)
+        observer_->OnPublishStreamTrackSendRtcpPacket(byte_write_xr.Data(), byte_write_xr.Used());
+    }
   }
   // generate next time to send an RTCP report
   int64_t min_interval = report_interval_;
@@ -139,4 +149,18 @@ void PublishStreamTrack::SendRequestkeyFrame() {
   }
   if (observer_)
     observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
+}
+
+void PublishStreamTrack::ReceiveDlrrSubBlock(const ReceiveTimeInfo& sub_block) {
+  if (sub_block.ssrc == configuration_.ssrc) {
+    uint64_t now = TimeMillis();
+    NtpTime ntp = NtpTime::CreateFromMillis(now);
+    uint32_t compact_ntp = ntp.ToCompactNtp();
+    if (sub_block.last_rr && compact_ntp > sub_block.last_rr + sub_block.delay_since_last_rr) {
+      uint32_t rtp_compact_ntp = compact_ntp - sub_block.delay_since_last_rr - sub_block.last_rr;
+      rtt_millis_ = NtpTime::CreateFromCompactNtp(rtp_compact_ntp).ToMillis();
+      if (configuration_.nack_enabled)
+        nack_request_->UpdateRtt(rtt_millis_);
+    }
+  }
 }

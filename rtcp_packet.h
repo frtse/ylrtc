@@ -408,16 +408,18 @@ class XrPacket : public RtcpPacket {
   static constexpr size_t kMaxNumberOfDlrrItems = 50;
   static constexpr uint8_t kBlockTypeRrtr = 4;
   static constexpr uint8_t kBlockTypeDlrr = 5;
-  static constexpr uint16_t kBlockHeaderIn32Bits = 2;
+  static constexpr uint16_t kBlockHeaderIn32Bits = 1;
 
   bool Parse(ByteReader* byte_reader) override;
   bool Serialize(ByteWriter* byte_writer) override;
   void SetRrtr(const RrtrBlockContext& rrtr);
   void SetDlrr(const DlrrBlockContext& dlrr);
+  std::optional<RrtrBlockContext> Rrtr() const;
+  std::optional<DlrrBlockContext> Dlrr() const;
  private:
   static constexpr size_t kXrBaseLength = 4;
-  std::optional<RrtrBlockContext> rrtr_block_;
-  std::optional<DlrrBlockContext> dlrr_block_;
+  std::optional<RrtrBlockContext> rrtr_block_context_;
+  std::optional<DlrrBlockContext> dlrr_block_context_;
 };
 
 class RtcpCompound {

@@ -117,7 +117,6 @@ void PublishStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
   }
   auto rtcp_packets = rtcp_compound.GetRtcpPackets();
   for (auto p : rtcp_packets) {
-    spdlog::debug("rtcp -----------------{}", p->Type());
     if (p->Type() == kRtcpTypeRtpfb) {
       if (p->Format() == 1) {
         // nack.
@@ -129,7 +128,19 @@ void PublishStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
     } else if (p->Type() == kRtcpTypeRr) {
       // rr
     } else if (p->Type() == kRtcpTypeXr) {
-      spdlog::debug("Xr-------------------------");
+      XrPacket* xr = dynamic_cast<XrPacket*>(p);
+      auto dlrr = xr->Dlrr();
+      if (!dlrr)
+        continue;
+      const auto& sub_blocks = dlrr->SubBlocks();
+      for (const auto& sub_block : sub_blocks) {
+        auto stream_iter = ssrc_track_map_.find(sub_block.ssrc);
+        if (stream_iter != ssrc_track_map_.end())
+          stream_iter->second->ReceiveDlrrSubBlock(sub_block);
+        else
+          spdlog::error("Unknown XR packet.");
+      }
+
     }
   }
 }

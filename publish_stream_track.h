@@ -47,6 +47,7 @@ class PublishStreamTrack : public Timer::Listener
   void Init();
   Configuration& Config();
   void SendRequestkeyFrame();
+  void ReceiveDlrrSubBlock(const ReceiveTimeInfo& sub_block);
 
  private:
   void OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) override;
@@ -61,5 +62,6 @@ class PublishStreamTrack : public Timer::Listener
   ReceiveSideTWCC& receive_side_twcc_;
   uint8_t fir_seq_num_{0};
   Random random_;
+  int64_t rtt_millis_{100};
   Observer* observer_;
 };
