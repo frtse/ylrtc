@@ -50,26 +50,6 @@ uint32_t NtpTime::ToCompactNtp() {
   return (seconds_ << 16) | (fractions_ >> 16);
 }
 
-size_t BitRate::GetBitRate(int64_t time) {
-  Update(0, time);
-  size_t sum = std::accumulate(data_buffer_.begin(), data_buffer_.end(), 0);
-  return sum * 8;
-}
-
-void BitRate::Update(size_t data_size, int64_t time) {
-  if (last_time_ == -1)
-    last_time_ = time;
-  if (last_time_ > time)
-    return;
-  for (int i = 0; i < time - last_time_; ++i) {
-    data_buffer_.push_back(0);
-  }
-
-  last_time_ = time;
-
-  data_buffer_.back() += data_size;
-}
-
 std::vector<std::string> StringSplit(const std::string& s, const char* delim) {
   std::vector<std::string> ret;
   int last = 0;
