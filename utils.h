@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/stacktrace.hpp>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -9,6 +10,7 @@
 #include <numeric>
 #include <string>
 #include <vector>
+#include <iostream>
 
 int64_t TimeMillis();
 
@@ -34,3 +36,21 @@ class NtpTime {
 
 std::vector<std::string> StringSplit(const std::string& s, const char* delim);
 std::string StringToLower(std::string str);
+
+#define RASSERT(expression)                                             \
+  do {                                                                  \
+    if (!(expression)) {                                                \
+      std::cerr << "Assertion failed: " << __FILE__ << ":" << __LINE__ \
+                 << "\n\t"                                              \
+                 << "Expression: " << #expression << "\n\t"             \
+                 << "Stack trace:\n"                                    \
+                 << boost::stacktrace::stacktrace() << std::endl;       \
+      abort();                                                          \
+    }                                                                   \
+  } while (false)
+
+#ifdef NDEBUG
+#define ASSERT(expression)
+#else
+#define ASSERT(expression) RASSERT(expression)
+#endif
