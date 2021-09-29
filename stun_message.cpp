@@ -1,10 +1,9 @@
 #include "stun_message.h"
 
-#include <cassert>
-
 #include "byte_buffer.h"
 #include "crc32.h"
 #include "hmac_sha1.h"
+#include "utils.h"
 #include "spdlog/spdlog.h"
 
 StunMessage::StunMessage(std::string local_ufrag, std::string local_password, std::string remote_ufrag)
@@ -145,7 +144,7 @@ bool StunMessage::CreateResponse() {
     } else if (mapped_endpoint_->protocol() == udp::v6()) {
       // TODO: Support ipv6.
     } else {
-      assert(false && "Protocol not supported");
+      ASSERT(false && "Protocol not supported");
     }
   }
 

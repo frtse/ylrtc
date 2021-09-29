@@ -2,9 +2,9 @@
 
 #include <regex>
 #include <string>
-#include <cassert>
 
 #include "spdlog/spdlog.h"
+#include "utils.h"
 #include "rtp_utils.h"
 #include "rtp_header_extension.h"
 
@@ -36,7 +36,7 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
     for (int i = 0; i < media.size(); ++i) {
       auto& media_section = media[i];
       media_section.erase("ext");
-      assert(media_section.find("type") != media_section.end());
+      ASSERT(media_section.find("type") != media_section.end());
       media_section["ext"] = ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(media_section.at("type"));
       if (media_section.find("direction") == media_section.end() || media_section.at("direction") != "sendonly")
         return false;

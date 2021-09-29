@@ -59,7 +59,7 @@ void PacketArrivalTimeMap::AddPacket(int64_t sequence_number,
                           arrival_times.begin() + packets_to_remove);
       begin_sequence_number_ += packets_to_remove;
       pos -= packets_to_remove;
-      assert(pos >= 0);
+      ASSERT(pos >= 0);
     }
   }
 
@@ -69,9 +69,9 @@ void PacketArrivalTimeMap::AddPacket(int64_t sequence_number,
   if (missing_gap_packets > 0) {
     arrival_times.insert(arrival_times.end(), missing_gap_packets, 0);
   }
-  assert(arrival_times.size() == pos);
+  ASSERT(arrival_times.size() == pos);
   arrival_times.push_back(arrival_time_ms);
-  assert(arrival_times.size() <= kMaxNumberOfPackets);
+  ASSERT(arrival_times.size() <= kMaxNumberOfPackets);
 }
 
 void PacketArrivalTimeMap::RemoveOldPackets(int64_t sequence_number,

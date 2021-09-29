@@ -1,8 +1,5 @@
 #include "rtp_packet.h"
 
-#include <cassert>
-#include <iostream>
-
 #include "byte_buffer.h"
 #include "rtp_utils.h"
 #include "spdlog/spdlog.h"

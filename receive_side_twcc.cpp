@@ -4,7 +4,6 @@
 #include <limits>
 #include <memory>
 #include <utility>
-#include <cassert>
 
 #include "spdlog/spdlog.h"
 #include "utils.h"
@@ -146,7 +145,7 @@ ReceiveSideTWCC::MaybeBuildFeedbackPacket(
     int64_t begin_sequence_number_inclusive,
     int64_t end_sequence_number_exclusive,
     bool is_periodic_update) {
-  assert(begin_sequence_number_inclusive < end_sequence_number_exclusive);
+  ASSERT(begin_sequence_number_inclusive < end_sequence_number_exclusive);
 
   int64_t start_seq =
       packet_arrival_times_.clamp(begin_sequence_number_inclusive);

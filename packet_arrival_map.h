@@ -3,7 +3,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
-#include <cassert>
+
+#include "utils.h"
 
 // PacketArrivalTimeMap is an optimized map of packet sequence number to arrival
 // time, limited in size to never exceed `kMaxNumberOfPackets`. It will grow as
@@ -37,7 +38,7 @@ class PacketArrivalTimeMap {
   // between [begin_sequence_number, end_sequence_number).
   int64_t get(int64_t sequence_number) {
     int64_t pos = sequence_number - begin_sequence_number_;
-    assert(pos >= 0 && pos < static_cast<int64_t>(arrival_times.size()));
+    ASSERT(pos >= 0 && pos < static_cast<int64_t>(arrival_times.size()));
     return arrival_times[pos];
   }
 

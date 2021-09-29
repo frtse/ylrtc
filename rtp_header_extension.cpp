@@ -1,6 +1,6 @@
 #include "rtp_header_extension.h"
 
-#include <cassert>
+#include "utils.h"
 #include "byte_buffer.h"
 
 std::unordered_map<std::string, RTPHeaderExtensionType> UriRTPHeaderExtensionMap = {
@@ -50,12 +50,12 @@ std::unordered_map<RTPHeaderExtensionType, uint32_t> ServerSupportRtpExtensionId
 
 uint32_t ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType type) {
   if (extension_id_map_.find(type) == extension_id_map_.end())
-    assert(false);
+    ASSERT(false);
   return extension_id_map_.at(type);
 }
 
 nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std::string& media_type) {
-  assert(media_type == "video" || media_type == "audio");
+  ASSERT(media_type == "video" || media_type == "audio");
   nlohmann::json extensions = nlohmann::json::array();
   extensions[0]["value"] = 1;
   extensions[0]["direction"] = "";

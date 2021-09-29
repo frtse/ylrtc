@@ -1,6 +1,5 @@
 #include "publish_stream.h"
 
-#include <cassert>
 #include <algorithm>
 
 #include "rtcp_packet.h"
