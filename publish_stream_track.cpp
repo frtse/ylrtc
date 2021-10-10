@@ -36,7 +36,7 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
   }
 
   receive_statistician_.ReceivePacket(rtp_packet); // TODO: Separate RTX.
-  if (!rtp_packet->ParsePayload(configuration_.codec))
+  if (!configuration_.audio && !rtp_packet->ParsePayload(configuration_.codec))
     return;
   if (rtp_packet->IsKeyFrame())
     spdlog::debug("Recv key frame.");
