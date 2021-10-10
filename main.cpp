@@ -18,10 +18,11 @@ int main(int argc, char* argv[]) {
 #ifdef NDEBUG
   spdlog::set_level(spdlog::level::info);
 #else
-  rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
-  setrlimit(RLIMIT_CORE, &l);
   spdlog::set_level(spdlog::level::debug);
 #endif
+
+  rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
+  setrlimit(RLIMIT_CORE, &l);
 
   if (!ServerConfig::GetInstance().Load("../config.toml")) {
     spdlog::error("Failed to load config file.");
