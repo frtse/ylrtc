@@ -14,6 +14,10 @@
 #include "threads.h"
 
 int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    spdlog::error("Parameter error. Usage: WebrtcSFU [Configuration file path].");
+    return EXIT_FAILURE;
+  }
   RoomManager::GetInstance().CreateRoom("AABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEABCD");
 #ifdef NDEBUG
   spdlog::set_level(spdlog::level::info);
@@ -24,7 +28,7 @@ int main(int argc, char* argv[]) {
   rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
   setrlimit(RLIMIT_CORE, &l);
 
-  if (!ServerConfig::GetInstance().Load("../config.toml")) {
+  if (!ServerConfig::GetInstance().Load(argv[1])) {
     spdlog::error("Failed to load config file.");
     return EXIT_FAILURE;
   }
