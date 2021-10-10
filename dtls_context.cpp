@@ -200,11 +200,7 @@ bool DtlsContext::Initialize() {
     hex_fingerprint[size * 3 - 1] = 0;
 
     DtlsContext::localFingerPrints_[hash] = std::string(hex_fingerprint);
-
-    spdlog::debug("LocalFingerprint {} {}.", hash, DtlsContext::localFingerPrints_[hash].c_str());
   }
-
-  spdlog::debug("<DTLSConnection::Initialize({}).", availableHashes_.size());
   return true;
 }
 
