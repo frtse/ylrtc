@@ -52,7 +52,7 @@ int NackRequester::OnReceivedPacket(uint16_t seq_num, bool is_keyframe, bool is_
   // that packet has never been Nacked.
   if (seq_num == newest_seq_num_)
     return 0;
-  if (AheadOf(newest_seq_num_, seq_num)) {
+  if (SeqNumGT(newest_seq_num_, seq_num)) {
     // An out of order packet has been received.
     auto nack_list_it = nack_list_.find(seq_num);
     int nacks_sent_for_packet = 0;
@@ -134,7 +134,7 @@ void NackRequester::AddPacketsToNack(uint16_t seq_num_start, uint16_t seq_num_en
   // If the nack list is too large, remove packets from the nack list until
   // the latest first packet of a keyframe. If the list is still too large,
   // clear it and request a keyframe.
-  uint16_t num_new_nacks = ForwardDiff(seq_num_start, seq_num_end);
+  uint16_t num_new_nacks = static_cast<uint16_t>(seq_num_end - seq_num_start);
   if (nack_list_.size() + num_new_nacks > kMaxNackPackets) {
     while (RemovePacketsUntilKeyFrame() && nack_list_.size() + num_new_nacks > kMaxNackPackets) {
     }
@@ -174,7 +174,7 @@ std::vector<uint16_t> NackRequester::GetNackBatch(NackFilterOptions options) {
 
     bool delay_timed_out = now - it->second.created_at_time >= send_nack_delay_ms_;
     bool nack_on_rtt_passed = now - it->second.sent_at_time >= resend_delay;
-    bool nack_on_seq_num_passed = it->second.sent_at_time == -1 && AheadOrAt(newest_seq_num_, it->second.send_at_seq_num);
+    bool nack_on_seq_num_passed = it->second.sent_at_time == -1 && SeqNumGE(newest_seq_num_, it->second.send_at_seq_num);
     if (delay_timed_out && ((consider_seq_num && nack_on_seq_num_passed) || (consider_timestamp && nack_on_rtt_passed))) {
       nack_batch.emplace_back(it->second.seq_num);
       ++it->second.retries;

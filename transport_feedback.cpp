@@ -319,7 +319,7 @@ bool TransportFeedback::AddReceivedPacket(uint16_t sequence_number,
   uint16_t next_seq_no = base_seq_no_ + num_seq_no_;
   if (sequence_number != next_seq_no) {
     uint16_t last_seq_no = next_seq_no - 1;
-    if (!AheadOf(sequence_number, last_seq_no))
+    if (!SeqNumGT(sequence_number, last_seq_no))
       return false;
     for (; next_seq_no != sequence_number; ++next_seq_no) {
       if (!AddDeltaSize(0))
