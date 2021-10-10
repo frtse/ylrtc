@@ -15,10 +15,11 @@
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
-    spdlog::error("Parameter error. Usage: WebrtcSFU [Configuration file path].");
+    std::cout << "Parameter error. Usage: WebrtcSFU [Configuration file path]." << std::endl;
     return EXIT_FAILURE;
   }
-  RoomManager::GetInstance().CreateRoom("AABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEABCD");
+
+  // TODO: More detailed log configuration.
 #ifdef NDEBUG
   spdlog::set_level(spdlog::level::info);
 #else
@@ -28,13 +29,17 @@ int main(int argc, char* argv[]) {
   rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
   setrlimit(RLIMIT_CORE, &l);
 
+  // Test room with id 9527.
+  // TODO: If not used, remove this test code.
+  RoomManager::GetInstance().CreateRoom("9527");
+
   if (!ServerConfig::GetInstance().Load(argv[1])) {
-    spdlog::error("Failed to load config file.");
+    spdlog::error("Failed to load configuration file.");
     return EXIT_FAILURE;
   }
 
   if (!DtlsContext::GetInstance().Initialize()) {
-    spdlog::error("Failed to initialize dtls.");
+    spdlog::error("Failed to initialize DTLS.");
     return EXIT_FAILURE;
   }
 
@@ -43,6 +48,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
+  // TODO: If there is no certificate, use a self-signed certificate?
   if (!SignalingServer::GetInstance().LoadCertKeyFile(ServerConfig::GetInstance().GetCertFile(), ServerConfig::GetInstance().GetKeyFile())) {
     spdlog::error("Load file failed.");
     return EXIT_FAILURE;
@@ -59,7 +65,9 @@ int main(int argc, char* argv[]) {
       MainThread::GetInstance().MessageLoop().stop();
     }
   });
+
   MainThread::GetInstance().MessageLoop().run();
+  // Clean up resources.
   RoomManager::GetInstance().Clear();
   return EXIT_SUCCESS;
 }

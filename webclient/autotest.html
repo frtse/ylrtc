@@ -55,7 +55,7 @@
       if (times === 20)
         location.reload();
     });
-    client.join("AABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEABCD", randomString(32)).then(async(roomInfo) => {
+    client.join("9527", randomString(32)).then(async(roomInfo) => {
         roomInfo.streams.forEach(function (e) {
           subscribe(e);
         });

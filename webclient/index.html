@@ -91,7 +91,7 @@
   var client = new Client(inputIp.value, inputPort.value);
 
   joinRoom.addEventListener('click', () => {
-    client.join("AABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEAABBCCDDEEABCD", randomString(32)).then((roomInfo) => {
+    client.join("9527", randomString(32)).then((roomInfo) => {
       console.log("Join room success.");
       console.log("room info = ", roomInfo);
       startPublish.disabled = false;
