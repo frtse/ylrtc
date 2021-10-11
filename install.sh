@@ -136,6 +136,22 @@ install_toml11() {
   fi
 }
 
+install_gperftools() {
+  if [ -d $BUILD_LIB_DIR ]; then
+    cd $BUILD_LIB_DIR
+    wget -O gperftools-2.9.1.zip https://github.com/gperftools/gperftools/releases/download/gperftools-2.9.1/gperftools-2.9.1.zip
+    unzip gperftools-2.9.1.zip
+    cd gperftools-2.9.1
+    ./configure --prefix=$PREFIX_DIR
+    make
+    make install
+    cd $THIRDPARTY_ROOT_DIR
+  else
+    mkdir -p $BUILD_LIB_DIR
+    install_gperftools
+  fi
+}
+
 install_spdlog
 install_json_hpp
 install_openssl
@@ -143,3 +159,4 @@ install_libsrtp2
 install_libsdptransform
 install_boost
 install_toml11
+install_gperftools

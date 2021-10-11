@@ -18,7 +18,7 @@ link_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty_dir/lib)
 
 file(GLOB SRC_LIST ./*.cpp)
 
-set(LINK_LIBRARYS sdptransform srtp2 ssl crypto spdlog boost_thread dl bz2 lzma z pthread)
+set(LINK_LIBRARYS sdptransform srtp2 ssl crypto spdlog boost_thread dl bz2 lzma z pthread tcmalloc)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST})
 
