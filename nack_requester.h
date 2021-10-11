@@ -81,9 +81,9 @@ class NackRequester : public Timer::Listener, public std::enable_shared_from_thi
   // with probability `probabilty` or higher.
   int WaitNumberOfPackets(float probability) const;
 
-  std::map<uint16_t, NackInfo, IsSeqNumLowerThan<uint16_t>> nack_list_;
-  std::set<uint16_t, IsSeqNumLowerThan<uint16_t>> keyframe_list_;
-  std::set<uint16_t, IsSeqNumLowerThan<uint16_t>> recovered_list_;
+  std::map<uint16_t, NackInfo, IsSeqNumLessThan<uint16_t>> nack_list_;
+  std::set<uint16_t, IsSeqNumLessThan<uint16_t>> keyframe_list_;
+  std::set<uint16_t, IsSeqNumLessThan<uint16_t>> recovered_list_;
   boost::asio::io_context& io_context_;
   std::shared_ptr<Timer> timer_;
   Observer* observer_;

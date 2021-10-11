@@ -25,7 +25,7 @@ inline bool SeqNumGT(T a, T b) {
 }
 
 template <typename T>
-struct IsSeqNumLowerThan {
+struct IsSeqNumLessThan {
   bool operator()(T a, T b) const {
     return SeqNumGT<T>(b, a);
   }
