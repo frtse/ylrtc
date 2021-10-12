@@ -57,35 +57,46 @@ uint32_t ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType type
 nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std::string& media_type) {
   ASSERT(media_type == "video" || media_type == "audio");
   nlohmann::json extensions = nlohmann::json::array();
-  extensions[0]["value"] = 1;
-  extensions[0]["direction"] = "";
-  extensions[0]["encrypt-uri"] = "";
-  extensions[0]["config"] = "";
-  extensions[0]["uri"] = "urn:ietf:params:rtp-hdrext:sdes:mid";
-  extensions[1]["value"] = 2;
-  extensions[1]["direction"] = "";
-  extensions[1]["encrypt-uri"] = "";
-  extensions[1]["config"] = "";
-  extensions[1]["uri"] = "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id";
-  extensions[2]["value"] = 3;
-  extensions[2]["direction"] = "";
-  extensions[2]["encrypt-uri"] = "";
-  extensions[2]["config"] = "";
-  extensions[2]["uri"] = "urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id";
+  nlohmann::json extension;
+  extension["value"] = 1;
+  extension["direction"] = "";
+  extension["encrypt-uri"] = "";
+  extension["config"] = "";
+  extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:mid";
+  extensions.push_back(extension);
+  extension.clear();
+  extension["value"] = 2;
+  extension["direction"] = "";
+  extension["encrypt-uri"] = "";
+  extension["config"] = "";
+  extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id";
+  extensions.push_back(extension);
+  extension.clear();
+  extension["value"] = 3;
+  extension["direction"] = "";
+  extension["encrypt-uri"] = "";
+  extension["config"] = "";
+  extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id";
+  extensions.push_back(extension);
+  extension.clear();
   // TODO 
   /*
-  extensions[3]["value"] = 4;
-  extensions[3]["direction"] = "";
-  extensions[3]["encrypt-uri"] = "";
-  extensions[3]["config"] = "";
-  extensions[3]["uri"] = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
+  extension["value"] = 4;
+  extension["direction"] = "";
+  extension["encrypt-uri"] = "";
+  extension["config"] = "";
+  extension["uri"] = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
+  extensions.push_back(extension);
+  extension.clear();
   */
   if (media_type == "audio") {
-    extensions[3]["value"] = 5;
-    extensions[3]["direction"] = "";
-    extensions[3]["encrypt-uri"] = "";
-    extensions[3]["config"] = "";
-    extensions[3]["uri"] = "urn:ietf:params:rtp-hdrext:ssrc-audio-level";
+    extension["value"] = 5;
+    extension["direction"] = "";
+    extension["encrypt-uri"] = "";
+    extension["config"] = "";
+    extension["uri"] = "urn:ietf:params:rtp-hdrext:ssrc-audio-level";
+    extensions.push_back(extension);
+    extension.clear();
   }
   return extensions;
 }
