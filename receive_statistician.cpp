@@ -19,7 +19,7 @@ ReceiveStatistician::ReceiveStatistician(uint32_t ssrc, uint32_t clock_rate)
 
 void ReceiveStatistician::ReceivePacket(std::shared_ptr<RtpPacket> packet) {
   if (ssrc_ != packet->Ssrc()) {
-    spdlog::error("Received SSRC different packet.");
+    spdlog::error("Received SSRC different packet. Processed SSRC = {}, Different SSRC = {}", ssrc_, packet->Ssrc());
     return;
   }
   int64_t now_ms = TimeMillis();
