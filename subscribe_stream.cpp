@@ -57,13 +57,14 @@ void SubscribeStream::SetPublishSdp(const Sdp& publish_sdp) {
 void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket> rtp_packet) {
   auto self(shared_from_this());
   work_thread_->PostAsync([rtp_packet, self, this] {
-    if (ssrc_track_map_.find(rtp_packet->Ssrc()) != ssrc_track_map_.end())
+    if (ssrc_track_map_.find(rtp_packet->Ssrc()) != ssrc_track_map_.end()) {
       ssrc_track_map_.at(rtp_packet->Ssrc())->SendRtpPacket(rtp_packet);
+      SendRtp(rtp_packet->Data(), rtp_packet->Size());
+    }
     else {
-      spdlog::error("SubscribeStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
+      spdlog::warn("SubscribeStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
       return;
     }
-    SendRtp(rtp_packet->Data(), rtp_packet->Size());
   });
 }
 
