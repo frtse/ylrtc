@@ -41,11 +41,11 @@ std::optional<int> RtpExtensionTypeIdManager::GetTypeId(RTPHeaderExtensionType t
 }
 
 std::unordered_map<RTPHeaderExtensionType, uint32_t> ServerSupportRtpExtensionIdMap::extension_id_map_ = {
-  {kRtpExtensionMid, 1},
-  {kRtpExtensionRtpStreamId, 2},
-  {kRtpExtensionRepairedRtpStreamId, 3},
-  {kRtpExtensionTransportSequenceNumber, 4},
-  {kRtpExtensionAudioLevel, 5}
+  {kRtpExtensionMid, 111},
+  {kRtpExtensionRtpStreamId, 112},
+  {kRtpExtensionRepairedRtpStreamId, 113},
+  {kRtpExtensionTransportSequenceNumber, 114},
+  {kRtpExtensionAudioLevel, 115}
 };
 
 uint32_t ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType type) {
@@ -58,21 +58,21 @@ nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std:
   ASSERT(media_type == "video" || media_type == "audio");
   nlohmann::json extensions = nlohmann::json::array();
   nlohmann::json extension;
-  extension["value"] = 1;
+  extension["value"] = 111;
   extension["direction"] = "";
   extension["encrypt-uri"] = "";
   extension["config"] = "";
   extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:mid";
   extensions.push_back(extension);
   extension.clear();
-  extension["value"] = 2;
+  extension["value"] = 112;
   extension["direction"] = "";
   extension["encrypt-uri"] = "";
   extension["config"] = "";
   extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id";
   extensions.push_back(extension);
   extension.clear();
-  extension["value"] = 3;
+  extension["value"] = 113;
   extension["direction"] = "";
   extension["encrypt-uri"] = "";
   extension["config"] = "";
@@ -80,17 +80,17 @@ nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std:
   extensions.push_back(extension);
   extension.clear();
   // TODO 
-  /*
-  extension["value"] = 4;
+  
+  extension["value"] = 114;
   extension["direction"] = "";
   extension["encrypt-uri"] = "";
   extension["config"] = "";
   extension["uri"] = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
   extensions.push_back(extension);
   extension.clear();
-  */
+  
   if (media_type == "audio") {
-    extension["value"] = 5;
+    extension["value"] = 115;
     extension["direction"] = "";
     extension["encrypt-uri"] = "";
     extension["config"] = "";
