@@ -40,7 +40,6 @@ void SignalingSession::OnRun() {
 
   // Perform the SSL handshake
   ws_.next_layer().async_handshake(ssl::stream_base::server, beast::bind_front_handler(&SignalingSession::OnHandshake, shared_from_this()));
-  DoRead();
 }
 
 void SignalingSession::OnHandshake(beast::error_code ec) {
