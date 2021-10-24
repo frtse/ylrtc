@@ -42,6 +42,7 @@ class SignalingSession : public std::enable_shared_from_this<SignalingSession> {
   const SessionInfo& GetSessionInfo() const;
 
  private:
+  static constexpr uint32_t kSslTimeoutSeconds = 30;
   websocket::stream<beast::ssl_stream<beast::tcp_stream>> ws_;
   std::vector<beast::flat_buffer> write_buffers_;
   boost::beast::multi_buffer read_buffer_;

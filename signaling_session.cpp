@@ -36,7 +36,7 @@ void SignalingSession::Run() {
 
 void SignalingSession::OnRun() {
   // Set the timeout.
-  beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(30));
+  beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(kSslTimeoutSeconds));
 
   // Perform the SSL handshake
   ws_.next_layer().async_handshake(ssl::stream_base::server, beast::bind_front_handler(&SignalingSession::OnHandshake, shared_from_this()));
