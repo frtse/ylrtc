@@ -41,11 +41,11 @@ std::optional<int> RtpExtensionTypeIdManager::GetTypeId(RTPHeaderExtensionType t
 }
 
 std::unordered_map<RTPHeaderExtensionType, uint32_t> ServerSupportRtpExtensionIdMap::extension_id_map_ = {
-  {kRtpExtensionMid, 11},
-  {kRtpExtensionRtpStreamId, 12},
-  {kRtpExtensionRepairedRtpStreamId, 13},
-  {kRtpExtensionTransportSequenceNumber, 14},
-  {kRtpExtensionAudioLevel, 15}
+  {kRtpExtensionMid, 10},
+  {kRtpExtensionRtpStreamId, 11},
+  {kRtpExtensionRepairedRtpStreamId, 12},
+  {kRtpExtensionTransportSequenceNumber, 13},
+  {kRtpExtensionAudioLevel, 14}
 };
 
 uint32_t ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType type) {
@@ -58,21 +58,21 @@ nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std:
   ASSERT(media_type == "video" || media_type == "audio");
   nlohmann::json extensions = nlohmann::json::array();
   nlohmann::json extension;
-  extension["value"] = 11;
+  extension["value"] = 10;
   extension["direction"] = "";
   extension["encrypt-uri"] = "";
   extension["config"] = "";
   extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:mid";
   extensions.push_back(extension);
   extension.clear();
-  extension["value"] = 12;
+  extension["value"] = 11;
   extension["direction"] = "";
   extension["encrypt-uri"] = "";
   extension["config"] = "";
   extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id";
   extensions.push_back(extension);
   extension.clear();
-  extension["value"] = 13;
+  extension["value"] = 12;
   extension["direction"] = "";
   extension["encrypt-uri"] = "";
   extension["config"] = "";
@@ -81,7 +81,7 @@ nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std:
   extension.clear();
   // TODO 
   
-  extension["value"] = 14;
+  extension["value"] = 13;
   extension["direction"] = "";
   extension["encrypt-uri"] = "";
   extension["config"] = "";
@@ -90,7 +90,7 @@ nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std:
   extension.clear();
   
   if (media_type == "audio") {
-    extension["value"] = 15;
+    extension["value"] = 14;
     extension["direction"] = "";
     extension["encrypt-uri"] = "";
     extension["config"] = "";
