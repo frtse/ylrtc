@@ -140,7 +140,7 @@ std::optional<uint16_t> TransportSequenceNumberExtension::Parse(uint8_t* data, s
   return LoadUInt16BE(data);
 }
 
-bool TransportSequenceNumberExtension::Write(uint8_t* data, size_t size, uint16_t transport_sequence_number) {
+bool TransportSequenceNumberExtension::Serialize(uint8_t* data, size_t size, uint16_t transport_sequence_number) {
   if (size != kValueSizeBytes)
     return false;
   StoreUInt16BE(data, transport_sequence_number);
