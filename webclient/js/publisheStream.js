@@ -18,7 +18,7 @@ class PublisheStream {
    */
   async publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters) {
     this.mediaStream_ = device.mediaStream();
-    const configuration = {};
+    const configuration = {bundlePolicy: "max-bundle"};
     this.pc_ = new RTCPeerConnection(configuration);
 
     const audioTransceiverInit = {

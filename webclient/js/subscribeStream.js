@@ -30,7 +30,8 @@ class SubscribeStream extends EventDispatcher {
   }
 
   async subscribe(remoteStream) {
-    this.pc_ = new RTCPeerConnection(null);
+    const configuration = {bundlePolicy: "max-bundle"};
+    this.pc_ = new RTCPeerConnection(configuration);
     if (remoteStream.hasAudio)
       this.pc_.addTransceiver("audio", { direction: "recvonly" });
     if (remoteStream.hasVideo)
