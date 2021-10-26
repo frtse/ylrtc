@@ -13,7 +13,7 @@ void SubscribeStreamTrack::Init() {
   rtcp_timer_->AsyncWait(report_interval_);
 }
 
-void SubscribeStreamTrack::SendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
+void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) {
   packets_sent_++;
   media_bytes_sent_ += rtp_packet->Size();
   last_rtp_timestamp_ = rtp_packet->Timestamp();
@@ -21,7 +21,7 @@ void SubscribeStreamTrack::SendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) 
   rate_statistics_.Update(rtp_packet->Size(), last_send_timestamp_);
   if (!configuration_.nack_enabled)
     return;
-  rtp_packet_history_.PutRtpPacket(rtp_packet);
+  rtp_packet_history_.PutRtpPacket(std::move(rtp_packet));
 }
 
 void SubscribeStreamTrack::ReceiveNack(NackPacket* nack_packet) {
@@ -39,9 +39,9 @@ void SubscribeStreamTrack::ReceiveNack(NackPacket* nack_packet) {
     if (!packet)
       continue;
     if (!configuration_.rtx_enabled)
-      observer_->OnSubscribeStreamTrackResendRtpPacket(packet);
+      observer_->OnSubscribeStreamTrackResendRtpPacket(std::move(packet));
     else
-      observer_->OnSubscribeStreamTrackSendRtxPacket(packet, configuration_.rtx_payload_type, configuration_.rtx_ssrc, rtx_sequence_number_++);
+      observer_->OnSubscribeStreamTrackSendRtxPacket(std::move(packet), configuration_.rtx_payload_type, configuration_.rtx_ssrc, rtx_sequence_number_++);
   }
 }
 

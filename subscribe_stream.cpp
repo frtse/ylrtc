@@ -57,9 +57,10 @@ void SubscribeStream::SetPublishSdp(const Sdp& publish_sdp) {
 void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket> rtp_packet) {
   auto self(shared_from_this());
   work_thread_->PostAsync([rtp_packet, self, this] {
-    if (ssrc_track_map_.find(rtp_packet->Ssrc()) != ssrc_track_map_.end()) {
-      ssrc_track_map_.at(rtp_packet->Ssrc())->SendRtpPacket(rtp_packet);
-      SendRtp(rtp_packet->Data(), rtp_packet->Size());
+    std::unique_ptr<RtpPacket> clone_packet = std::make_unique<RtpPacket>(*rtp_packet);
+    if (ssrc_track_map_.find(clone_packet->Ssrc()) != ssrc_track_map_.end()) {
+      SendRtp(clone_packet->Data(), clone_packet->Size());
+      ssrc_track_map_.at(rtp_packet->Ssrc())->SendRtpPacket(std::move(clone_packet));
     }
     else {
       spdlog::warn("SubscribeStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
@@ -123,19 +124,11 @@ void SubscribeStream::SetLocalDescription() {
   }
 }
 
-void SubscribeStream::OnSubscribeStreamTrackResendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
+void SubscribeStream::OnSubscribeStreamTrackResendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) {
   SendRtp(rtp_packet->Data(), rtp_packet->Size());
 }
 
-void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) {
-  SendRtx(rtp_packet, payload_type, ssrc, sequence_number);
-}
-
-void SubscribeStream::OnSubscribeStreamTrackSendRtcpPacket(uint8_t* data, size_t size) {
-  SendRtcp(data, size);
-}
-
-void SubscribeStream::SendRtx(std::shared_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) {
+void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) {
   // https://tools.ietf.org/html/rfc4588#section-8.3
   // The format of a retransmission packet is shown below:
 
@@ -172,5 +165,8 @@ void SubscribeStream::SendRtx(std::shared_ptr<RtpPacket> rtp_packet, uint8_t pay
   if (udp_socket_)
     udp_socket_->SendData(std::move(msg));
   else
-    spdlog::error("Send data before socket is connected.");
+    spdlog::error("Send data before socket is connected.");}
+
+void SubscribeStream::OnSubscribeStreamTrackSendRtcpPacket(uint8_t* data, size_t size) {
+  SendRtcp(data, size);
 }

@@ -43,6 +43,9 @@ class RtpPacket {
     uint16_t offset;
   };
 
+  RtpPacket();
+  RtpPacket(const RtpPacket& other);
+  RtpPacket& operator=(const RtpPacket&) = delete;
   ~RtpPacket();
   bool Create(uint8_t* buffer, size_t size);
 

@@ -5,6 +5,26 @@
 #include "spdlog/spdlog.h"
 #include "utils.h"
 
+RtpPacket::RtpPacket() {
+
+}
+
+RtpPacket::RtpPacket(const RtpPacket& other) {
+  this->marker_ = other.marker_;
+  this->payload_type_ = other.payload_type_;
+  this->padding_size_ = other.padding_size_;
+  this->sequence_number_ = other.sequence_number_;
+  this->timestamp_ = other.timestamp_;
+  this->ssrc_ = other.ssrc_;
+  this->payload_offset_ = other.payload_offset_;
+  this->payload_size_ = other.payload_size_;
+  this->extension_entries_ = other.extension_entries_;
+  this->extensions_size_ = other.extensions_size_;
+  this->payload_info_ = other.payload_info_;
+  data_ = std::make_unique<uint8_t[]>(other.Size());
+  memcpy(data_.get(), other.Data(), other.Size());
+}
+
 RtpPacket::~RtpPacket() {
 }
 

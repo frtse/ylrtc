@@ -27,15 +27,15 @@ class SubscribeStreamTrack : public Timer::Listener, public std::enable_shared_f
 
   class Observer {
    public:
-    virtual void OnSubscribeStreamTrackResendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) = 0;
-    virtual void OnSubscribeStreamTrackSendRtxPacket(std::shared_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) = 0;
+    virtual void OnSubscribeStreamTrackResendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) = 0;
+    virtual void OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPacket> rtp_packet, uint8_t payload_type, uint32_t ssrc, uint16_t sequence_number) = 0;
     virtual void OnSubscribeStreamTrackSendRtcpPacket(uint8_t* data, size_t size) = 0;
   };
 
   SubscribeStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer);
 
   void Init();
-  void SendRtpPacket(std::shared_ptr<RtpPacket> rtp_packet);
+  void SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet);
   void ReceiveNack(NackPacket* nack_packet);
   void ReceiveReceiverReport(const ReportBlock& report_block);
 

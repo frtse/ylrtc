@@ -20,21 +20,21 @@ class RtpPacketHistory {
   // Set RTT, used to avoid premature retransmission and to prevent over-writing
   // a packet in the history before we are reasonably sure it has been received.
   void SetRtt(int64_t rtt_ms);
-  void PutRtpPacket(std::shared_ptr<RtpPacket> packet);
+  void PutRtpPacket(std::unique_ptr<RtpPacket> packet);
   // Gets stored RTP packet corresponding to the input |sequence number|.
   // Returns nullptr if packet is not found or was (re)sent too recently.
-  std::shared_ptr<RtpPacket> GetPacketAndSetSendTime(uint16_t sequence_number);
+  std::unique_ptr<RtpPacket> GetPacketAndSetSendTime(uint16_t sequence_number);
 
  private:
   class StoredPacket {
    public:
-    StoredPacket(std::shared_ptr<RtpPacket> packet, int64_t send_time_ms, uint64_t insert_order) : send_time_ms_(send_time_ms), packet_(packet), insert_order_(insert_order), times_retransmitted_(0) {}
+    StoredPacket(std::unique_ptr<RtpPacket> packet, int64_t send_time_ms, uint64_t insert_order) : send_time_ms_(send_time_ms), packet_(std::move(packet)), insert_order_(insert_order), times_retransmitted_(0) {}
 
     // The time of last transmission, including retransmissions.
     int64_t send_time_ms_;
 
     // The actual packet.
-    std::shared_ptr<RtpPacket> packet_;
+    std::unique_ptr<RtpPacket> packet_;
 
     // Unique number per StoredPacket, incremented by one for each added
     // packet. Used to sort on insert order.
@@ -44,7 +44,7 @@ class RtpPacketHistory {
     size_t times_retransmitted_;
   };
   void CullOldPackets(int64_t now_ms);
-  std::shared_ptr<RtpPacket> RemovePacket(int packet_index);
+  std::unique_ptr<RtpPacket> RemovePacket(int packet_index);
   int GetPacketIndex(uint16_t sequence_number) const;
   StoredPacket* GetStoredPacket(uint16_t sequence_number);
   bool VerifyRtt(const StoredPacket& packet, int64_t now_ms) const;

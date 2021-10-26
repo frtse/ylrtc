@@ -11,7 +11,7 @@ void RtpPacketHistory::SetRtt(int64_t rtt_ms) {
   CullOldPackets(TimeMillis());
 }
 
-void RtpPacketHistory::PutRtpPacket(std::shared_ptr<RtpPacket> packet) {
+void RtpPacketHistory::PutRtpPacket(std::unique_ptr<RtpPacket> packet) {
   int64_t now_ms = TimeMillis();
   CullOldPackets(now_ms);
   // Store packet.
@@ -33,7 +33,7 @@ void RtpPacketHistory::PutRtpPacket(std::shared_ptr<RtpPacket> packet) {
     packet_history_.emplace_back(nullptr, 0, 0);
   }
 
-  packet_history_[packet_index] = StoredPacket(packet, now_ms, packets_inserted_++);
+  packet_history_[packet_index] = StoredPacket(std::move(packet), now_ms, packets_inserted_++);
 }
 
 int RtpPacketHistory::GetPacketIndex(uint16_t sequence_number) const {
@@ -89,9 +89,9 @@ void RtpPacketHistory::CullOldPackets(int64_t now_ms) {
   }
 }
 
-std::shared_ptr<RtpPacket> RtpPacketHistory::RemovePacket(int packet_index) {
+std::unique_ptr<RtpPacket> RtpPacketHistory::RemovePacket(int packet_index) {
   // Move the packet out from the StoredPacket container.
-  std::shared_ptr<RtpPacket> rtp_packet = packet_history_[packet_index].packet_;
+  std::unique_ptr<RtpPacket> rtp_packet = std::move(packet_history_[packet_index].packet_);
   packet_history_[packet_index].packet_ = nullptr;
 
   if (packet_index == 0) {
@@ -103,7 +103,7 @@ std::shared_ptr<RtpPacket> RtpPacketHistory::RemovePacket(int packet_index) {
   return rtp_packet;
 }
 
-std::shared_ptr<RtpPacket> RtpPacketHistory::GetPacketAndSetSendTime(uint16_t sequence_number) {
+std::unique_ptr<RtpPacket> RtpPacketHistory::GetPacketAndSetSendTime(uint16_t sequence_number) {
   StoredPacket* packet = GetStoredPacket(sequence_number);
   if (packet == nullptr) {
     return nullptr;
@@ -122,7 +122,7 @@ std::shared_ptr<RtpPacket> RtpPacketHistory::GetPacketAndSetSendTime(uint16_t se
   packet->send_time_ms_ = now_ms;
 
   // Return packet since it may need to be retransmitted.
-  return packet->packet_;
+  return std::make_unique<RtpPacket>(*packet->packet_);
 }
 
 RtpPacketHistory::StoredPacket* RtpPacketHistory::GetStoredPacket(uint16_t sequence_number) {
