@@ -40,7 +40,7 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
       media_section["ext"] = ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(media_section.at("type"));
       if (media_section.find("direction") == media_section.end() || media_section.at("direction") != "sendonly")
         return false;
-      std::string media_type = media_section.at("type");
+      const std::string& media_type = media_section.at("type");
       if (media_section.find("ssrcs") != media_section.end()) {
         media_section_ssrcs_map_[media_type] = media_section.at("ssrcs");
       }
@@ -121,7 +121,7 @@ std::string Sdp::CreatePublishAnswer() {
     }
 
     std::string select_codec;
-    std::string media_section_type = media_section.at("type");
+    const std::string& media_section_type = media_section.at("type");
     if (media_section_type == "video")
       select_codec = video_codec;
     else if (media_section_type == "audio")
@@ -147,7 +147,7 @@ std::string Sdp::CreatePublishAnswer() {
     if (media_section.find("fmtp") != media_section.end()) {
       auto& fmtp = media_section.at("fmtp");
       fmtp.erase(std::remove_if(fmtp.begin(), fmtp.end(),
-                                [codec_payload, &rtx_payload](auto item) {
+                                [codec_payload, &rtx_payload](auto& item) {
                                   if (item.at("config") == "apt=" + std::to_string(codec_payload)) {
                                     rtx_payload = item.at("payload");
                                     return false;
@@ -160,7 +160,7 @@ std::string Sdp::CreatePublishAnswer() {
     if (media_section.find("rtp") != media_section.end()) {
       auto& rtp = media_section.at("rtp");
       rtp.erase(std::remove_if(rtp.begin(), rtp.end(),
-                               [codec_payload, rtx_payload, this, media_section_type](auto item) {
+                               [codec_payload, rtx_payload, this, media_section_type](auto& item) {
                                  auto& payload = item.at("payload");
                                  if (rtx_payload != -1 && payload == rtx_payload) {
                                    media_section_rtpmaps_map_[media_section_type].push_back(item);
@@ -176,7 +176,7 @@ std::string Sdp::CreatePublishAnswer() {
     if (media_section.find("rtcpFb") != media_section.end()) {
       auto& rtcp_fb = media_section.at("rtcpFb");
       rtcp_fb.erase(std::remove_if(rtcp_fb.begin(), rtcp_fb.end(),
-                                   [codec_payload](auto item) {
+                                   [codec_payload](auto& item) {
                                      return item.at("payload") != std::to_string(codec_payload) && item.at("payload") != "*";  // * todo
                                    }),
                     rtcp_fb.end());
@@ -185,7 +185,7 @@ std::string Sdp::CreatePublishAnswer() {
     if (media_section.find("rtcpFbTrrInt") != media_section.end()) {
       auto& rtcp_fb_trr_int = media_section.at("rtcpFbTrrInt");
       rtcp_fb_trr_int.erase(std::remove_if(rtcp_fb_trr_int.begin(), rtcp_fb_trr_int.end(),
-                                           [codec_payload](auto item) {
+                                           [codec_payload](auto& item) {
                                              return item.at("payload") != std::to_string(codec_payload) && item.at("payload") != "*";  // * todo
                                            }),
                             rtcp_fb_trr_int.end());
@@ -205,7 +205,7 @@ bool Sdp::SetSubscribeOffer(const std::string& offer) {
     return false;
   }
 
-  auto media = subscribe_offer_sdp_.at("media");
+  const auto& media = subscribe_offer_sdp_.at("media");
   for (int i = 0; i < media.size(); ++i) {
     auto& media_section = media[i];
     if (media_section.find("setup") != media_section.end())
@@ -275,7 +275,7 @@ std::string Sdp::CreateSubscribeAnswer() {
       if (media_section.find("simulcast") != media_section.end()) {
         media_section.erase("ssrcs");
         media_section.erase("ssrcGroups");
-        std::string msid = media_section.at("msid");
+        const std::string& msid = media_section.at("msid");
         auto pos = msid.find(" ");
         if (pos == std::string::npos)
           return "";
