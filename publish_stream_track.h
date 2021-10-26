@@ -38,7 +38,6 @@ class PublishStreamTrack : public Timer::Listener
 
   class Observer {
    public:
-    virtual void OnPublishStreamTrackReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) = 0;
     virtual void OnPublishStreamTrackSendRtcpPacket(uint8_t* data, size_t size) = 0;
   };
 

@@ -77,6 +77,8 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
     }
   }
   ssrc_track_map_[rtp_packet->Ssrc()]->ReceiveRtpPacket(rtp_packet);
+  for (auto observer : data_observers_)
+    observer->OnPublishStreamRtpPacketReceive(rtp_packet);
 }
 
 void PublishStream::SendRequestkeyFrame() {
@@ -225,11 +227,6 @@ void PublishStream::SetLocalDescription() {
         ", rtx_enabled = {}, rtx_ssrc = {}, rtx_payload_type = {}, nack_enabled = {}",
         config.ssrc, config.payload_type, config.rtx_enabled, config.rtx_ssrc, config.rtx_payload_type, config.nack_enabled);
   }
-}
-
-void PublishStream::OnPublishStreamTrackReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
-  for (auto observer : data_observers_)
-    observer->OnPublishStreamRtpPacketReceive(rtp_packet);
 }
 
 void PublishStream::OnPublishStreamTrackSendRtcpPacket(uint8_t* data, size_t size) {

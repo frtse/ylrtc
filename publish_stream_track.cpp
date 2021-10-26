@@ -54,8 +54,6 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
 
   if (!configuration_.rid.empty())
     rtp_packet->SetSsrc(kSimulcastSubscribeVideoSsrc);
-  if (observer_)
-    observer_->OnPublishStreamTrackReceiveRtpPacket(rtp_packet);
 }
 
 PublishStreamTrack::Configuration& PublishStreamTrack::Config() {

@@ -27,7 +27,6 @@ class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer, 
  private:
   void OnRtpPacketReceive(uint8_t* data, size_t length) override;
   void OnRtcpPacketReceive(uint8_t* data, size_t length) override;
-  void OnPublishStreamTrackReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) override;
   void OnPublishStreamTrackSendRtcpPacket(uint8_t* data, size_t size) override;
   std::list<std::shared_ptr<SubscribeStream>> data_observers_;
   std::vector<std::shared_ptr<PublishStreamTrack>> tracks_;
