@@ -8,6 +8,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "rtp_header_extension.h"
 #include "rtp_payload_parser.h"
 
 //  0                   1                   2                   3
@@ -66,12 +67,25 @@ class RtpPacket {
   uint8_t* Payload() const;
   size_t HeaderSize() const;
   bool IsKeyFrame() const;
-  const std::vector<ExtensionInfo>& GetExtensions();
   template <typename Extension>
   std::optional<typename Extension::value_type> GetExtension(uint8_t id) {
     auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) {
       return extension.id == id;
     });
+
+    if (result == extension_entries_.end())
+      return std::nullopt;
+    return Extension::Parse(data_.get() + result->offset, result->length);
+  }
+  template <typename Extension>
+  std::optional<typename Extension::value_type> GetExtensionValue() {
+    auto id = extension_configure_.GetTypeId(Extension::kType);
+    if (!id)
+      return std::nullopt;
+    auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) {
+      return extension.id == *id;
+    });
+
 
     if (result == extension_entries_.end())
       return std::nullopt;
@@ -96,4 +110,5 @@ class RtpPacket {
   size_t extensions_size_ = 0;  // Unaligned.
   std::unique_ptr<uint8_t[]> data_;
   PayloadInfo payload_info_;
+  RtpExtensionConfigure extension_configure_;
 };

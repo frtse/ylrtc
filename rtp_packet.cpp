@@ -222,10 +222,6 @@ bool RtpPacket::IsKeyFrame() const {
   return payload_info_.frame_type == VideoFrameType::kVideoFrameKey;
 }
 
-const std::vector<RtpPacket::ExtensionInfo>& RtpPacket::GetExtensions() {
-  return extension_entries_;
-}
-
 void RtpPacket::RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint32_t ssrc) {
   if (payload_size_ == 0)
     return;
