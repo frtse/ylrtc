@@ -165,6 +165,7 @@ bool RtpPacket::Parse(const uint8_t* buffer, size_t size) {
         size_t offset = extension_offset + extensions_size_ + extension_header_length;
         extension_info.offset = static_cast<uint16_t>(offset);
         extension_info.length = length;
+        extension_info.header_length = extension_header_length;
         extensions_size_ += extension_header_length + length;
       }
     }
@@ -220,6 +221,31 @@ size_t RtpPacket::HeaderSize() const {
 
 bool RtpPacket::IsKeyFrame() const {
   return payload_info_.frame_type == VideoFrameType::kVideoFrameKey;
+}
+
+void RtpPacket::UpdateExtensionConfigure(RtpHeaderExtensionCapability new_configure) {
+  for (auto& entry : extension_entries_) {
+    auto type = extension_configure_.GetIdType(entry.id);
+    if (!type)
+      continue;
+    auto expect_id = new_configure.GetTypeId(*type);
+    if (*expect_id != entry.id) {
+      if (entry.header_length == kOneByteExtensionHeaderLength) {
+        uint16_t header_offset = entry.offset - kOneByteExtensionHeaderLength;
+        data_[header_offset] &= 0xf;
+        data_[header_offset] |= *expect_id << 4;
+      }
+      else if (entry.header_length == kTwoByteExtensionHeaderLength) {
+        uint16_t header_offset = entry.offset - kTwoByteExtensionHeaderLength;
+        data_[header_offset] = *expect_id;
+      }
+      else {
+        assert(false);
+      }
+      entry.id = *expect_id;
+    }
+  }
+  extension_configure_ = new_configure;
 }
 
 void RtpPacket::RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint32_t ssrc) {

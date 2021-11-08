@@ -36,10 +36,11 @@ enum RTPHeaderExtensionType : int {
 };
 
 // TODO: If it can be determined that the server decides to [rtp extension id map], remove this code.
-class RtpExtensionConfigure {
+class RtpHeaderExtensionCapability {
  public:
   void Register(int id, const std::string& uri);
   std::optional<int> GetTypeId(RTPHeaderExtensionType type);
+  std::optional<RTPHeaderExtensionType> GetIdType(int id);
  private:
   std::unordered_map<RTPHeaderExtensionType, int> type_id_map_;
 };
