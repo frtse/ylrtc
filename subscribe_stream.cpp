@@ -3,6 +3,7 @@
 #include "byte_buffer.h"
 #include "rtcp_packet.h"
 #include "rtp_utils.h"
+#include "rtp_header_extension.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
 
@@ -59,6 +60,8 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
   work_thread_->PostAsync([rtp_packet, self, this] {
     std::unique_ptr<RtpPacket> clone_packet = std::make_unique<RtpPacket>(*rtp_packet);
     if (ssrc_track_map_.find(clone_packet->Ssrc()) != ssrc_track_map_.end()) {
+      clone_packet->UpdateExtensionCapability(ssrc_track_map_.at(clone_packet->Ssrc())->Config().extension_capability);
+      rtp_packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
       SendRtp(clone_packet->Data(), clone_packet->Size());
       ssrc_track_map_.at(rtp_packet->Ssrc())->SendRtpPacket(std::move(clone_packet));
     }

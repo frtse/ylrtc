@@ -36,6 +36,7 @@ class SubscribeStreamTrack : public Timer::Listener, public std::enable_shared_f
   SubscribeStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer);
 
   void Init();
+  Configuration& Config();
   void SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet);
   void ReceiveNack(NackPacket* nack_packet);
   void ReceiveReceiverReport(const ReportBlock& report_block);

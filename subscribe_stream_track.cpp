@@ -13,8 +13,11 @@ void SubscribeStreamTrack::Init() {
   rtcp_timer_->AsyncWait(report_interval_);
 }
 
+SubscribeStreamTrack::Configuration& SubscribeStreamTrack::Config() {
+  return configuration_;
+}
+
 void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) {
-  rtp_packet->UpdateExtensionCapability(configuration_.extension_capability);
   packets_sent_++;
   media_bytes_sent_ += rtp_packet->Size();
   last_rtp_timestamp_ = rtp_packet->Timestamp();

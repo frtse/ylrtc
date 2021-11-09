@@ -28,4 +28,5 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   void OnSubscribeStreamTrackSendRtcpPacket(uint8_t* data, size_t size) override;
   std::vector<std::shared_ptr<SubscribeStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<SubscribeStreamTrack>> ssrc_track_map_;
+  uint64_t transport_seq_{0};
 };
