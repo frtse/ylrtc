@@ -10,6 +10,7 @@
 #include "rtp_packet.h"
 #include "webrtc_stream.h"
 #include "receive_side_twcc.h"
+#include "rtp_header_extension.h"
 
 class SubscribeStream;
 class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer, public std::enable_shared_from_this<PublishStream> {
@@ -32,6 +33,7 @@ class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer, 
   std::vector<std::shared_ptr<PublishStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<PublishStreamTrack>> ssrc_track_map_;
   std::shared_ptr<ReceiveSideTWCC> receive_side_twcc_;
-  std::unordered_map<std::string, std::vector<std::string>> mid_rids_map_;
   std::unordered_map<std::string, PublishStreamTrack::Configuration> rid_configuration_map_;
+  std::unordered_map<std::string, RtpHeaderExtensionCapability> section_type_extensions_map_;
+  std::vector<RtpHeaderExtensionCapability> extension_capabilities_;
 };

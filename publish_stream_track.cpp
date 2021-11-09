@@ -9,11 +9,10 @@
 #include "utils.h"
 
 PublishStreamTrack::PublishStreamTrack(const Configuration& configuration
-  , boost::asio::io_context& io_context, ReceiveSideTWCC& bwe, Observer* observer)
+  , boost::asio::io_context& io_context, Observer* observer)
   : configuration_{configuration}
   , receive_statistician_{configuration_.ssrc, configuration_.clock_rate}
   , io_context_{io_context}
-  , receive_side_twcc_{bwe}
   , observer_{observer} {
   if (configuration_.nack_enabled) {
     nack_request_.reset(new NackRequester(io_context, this));
@@ -28,23 +27,16 @@ void PublishStreamTrack::Init() {
 }
 
 void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
-  uint32_t original_ssrc = rtp_packet->Ssrc();
   bool is_rtx = false;
   if (configuration_.rtx_enabled && configuration_.rtx_ssrc == rtp_packet->Ssrc()) {
     rtp_packet->RtxRepaire(LoadUInt16BE(rtp_packet->Payload()), configuration_.payload_type, configuration_.ssrc);
     is_rtx = true;
   }
-
   receive_statistician_.ReceivePacket(rtp_packet); // TODO: Separate RTX.
   if (!configuration_.audio && !rtp_packet->ParsePayload(configuration_.codec))
     return;
   if (rtp_packet->IsKeyFrame())
     spdlog::debug("Recv key frame.");
-  // TODO : Move this to PublishStream.
-  uint32_t id = ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType::kRtpExtensionTransportSequenceNumber);
-  auto twsn = rtp_packet->GetExtension<TransportSequenceNumberExtension>(id);
-  if (twsn)
-    receive_side_twcc_.IncomingPacket(TimeMillis(), original_ssrc, *twsn);
   if (configuration_.nack_enabled) {
     if (is_rtx)
       nack_request_->OnReceivedPacket(rtp_packet->SequenceNumber(), rtp_packet->IsKeyFrame(), true);

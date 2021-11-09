@@ -35,9 +35,6 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
     auto& media = publish_offer_sdp.at("media");
     for (int i = 0; i < media.size(); ++i) {
       auto& media_section = media[i];
-      media_section.erase("ext");
-      ASSERT(media_section.find("type") != media_section.end());
-      media_section["ext"] = ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(media_section.at("type"));
       if (media_section.find("direction") == media_section.end() || media_section.at("direction") != "sendonly")
         return false;
       const std::string& media_type = media_section.at("type");

@@ -68,7 +68,8 @@ class RtpPacket {
   uint8_t* Payload() const;
   size_t HeaderSize() const;
   bool IsKeyFrame() const;
-
+  void SetExtensionCapability(const RtpHeaderExtensionCapability& extension_capability);
+  /*
   template <typename Extension>
   std::optional<typename Extension::value_type> GetExtension(uint8_t id) {
     auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) {
@@ -78,10 +79,10 @@ class RtpPacket {
       return std::nullopt;
     return Extension::Parse(data_.get() + result->offset, result->length);
   }
-
+  */
   template <typename Extension>
   std::optional<typename Extension::value_type> GetExtensionValue() {
-    auto id = extension_configure_.GetTypeId(Extension::kType);
+    auto id = extension_capability_.GetTypeId(Extension::kType);
     if (!id)
       return std::nullopt;
     auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) {
@@ -94,7 +95,7 @@ class RtpPacket {
 
   template <typename Extension>
   void SetExtensionValue(typename Extension::value_type value) {
-    auto id = extension_configure_.GetTypeId(Extension::kType);
+    auto id = extension_capability_.GetTypeId(Extension::kType);
     if (!id)
       return;
     auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) {
@@ -103,7 +104,7 @@ class RtpPacket {
     Extension::Serialize(data_.get() + result->offset, result->length, value);
   }
 
-  void UpdateExtensionConfigure(RtpHeaderExtensionCapability new_configure);
+  void UpdateExtensionCapability(RtpHeaderExtensionCapability new_capability);
   void RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint32_t ssrc);
   bool ParsePayload(std::string_view codec);
 
@@ -123,5 +124,5 @@ class RtpPacket {
   size_t extensions_size_ = 0;  // Unaligned.
   std::unique_ptr<uint8_t[]> data_;
   PayloadInfo payload_info_;
-  RtpHeaderExtensionCapability extension_configure_;
+  RtpHeaderExtensionCapability extension_capability_;
 };

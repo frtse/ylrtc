@@ -34,6 +34,7 @@ class PublishStreamTrack : public Timer::Listener
     bool rtcpfb_pli{false};
     bool rtcpfb_fir{false};
     uint32_t clock_rate{0};
+    RtpHeaderExtensionCapability extension_capability;
   };
 
   class Observer {
@@ -41,7 +42,7 @@ class PublishStreamTrack : public Timer::Listener
     virtual void OnPublishStreamTrackSendRtcpPacket(uint8_t* data, size_t size) = 0;
   };
 
-  PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, ReceiveSideTWCC& bwe, Observer* observer);
+  PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer);
   void ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet);
   void Init();
   Configuration& Config();
@@ -58,7 +59,6 @@ class PublishStreamTrack : public Timer::Listener
   ReceiveStatistician receive_statistician_;
   boost::asio::io_context& io_context_;
   std::shared_ptr<NackRequester> nack_request_;
-  ReceiveSideTWCC& receive_side_twcc_;
   uint8_t fir_seq_num_{0};
   Random random_;
   int64_t rtt_millis_{100};

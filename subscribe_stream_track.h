@@ -23,6 +23,7 @@ class SubscribeStreamTrack : public Timer::Listener, public std::enable_shared_f
     bool nack_enabled{false};
     uint32_t clock_rate{0};
     bool audio{false};
+    RtpHeaderExtensionCapability extension_capability;
   };
 
   class Observer {

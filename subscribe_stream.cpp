@@ -111,6 +111,11 @@ void SubscribeStream::SetLocalDescription() {
           config.nack_enabled = true;
       }
     }
+    if (media_section.find("ext") != media_section.end()) {
+      const auto& extensions = media_section.at("ext");
+      for (const auto& extension : extensions)
+        config.extension_capability.Register(extension.at("value"), extension.at("uri"));
+    }
 
     auto track = std::make_shared<SubscribeStreamTrack>(config, work_thread_->MessageLoop(), this);
     track->Init();

@@ -14,6 +14,7 @@ void SubscribeStreamTrack::Init() {
 }
 
 void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) {
+  rtp_packet->UpdateExtensionCapability(configuration_.extension_capability);
   packets_sent_++;
   media_bytes_sent_ += rtp_packet->Size();
   last_rtp_timestamp_ = rtp_packet->Timestamp();

@@ -223,12 +223,16 @@ bool RtpPacket::IsKeyFrame() const {
   return payload_info_.frame_type == VideoFrameType::kVideoFrameKey;
 }
 
-void RtpPacket::UpdateExtensionConfigure(RtpHeaderExtensionCapability new_configure) {
+void RtpPacket::SetExtensionCapability(const RtpHeaderExtensionCapability& extension_capability) {
+  extension_capability_ = extension_capability;
+}
+
+void RtpPacket::UpdateExtensionCapability(RtpHeaderExtensionCapability new_capability) {
   for (auto& entry : extension_entries_) {
-    auto type = extension_configure_.GetIdType(entry.id);
+    auto type = extension_capability_.GetIdType(entry.id);
     if (!type)
       continue;
-    auto expect_id = new_configure.GetTypeId(*type);
+    auto expect_id = new_capability.GetTypeId(*type);
     if (*expect_id != entry.id) {
       if (entry.header_length == kOneByteExtensionHeaderLength) {
         uint16_t header_offset = entry.offset - kOneByteExtensionHeaderLength;
@@ -245,7 +249,7 @@ void RtpPacket::UpdateExtensionConfigure(RtpHeaderExtensionCapability new_config
       entry.id = *expect_id;
     }
   }
-  extension_configure_ = new_configure;
+  extension_capability_ = new_capability;
 }
 
 void RtpPacket::RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint32_t ssrc) {

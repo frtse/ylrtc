@@ -36,46 +36,48 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
   if (!rtp_packet->Create(data, length))
     return;
   if (ssrc_track_map_.find(rtp_packet->Ssrc()) == ssrc_track_map_.end()) {
-    uint32_t mid_id = ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType::kRtpExtensionMid);
-    auto mid = rtp_packet->GetExtension<RtpMidExtension>(mid_id);
-    if (!mid)
-      return;
-    uint32_t rid_id = ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType::kRtpExtensionRtpStreamId);
-    auto rid = rtp_packet->GetExtension<RtpStreamIdExtension>(rid_id);
-    if (!rid) {
-      uint32_t rrid_id = ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType::kRtpExtensionRepairedRtpStreamId);
-      rid = rtp_packet->GetExtension<RepairedRtpStreamIdExtension>(rrid_id);
-      if (!rid)
-        return;
-    }
-    if (mid_rids_map_.find(*mid) != mid_rids_map_.end()) {
-      auto& rids = mid_rids_map_.at(*mid);
-      if (std::find(rids.begin(), rids.end(), *rid) == rids.end())
-        return;
-    }
-    if (rid_configuration_map_.find(*rid) == rid_configuration_map_.end())
-      return;
-    auto& config = rid_configuration_map_.at(*rid);
-    if (rtp_packet->PayloadType() == config.payload_type) {
-      config.ssrc = rtp_packet->Ssrc();
-      config.rid = *rid;
-      std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), *receive_side_twcc_, this);
-      tracks_.push_back(track);
-      ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
-    } else if (rtp_packet->PayloadType() == config.rtx_payload_type) {
-      for (auto track : tracks_) {
-        auto& track_config = track->Config();
-        if (track_config.payload_type == config.payload_type) {
-          track_config.rtx_ssrc = rtp_packet->Ssrc();
-          ssrc_track_map_.insert(std::make_pair(track_config.rtx_ssrc, track));
+    for (const auto& extension_capability : extension_capabilities_) {
+      rtp_packet->SetExtensionCapability(extension_capability);
+      auto rid = rtp_packet->GetExtensionValue<RtpStreamIdExtension>();
+      if (!rid) {
+        rid = rtp_packet->GetExtensionValue<RepairedRtpStreamIdExtension>();
+        if (!rid)
+          return;
+      }
+      auto& config = rid_configuration_map_.at(*rid);
+      if (rtp_packet->PayloadType() == config.payload_type) {
+        config.ssrc = rtp_packet->Ssrc();
+        config.rid = *rid;
+        std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), this);
+        tracks_.push_back(track);
+        ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
+      } else if (rtp_packet->PayloadType() == config.rtx_payload_type) {
+        for (auto track : tracks_) {
+          auto& track_config = track->Config();
+          if (track_config.rid == *rid) {
+            track_config.rtx_ssrc = rtp_packet->Ssrc();
+            ssrc_track_map_.insert(std::make_pair(track_config.rtx_ssrc, track));
+          }
         }
       }
     }
-    else {
-      spdlog::warn("Unknown RTP payload type.");
-      return;
-    }
   }
+  if (ssrc_track_map_[rtp_packet->Ssrc()]->Config().audio) {
+    if (section_type_extensions_map_.find("audio") != section_type_extensions_map_.end())
+      rtp_packet->SetExtensionCapability(section_type_extensions_map_.at("audio"));
+    else
+      return;
+  }
+  else {
+    if (section_type_extensions_map_.find("video") != section_type_extensions_map_.end())
+      rtp_packet->SetExtensionCapability(section_type_extensions_map_.at("video"));
+    else
+      return;
+  }
+
+  auto twsn = rtp_packet->GetExtensionValue<TransportSequenceNumberExtension>();
+  if (twsn)
+    receive_side_twcc_->IncomingPacket(TimeMillis(), rtp_packet->Ssrc(), *twsn);
   ssrc_track_map_[rtp_packet->Ssrc()]->ReceiveRtpPacket(rtp_packet);
   for (auto observer : data_observers_)
     observer->OnPublishStreamRtpPacketReceive(rtp_packet);
@@ -208,14 +210,20 @@ void PublishStream::SetLocalDescription() {
       if (simulcast.find("list1") != simulcast.end()) {
         std::string send_rids = simulcast.at("list1");
         auto result = StringSplit(send_rids, ";"); // TODO FIXME : example[1,2,3;~4,~5].
-        if (!result.empty() && media_section.find("mid") != media_section.end())
-          mid_rids_map_.insert(std::make_pair(media_section.at("mid"), result));
         for (auto& rid : result)
           rid_configuration_map_.insert(std::make_pair(rid, config));
       }
     }
+    if (media_section.find("ext") != media_section.end()) {
+      RtpHeaderExtensionCapability extension_capability;
+      const auto& extensions = media_section.at("ext");
+      for (const auto& extension : extensions)
+        extension_capability.Register(extension.at("value"), extension.at("uri"));
+      section_type_extensions_map_.insert(std::make_pair(media_section.at("type"), extension_capability));
+      extension_capabilities_.push_back(extension_capability);
+    }
     if (has_ssrc) {
-      std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), *receive_side_twcc_, this);
+      std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), this);
       track->Init();
       tracks_.push_back(track);
       ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
