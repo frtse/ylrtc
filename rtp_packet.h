@@ -69,17 +69,6 @@ class RtpPacket {
   size_t HeaderSize() const;
   bool IsKeyFrame() const;
   void SetExtensionCapability(const RtpHeaderExtensionCapability& extension_capability);
-  /*
-  template <typename Extension>
-  std::optional<typename Extension::value_type> GetExtension(uint8_t id) {
-    auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) {
-      return extension.id == id;
-    });
-    if (result == extension_entries_.end())
-      return std::nullopt;
-    return Extension::Parse(data_.get() + result->offset, result->length);
-  }
-  */
   template <typename Extension>
   std::optional<typename Extension::value_type> GetExtensionValue() {
     auto id = extension_capability_.GetTypeId(Extension::kType);
