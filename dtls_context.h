@@ -9,7 +9,7 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <vector>
 
@@ -28,7 +28,7 @@ class DtlsContext {
   static bool IsDtls(uint8_t* data, size_t size);
 
  private:
-  using LocalFingerPrints = std::map<Hash, std::string>;
+  using LocalFingerPrints = std::unordered_map<Hash, std::string>;
   using AvailableHashes = std::vector<Hash>;
   DtlsContext() = default;
   bool MakeRSAKeyPair();
@@ -40,6 +40,6 @@ class DtlsContext {
   LocalFingerPrints localFingerPrints_;
   AvailableHashes availableHashes_;
   Random random_;
-  static std::map<std::string, DtlsContext::Hash> string_to_Hash_;
-  static std::map<DtlsContext::Hash, std::string> Hash_tp_string_;
+  static std::unordered_map<std::string, DtlsContext::Hash> string_to_Hash_;
+  static std::unordered_map<DtlsContext::Hash, std::string> Hash_tp_string_;
 };

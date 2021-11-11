@@ -2,7 +2,7 @@
 
 #include <srtp2/srtp.h>
 
-#include <map>
+#include <unordered_map>
 #include <string>
 
 class SrtpSession {
@@ -36,8 +36,8 @@ class SrtpSession {
   bool UnprotectRtcp(void* data, int in_len, int* out_len);
 
  private:
-  static std::map<std::string, SrtpSession::CipherSuite> str_to_cipher_suite_;
-  static std::map<SrtpSession::CipherSuite, CipherSuiteKeySaltLength> cipher_suites_key_salt_length_;
+  static std::unordered_map<std::string, SrtpSession::CipherSuite> str_to_cipher_suite_;
+  static std::unordered_map<SrtpSession::CipherSuite, CipherSuiteKeySaltLength> cipher_suites_key_salt_length_;
   srtp_ctx_t_* session_{nullptr};
   int rtp_auth_tag_len_{0};
   int rtcp_auth_tag_len_{0};

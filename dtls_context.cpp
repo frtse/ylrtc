@@ -16,13 +16,13 @@ static const int SERIAL_RAND_BITS = 64;
 static const int kRsaDefaultModSize = 1024;
 static const int kRsaDefaultExponent = 0x10001;  // = 2^16+1 = 65537
 
-std::map<std::string, DtlsContext::Hash> DtlsContext::string_to_Hash_ = {{"sha-1", DtlsContext::Hash::kSha1},
+std::unordered_map<std::string, DtlsContext::Hash> DtlsContext::string_to_Hash_ = {{"sha-1", DtlsContext::Hash::kSha1},
                                                                          {"sha-224", DtlsContext::Hash::kSha224},
                                                                          {"sha-256", DtlsContext::Hash::kSha256},
                                                                          {"sha-384", DtlsContext::Hash::kSha384},
                                                                          {"sha-512", DtlsContext::Hash::kSha512}};
 
-std::map<DtlsContext::Hash, std::string> DtlsContext::Hash_tp_string_ = {{DtlsContext::Hash::kSha1, "sha-1"},
+std::unordered_map<DtlsContext::Hash, std::string> DtlsContext::Hash_tp_string_ = {{DtlsContext::Hash::kSha1, "sha-1"},
                                                                          {DtlsContext::Hash::kSha224, "sha-224"},
                                                                          {DtlsContext::Hash::kSha256, "sha-256"},
                                                                          {DtlsContext::Hash::kSha384, "sha-384"},

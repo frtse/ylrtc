@@ -6,11 +6,11 @@
 
 static const uint32_t kDtlsMtu = 1350;
 
-std::map<std::string, DtlsTransport::Setup> DtlsTransport::string_to_setup_ = {{"active", DtlsTransport::Setup::kActive},
+std::unordered_map<std::string, DtlsTransport::Setup> DtlsTransport::string_to_setup_ = {{"active", DtlsTransport::Setup::kActive},
                                                                                {"passive", DtlsTransport::Setup::kPassive},
                                                                                {"actpass", DtlsTransport::Setup::kActPass}};
 
-std::map<DtlsTransport::Setup, std::string> DtlsTransport::setup_to_string_ = {{DtlsTransport::Setup::kActive, "active"},
+std::unordered_map<DtlsTransport::Setup, std::string> DtlsTransport::setup_to_string_ = {{DtlsTransport::Setup::kActive, "active"},
                                                                                {DtlsTransport::Setup::kPassive, "passive"},
                                                                                {DtlsTransport::Setup::kActPass, "actpass"}};
 

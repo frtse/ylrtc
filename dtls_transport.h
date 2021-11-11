@@ -8,7 +8,7 @@
 #include <atomic>
 #include <boost/asio.hpp>
 #include <cstddef>
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <string>
 
@@ -65,6 +65,6 @@ class DtlsTransport : public Timer::Listener, public std::enable_shared_from_thi
   Observer* listener_;
   static constexpr int kReadBufferSize{65536};
   uint8_t read_buffer_[kReadBufferSize];
-  static std::map<std::string, DtlsTransport::Setup> string_to_setup_;
-  static std::map<DtlsTransport::Setup, std::string> setup_to_string_;
+  static std::unordered_map<std::string, DtlsTransport::Setup> string_to_setup_;
+  static std::unordered_map<DtlsTransport::Setup, std::string> setup_to_string_;
 };
