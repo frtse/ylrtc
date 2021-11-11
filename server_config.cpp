@@ -1,5 +1,6 @@
 #include "server_config.h"
 
+#include <exception>
 #include "spdlog/spdlog.h"
 #include "toml.hpp"
 
@@ -22,8 +23,8 @@ bool ServerConfig::Load(std::string_view json_file_name) {
     signaling_server_port_ = toml::find<uint16_t>(signaling_server, "signalingServerPort");
     ssl_cert_file_ = toml::find<std::string>(signaling_server, "certFile");
     ssl_key_file_ = toml::find<std::string>(signaling_server, "keyFile");
-  } catch (...) {
-    spdlog::error("Parse config file failed.");
+  } catch (const std::exception& e) {
+    spdlog::error("Parse config file failed. error: {}", e.what());
     return false;
   }
 
