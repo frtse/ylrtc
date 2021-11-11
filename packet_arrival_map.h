@@ -38,7 +38,7 @@ class PacketArrivalTimeMap {
   // between [begin_sequence_number, end_sequence_number).
   int64_t get(int64_t sequence_number) {
     int64_t pos = sequence_number - begin_sequence_number_;
-    ASSERT(pos >= 0 && pos < static_cast<int64_t>(arrival_times.size()));
+    DCHECK(pos >= 0 && pos < static_cast<int64_t>(arrival_times.size()));
     return arrival_times[pos];
   }
 

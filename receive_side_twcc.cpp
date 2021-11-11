@@ -145,7 +145,7 @@ ReceiveSideTWCC::MaybeBuildFeedbackPacket(
     int64_t begin_sequence_number_inclusive,
     int64_t end_sequence_number_exclusive,
     bool is_periodic_update) {
-  ASSERT(begin_sequence_number_inclusive < end_sequence_number_exclusive);
+  DCHECK(begin_sequence_number_inclusive < end_sequence_number_exclusive);
 
   int64_t start_seq =
       packet_arrival_times_.clamp(begin_sequence_number_inclusive);

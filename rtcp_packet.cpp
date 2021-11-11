@@ -110,7 +110,7 @@ bool RtcpPacket::IsRtcp(uint8_t* data, size_t size) {
 }
 
 bool RtcpPacket::ParseCommonHeader(ByteReader* byte_reader) {
-  ASSERT(byte_reader);
+  DCHECK(byte_reader);
   if (!byte_reader->ReadBytes((char*)&header_, sizeof(RtcpCommonHeader)))
     return false;
   header_.length = ntohs(header_.length);
@@ -118,7 +118,7 @@ bool RtcpPacket::ParseCommonHeader(ByteReader* byte_reader) {
 }
 
 bool RtcpPacket::SerializeCommonHeader(ByteWriter* byte_writer) {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   header_.length = htons(header_.length);
   if (!byte_writer->WriteBytes((const char*)(&header_), sizeof(RtcpCommonHeader)))
     return false;
@@ -182,7 +182,7 @@ uint32_t ReportBlock::DelayLastSr() const {
 }
 
 bool ReportBlock::Parse(ByteReader* byte_reader) {
-  ASSERT(byte_reader);
+  DCHECK(byte_reader);
   if (!byte_reader->ReadUInt32(&source_ssrc_))
     return false;
   if (!byte_reader->ReadUInt8(&fraction_lost_))
@@ -201,7 +201,7 @@ bool ReportBlock::Parse(ByteReader* byte_reader) {
 }
 
 bool ReportBlock::Serialize(ByteWriter* byte_writer) {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   if (!byte_writer->WriteUInt32(source_ssrc_))
     return false;
   if (!byte_writer->WriteUInt8(fraction_lost_))
@@ -220,7 +220,7 @@ bool ReportBlock::Serialize(ByteWriter* byte_writer) {
 }
 
 bool SenderReportPacket::Serialize(ByteWriter* byte_writer) {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   header_.count_or_format = 0;
   header_.packet_type = kRtcpTypeSr;
   header_.padding = 0;
@@ -264,7 +264,7 @@ void SenderReportPacket::SendOctets(uint32_t send_octets) {
 }
 
 bool ReceiverReportPacket::Parse(ByteReader* byte_reader) {
-  ASSERT(byte_reader);
+  DCHECK(byte_reader);
   if (!ParseCommonHeader(byte_reader))
     return false;
   if (!byte_reader->ReadUInt32(&sender_ssrc_))
@@ -279,7 +279,7 @@ bool ReceiverReportPacket::Parse(ByteReader* byte_reader) {
 }
 
 bool ReceiverReportPacket::Serialize(ByteWriter* byte_writer) {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   header_.count_or_format = report_blocks_.size();
   header_.packet_type = kRtcpTypeRr;
   header_.padding = 0;
@@ -310,7 +310,7 @@ bool ReceiverReportPacket::SetReportBlocks(const std::vector<ReportBlock>&& bloc
 }
 
 bool RtcpCommonFeedback::ParseCommonFeedback(ByteReader* byte_reader) {
-  ASSERT(byte_reader);
+  DCHECK(byte_reader);
   if (!byte_reader->ReadUInt32(&sender_ssrc_))
     return false;
   if (!byte_reader->ReadUInt32(&media_ssrc_))
@@ -319,7 +319,7 @@ bool RtcpCommonFeedback::ParseCommonFeedback(ByteReader* byte_reader) {
 }
 
 bool RtcpCommonFeedback::SerializeCommonFeedback(ByteWriter* byte_writer) const {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   if (!byte_writer->WriteUInt32(sender_ssrc_))
     return false;
   if (!byte_writer->WriteUInt32(media_ssrc_))
@@ -336,7 +336,7 @@ void RtcpCommonFeedback::SetMediaSsrc(uint32_t media_ssrc) {
 }
 
 bool RtcpPliPacket::Serialize(ByteWriter* byte_writer) {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   header_.count_or_format = FeedbackPsMessageType::kPli;
   header_.length = (kHeaderLength + kCommonFeedbackLength) / 4 - 1;
   header_.packet_type = kRtcpTypePsfb;
@@ -351,7 +351,7 @@ bool RtcpPliPacket::Serialize(ByteWriter* byte_writer) {
 }
 
 bool RtcpFirPacket::Serialize(ByteWriter* byte_writer) {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   header_.count_or_format = FeedbackPsMessageType::kFir;
   header_.length = (kHeaderLength + kCommonFeedbackLength + 8 * FCI_.size()) / 4 - 1;
   header_.packet_type = kRtcpTypePsfb;
@@ -384,7 +384,7 @@ void NackPacket::SetLostPacketSequenceNumbers(std::vector<uint16_t> nack_list) {
 }
 
 bool NackPacket::Serialize(ByteWriter* byte_writer) {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   std::vector<PackedNack> packed;
   auto it = packet_lost_sequence_numbers_.begin();
   const auto end = packet_lost_sequence_numbers_.end();
@@ -422,7 +422,7 @@ bool NackPacket::Serialize(ByteWriter* byte_writer) {
 }
 
 bool NackPacket::Parse(ByteReader* byte_reader) {
-  ASSERT(byte_reader);
+  DCHECK(byte_reader);
   if (!ParseCommonHeader(byte_reader))
     return false;
   if (!ParseCommonFeedback(byte_reader))
@@ -451,7 +451,7 @@ bool NackPacket::Parse(ByteReader* byte_reader) {
 bool RrtrBlockContext::Parse(ByteReader* byte_reader) {
   uint32_t seconds = 0;
   uint32_t fraction = 0;
-  ASSERT(byte_reader);
+  DCHECK(byte_reader);
   if (!byte_reader->ReadUInt32(&seconds))
     return false;
   if (!byte_reader->ReadUInt32(&fraction))
@@ -461,7 +461,7 @@ bool RrtrBlockContext::Parse(ByteReader* byte_reader) {
 }
 
 bool RrtrBlockContext::Serialize(ByteWriter* byte_writer) const {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   if (!ntp_)
     return false;
   if (!byte_writer->WriteUInt32(ntp_->Seconds()))
@@ -476,7 +476,7 @@ uint16_t RrtrBlockContext::SizeIn32bits() const {
 }
 
 bool DlrrBlockContext::Parse(ByteReader* byte_reader, uint16_t block_length) {
-  ASSERT(byte_reader);
+  DCHECK(byte_reader);
   if (block_length % 3 != 0) {
     spdlog::warn("Invalid size for dlrr block.");
     return false;
@@ -497,7 +497,7 @@ bool DlrrBlockContext::Parse(ByteReader* byte_reader, uint16_t block_length) {
 }
 
 bool DlrrBlockContext::Serialize(ByteWriter* byte_writer) const {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   for (const auto& sub_block : sub_blocks_) {
     if (!byte_writer->WriteUInt32(sub_block.ssrc))
       return false;
@@ -514,7 +514,7 @@ uint16_t DlrrBlockContext::SizeIn32bits() const {
 }
 
 bool XrPacket::Parse(ByteReader* byte_reader) {
-  ASSERT(byte_reader);
+  DCHECK(byte_reader);
   if (!ParseCommonHeader(byte_reader))
     return false;
   if (!byte_reader->ReadUInt32(&sender_ssrc_))
@@ -557,7 +557,7 @@ bool XrPacket::Parse(ByteReader* byte_reader) {
 }
 
 bool XrPacket::Serialize(ByteWriter* byte_writer) {
-  ASSERT(byte_writer);
+  DCHECK(byte_writer);
   if (rrtr_block_context_)
     header_.length += (rrtr_block_context_->SizeIn32bits() + kBlockHeaderIn32Bits + 1);
   if (dlrr_block_context_)

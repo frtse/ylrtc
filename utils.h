@@ -37,7 +37,7 @@ class NtpTime {
 std::vector<std::string> StringSplit(const std::string& s, const char* delim);
 std::string StringToLower(std::string str);
 
-#define RASSERT(expression)                                             \
+#define CHECK(expression)                                             \
   do {                                                                  \
     if (!(expression)) {                                                \
       std::cerr << "Assertion failed: " << __FILE__ << ":" << __LINE__ \
@@ -50,7 +50,7 @@ std::string StringToLower(std::string str);
   } while (false)
 
 #ifdef NDEBUG
-#define ASSERT(expression)
+#define DCHECK(expression)
 #else
-#define ASSERT(expression) RASSERT(expression)
+#define DCHECK(expression) CHECK(expression)
 #endif

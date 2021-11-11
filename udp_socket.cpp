@@ -65,7 +65,7 @@ void UdpSocket::HandSend(const boost::system::error_code& ec, size_t bytes) {
       listener_->OnUdpSocketError();
   }
 
-  ASSERT(send_queue_.size() > 0);
+  DCHECK(send_queue_.size() > 0);
   send_queue_.pop();
 
   if (send_queue_.size() > 0)
@@ -95,7 +95,7 @@ unsigned short UdpSocket::GetListeningPort() {
 void UdpSocket::StartReceive() {
   if (!receive_data_.buffer)
     receive_data_.buffer.reset(new uint8_t[init_receive_buffer_size_]);
-  ASSERT(socket_);
+  DCHECK(socket_);
 
   socket_->async_receive_from(boost::asio::buffer(receive_data_.buffer.get(), init_receive_buffer_size_), receive_data_.endpoint,
                               boost::bind(&UdpSocket::HandleReceive, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));

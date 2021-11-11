@@ -144,7 +144,7 @@ bool StunMessage::CreateResponse() {
     } else if (mapped_endpoint_->protocol() == udp::v6()) {
       // TODO: Support ipv6.
     } else {
-      ASSERT(false && "Protocol not supported");
+      DCHECK(false && "Protocol not supported");
     }
   }
 

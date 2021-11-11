@@ -59,12 +59,12 @@ std::unordered_map<RTPHeaderExtensionType, uint32_t> ServerSupportRtpExtensionId
 
 uint32_t ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType type) {
   if (extension_id_map_.find(type) == extension_id_map_.end())
-    ASSERT(false);
+    DCHECK(false);
   return extension_id_map_.at(type);
 }
 
 nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std::string& media_type) {
-  ASSERT(media_type == "video" || media_type == "audio");
+  DCHECK(media_type == "video" || media_type == "audio");
   nlohmann::json extensions = nlohmann::json::array();
   nlohmann::json extension;
   extension["value"] = 10;

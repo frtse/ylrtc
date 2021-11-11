@@ -81,7 +81,7 @@ void TransportFeedback::LastChunk::Clear() {
 }
 
 bool TransportFeedback::LastChunk::CanAdd(DeltaSize delta_size) const {
-  ASSERT(delta_size <= 2);
+  DCHECK(delta_size <= 2);
   if (size_ < kMaxTwoBitCapacity)
     return true;
   if (size_ < kMaxOneBitCapacity && !has_large_delta_ && delta_size != kLarge)
@@ -93,7 +93,7 @@ bool TransportFeedback::LastChunk::CanAdd(DeltaSize delta_size) const {
 }
 
 void TransportFeedback::LastChunk::Add(DeltaSize delta_size) {
-  ASSERT(CanAdd(delta_size));
+  DCHECK(CanAdd(delta_size));
   if (size_ < kMaxVectorCapacity)
     delta_sizes_[size_] = delta_size;
   size_++;
@@ -102,7 +102,7 @@ void TransportFeedback::LastChunk::Add(DeltaSize delta_size) {
 }
 
 uint16_t TransportFeedback::LastChunk::Emit() {
-  ASSERT(!CanAdd(0) || !CanAdd(1) || !CanAdd(2));
+  DCHECK(!CanAdd(0) || !CanAdd(1) || !CanAdd(2));
   if (all_same_) {
     uint16_t chunk = EncodeRunLength();
     Clear();
@@ -113,7 +113,7 @@ uint16_t TransportFeedback::LastChunk::Emit() {
     Clear();
     return chunk;
   }
-  ASSERT(size_ >= kMaxTwoBitCapacity);
+  DCHECK(size_ >= kMaxTwoBitCapacity);
   uint16_t chunk = EncodeTwoBit(kMaxTwoBitCapacity);
   // Remove `kMaxTwoBitCapacity` encoded delta sizes:
   // Shift remaining delta sizes and recalculate all_same_ && has_large_delta_.
@@ -131,7 +131,7 @@ uint16_t TransportFeedback::LastChunk::Emit() {
 }
 
 uint16_t TransportFeedback::LastChunk::EncodeLast() const {
-  ASSERT(size_ > 0);
+  DCHECK(size_ > 0);
   if (all_same_)
     return EncodeRunLength();
   if (size_ <= kMaxTwoBitCapacity)
@@ -171,8 +171,8 @@ void TransportFeedback::LastChunk::Decode(uint16_t chunk, size_t max_size) {
 //  S = 0
 //  Symbol list = 14 entries where 0 = not received, 1 = received 1-byte delta.
 uint16_t TransportFeedback::LastChunk::EncodeOneBit() const {
-  ASSERT(!has_large_delta_);
-  ASSERT(size_ <= kMaxOneBitCapacity);
+  DCHECK(!has_large_delta_);
+  DCHECK(size_ <= kMaxOneBitCapacity);
   uint16_t chunk = 0x8000;
   for (size_t i = 0; i < size_; ++i)
     chunk |= delta_sizes_[i] << (kMaxOneBitCapacity - 1 - i);
@@ -181,7 +181,7 @@ uint16_t TransportFeedback::LastChunk::EncodeOneBit() const {
 
 void TransportFeedback::LastChunk::DecodeOneBit(uint16_t chunk,
                                                 size_t max_size) {
-  ASSERT((chunk & 0xc000) == 0x8000);
+  DCHECK((chunk & 0xc000) == 0x8000);
   size_ = std::min(kMaxOneBitCapacity, max_size);
   has_large_delta_ = false;
   all_same_ = false;
@@ -201,7 +201,7 @@ void TransportFeedback::LastChunk::DecodeOneBit(uint16_t chunk,
 //  S = 1
 //  symbol list = 7 entries of two bits each.
 uint16_t TransportFeedback::LastChunk::EncodeTwoBit(size_t size) const {
-  ASSERT(size <= size_);
+  DCHECK(size <= size_);
   uint16_t chunk = 0xc000;
   for (size_t i = 0; i < size; ++i)
     chunk |= delta_sizes_[i] << 2 * (kMaxTwoBitCapacity - 1 - i);
@@ -210,7 +210,7 @@ uint16_t TransportFeedback::LastChunk::EncodeTwoBit(size_t size) const {
 
 void TransportFeedback::LastChunk::DecodeTwoBit(uint16_t chunk,
                                                 size_t max_size) {
-  ASSERT((chunk & 0xc000) ==  0xc000);
+  DCHECK((chunk & 0xc000) ==  0xc000);
   size_ = std::min(kMaxTwoBitCapacity, max_size);
   has_large_delta_ = true;
   all_same_ = false;
@@ -230,14 +230,14 @@ void TransportFeedback::LastChunk::DecodeTwoBit(uint16_t chunk,
 //  S = symbol
 //  Run Length = Unsigned integer denoting the run length of the symbol
 uint16_t TransportFeedback::LastChunk::EncodeRunLength() const {
-  ASSERT(all_same_);
-  ASSERT(size_ <= kMaxRunLengthCapacity);
+  DCHECK(all_same_);
+  DCHECK(size_ <= kMaxRunLengthCapacity);
   return (delta_sizes_[0] << 13) | static_cast<uint16_t>(size_);
 }
 
 void TransportFeedback::LastChunk::DecodeRunLength(uint16_t chunk,
                                                    size_t max_count) {
-  ASSERT((chunk & 0x8000) == 0);
+  DCHECK((chunk & 0x8000) == 0);
   size_ = std::min<size_t>(chunk & 0x1fff, max_count);
   DeltaSize delta_size = (chunk >> 13) & 0x03;
   has_large_delta_ = delta_size >= kLarge;
@@ -282,8 +282,8 @@ TransportFeedback::~TransportFeedback() {}
 
 void TransportFeedback::SetBase(uint16_t base_sequence,
                                 int64_t ref_timestamp_us) {
-  ASSERT(num_seq_no_ == 0);
-  ASSERT(ref_timestamp_us >= 0);
+  DCHECK(num_seq_no_ == 0);
+  DCHECK(ref_timestamp_us >= 0);
   base_seq_no_ = base_sequence;
   base_time_ticks_ = (ref_timestamp_us % kTimeWrapPeriodUs) / kBaseScaleFactor;
   last_timestamp_us_ = GetBaseTimeUs();
@@ -350,7 +350,7 @@ TransportFeedback::GetReceivedPackets() const {
 
 const std::vector<TransportFeedback::ReceivedPacket>&
 TransportFeedback::GetAllPackets() const {
-  ASSERT(include_lost_);
+  DCHECK(include_lost_);
   return all_packets_;
 }
 
@@ -504,7 +504,7 @@ bool TransportFeedback::Parse(ByteReader* byte_reader) {
   }
   // Last chunk is stored in the `last_chunk_`.
   encoded_chunks_.pop_back();
-  ASSERT(delta_sizes.size() == status_count);
+  DCHECK(delta_sizes.size() == status_count);
   num_seq_no_ = status_count;
 
   uint16_t seq_no = base_seq_no_;
@@ -550,7 +550,7 @@ bool TransportFeedback::Parse(ByteReader* byte_reader) {
 
           return false;
         default:
-          ASSERT(false);
+          DCHECK(false);
           break;
       }
       ++seq_no;
@@ -574,7 +574,7 @@ bool TransportFeedback::Parse(ByteReader* byte_reader) {
     }
   }
   size_bytes_ = RtcpPacket::kHeaderLength + index;
-  ASSERT(index <= end_index);
+  DCHECK(index <= end_index);
   byte_reader->Consume(end_index - kCommonFeedbackLength);
   return true;
 }
