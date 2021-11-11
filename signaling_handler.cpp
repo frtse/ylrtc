@@ -1,5 +1,6 @@
 #include "signaling_handler.h"
 
+#include <exception>
 #include "notification.h"
 #include "publish_stream.h"
 #include "room.h"
@@ -75,8 +76,8 @@ std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& 
     }
 
     return response_json.dump();
-  } catch (...) {
-    spdlog::error("Handle signaling failed, signaling: {}", signaling);
+  } catch (const std::exception& e) {
+    spdlog::error("Handle signaling failed, signaling: {}, exception: {}", signaling, e.what());
     return std::nullopt;
   }
 }
