@@ -8,13 +8,13 @@ class ServerConfig {
  public:
   static ServerConfig& GetInstance();
   bool Load(std::string_view json_file_name);
-  const std::string& GetIp() const;
-  const std::string& GetAnnouncedIp() const;
+  std::string_view GetIp() const;
+  std::string_view GetAnnouncedIp() const;
   uint16_t GetSignalingServerPort() const;
   uint16_t GetWebRtcMaxPort() const;
   uint16_t GetWebRtcMinPort() const;
-  const std::string GetCertFile();
-  const std::string GetKeyFile();
+  std::string_view GetCertFile();
+  std::string_view GetKeyFile();
 
  private:
   ServerConfig() = default;

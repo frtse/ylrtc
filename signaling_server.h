@@ -18,7 +18,7 @@ namespace ssl = boost::asio::ssl;
 class SignalingServer : public SignalingSession::Observer {
  public:
   static SignalingServer& GetInstance();
-  bool LoadCertKeyFile(const std::string& cert, const std::string& key);
+  bool LoadCertKeyFile(std::string_view cert, std::string_view key);
   bool Start(std::string_view ip, uint16_t port);
   void Notify(const Notification& notification);
 

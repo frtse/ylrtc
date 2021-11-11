@@ -31,11 +31,11 @@ bool ServerConfig::Load(std::string_view json_file_name) {
   return true;
 }
 
-const std::string& ServerConfig::GetIp() const {
+std::string_view ServerConfig::GetIp() const {
   return ip_;
 }
 
-const std::string& ServerConfig::GetAnnouncedIp() const {
+std::string_view ServerConfig::GetAnnouncedIp() const {
   return announced_ip_;
 }
 
@@ -51,10 +51,10 @@ uint16_t ServerConfig::GetWebRtcMinPort() const {
   return webrtc_min_port_;
 }
 
-const std::string ServerConfig::GetCertFile() {
+std::string_view ServerConfig::GetCertFile() {
   return ssl_cert_file_;
 }
 
-const std::string ServerConfig::GetKeyFile() {
+std::string_view ServerConfig::GetKeyFile() {
   return ssl_key_file_;
 }

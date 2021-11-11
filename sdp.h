@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <string_view>
 
 #include "sdptransform/json.hpp"
 #include "sdptransform/sdptransform.hpp"
@@ -19,7 +20,7 @@ class Sdp {
 
   bool SetSubscribeOffer(const std::string& offer);
   std::string CreateSubscribeAnswer();
-  void SetLocalHostAddress(const std::string& ip, uint16_t port);
+  void SetLocalHostAddress(std::string_view ip, uint16_t port);
   void SetLocalIceInfo(const std::string& ufrag, const std::string& password);
   void SetLocalFingerprint(const std::string& type, const std::string& hash);
   const std::string& GetRemoteDtlsSetup() const;

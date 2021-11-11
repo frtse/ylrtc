@@ -306,7 +306,7 @@ std::string Sdp::CreateSubscribeAnswer() {
   }
 }
 
-void Sdp::SetLocalHostAddress(const std::string& ip, uint16_t port) {
+void Sdp::SetLocalHostAddress(std::string_view ip, uint16_t port) {
   local_host_ip_ = ip;
   local_host_port_ = port;
 }

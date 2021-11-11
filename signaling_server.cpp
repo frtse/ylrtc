@@ -57,10 +57,10 @@ void SignalingServer::OnAccept(boost::system::error_code ec, tcp::socket socket)
   DoAccept();
 }
 
-bool SignalingServer::LoadCertKeyFile(const std::string& cert, const std::string& key) {
+bool SignalingServer::LoadCertKeyFile(std::string_view cert, std::string_view key) {
   try {
-    ssl_ctx_.use_certificate_chain_file(cert);
-    ssl_ctx_.use_private_key_file(key, ssl::context::file_format::pem);
+    ssl_ctx_.use_certificate_chain_file(cert.data());
+    ssl_ctx_.use_private_key_file(key.data(), ssl::context::file_format::pem);
   } catch (...) {
     return false;
   }
