@@ -16,16 +16,16 @@ std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& 
   try {
     auto request_json = nlohmann::json::parse(signaling);
     nlohmann::json response_json;
-    std::string action = request_json["action"];
+    const std::string& action = request_json.at("action");
     response_json["error"] = true;
     if (request_json.find("requestId") != request_json.end())
-      response_json["requestId"] = request_json["requestId"];
+      response_json["requestId"] = request_json.at("requestId");
 
     if (action == "subscribe") {
       // { action: "subscribe", streamId: streamId, offer: offer.sdp }
-      std::string stream_id = request_json["streamId"];
-      std::string offer_sdp = request_json["offer"];
-      std::string participant_id = request_json["participantId"];
+      const std::string& stream_id = request_json.at("streamId");
+      const std::string& offer_sdp = request_json.at("offer");
+      const std::string participant_id = request_json.at("participantId");
       spdlog::debug("subscribe, {} {} {}", session_info_.room_id, session_info_.participant_id, stream_id);
       auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
       if (room) {
@@ -51,8 +51,8 @@ std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& 
         }
       }
     } else if (action == "join") {
-      std::string room_id = request_json["roomId"];
-      std::string participant_id = request_json["participantId"];
+      const std::string& room_id = request_json.at("roomId");
+      const std::string& participant_id = request_json.at("participantId");
       auto room = RoomManager::GetInstance().GetRoomById(room_id);
       auto room_info = room->GetRoomInfo();
       if (room) {
@@ -66,9 +66,9 @@ std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& 
     } else if (action == "publish_muteOrUnmute") {
       // { action: "publish_muteOrUnmute", streamId: this.streamId_, muted :
       // false, type: "audio"}
-      std::string publish_stream_id = request_json["streamId"];
+      const std::string& publish_stream_id = request_json.at("streamId");
       bool muted = request_json["muted"];
-      std::string type = request_json["type"];
+      const std::string& type = request_json.at("type");
       auto notification = Notification::MakePublishMuteOrUnmuteNotification(session_info_.room_id, muted, type, publish_stream_id);
       SignalingServer::GetInstance().Notify(notification);
     } else {
