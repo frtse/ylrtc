@@ -1,5 +1,26 @@
 #include "srtp_session.h"
 
+#include "spdlog/spdlog.h"
+#include "utils.h"
+
+class LibSrtpInitializer {
+ public:
+  static LibSrtpInitializer& GetInstance() {
+    static LibSrtpInitializer instance;
+    return instance;
+  }
+
+ private:
+  LibSrtpInitializer() {
+    CHECK(srtp_init() == srtp_err_status_ok);
+  }
+  ~LibSrtpInitializer() {
+    int err = srtp_shutdown();
+    if (err != srtp_err_status_ok)
+      spdlog::error("srtp_shutdown failed. err = {}.", err);
+  }
+};
+
 std::map<std::string, SrtpSession::CipherSuite> SrtpSession::str_to_cipher_suite_ = {{"SRTP_AES128_CM_SHA1_80", CipherSuite::SUITE_AES_CM_128_HMAC_SHA1_80},
                                                                                      {"SRTP_AES128_CM_SHA1_32", CipherSuite::SUITE_AES_CM_128_HMAC_SHA1_32},
                                                                                      {"SRTP_AEAD_AES_128_GCM", CipherSuite::SUITE_AEAD_AES_128_GCM},
@@ -23,7 +44,9 @@ SrtpSession::CipherSuiteKeySaltLength SrtpSession::GetSuiteKeySaltLength(SrtpSes
   return cipher_suites_key_salt_length_[suite];
 }
 
-SrtpSession::SrtpSession() {}
+SrtpSession::SrtpSession() {
+  LibSrtpInitializer::GetInstance();
+}
 
 SrtpSession::~SrtpSession() {
   if (session_) {

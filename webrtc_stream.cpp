@@ -11,6 +11,7 @@
 #include "signaling_server.h"
 #include "stun_message.h"
 #include "utils.h"
+#include "spdlog/spdlog.h"
 
 WebrtcStream::WebrtcStream(const std::string& stream_id, Observer* observer)
     : observer_{observer}, connection_established_(false), stream_id_{stream_id}, work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {}

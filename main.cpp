@@ -45,11 +45,6 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  if (!LibSrtpInitializer::GetInstance().Initialize()) {
-    spdlog::error("Failed to initialize libsrtp.");
-    return EXIT_FAILURE;
-  }
-
   // TODO: If there is no certificate, use a self-signed certificate?
   if (!SignalingServer::GetInstance().LoadCertKeyFile(ServerConfig::GetInstance().GetCertFile(), ServerConfig::GetInstance().GetKeyFile())) {
     spdlog::error("Load file failed.");

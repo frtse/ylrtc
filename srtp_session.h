@@ -5,29 +5,6 @@
 #include <map>
 #include <string>
 
-#include "spdlog/spdlog.h"
-
-class LibSrtpInitializer {
- public:
-  static LibSrtpInitializer& GetInstance() {
-    static LibSrtpInitializer instance;
-    return instance;
-  }
-
-  bool Initialize() {
-    int err = srtp_init();
-    return err == srtp_err_status_ok;
-  }
-
- private:
-  LibSrtpInitializer() = default;
-  ~LibSrtpInitializer() {
-    int err = srtp_shutdown();
-    if (err != srtp_err_status_ok)
-      spdlog::error("srtp_shutdown failed. err = {}.", err);
-  }
-};
-
 class SrtpSession {
  public:
   enum class CipherSuite { SUITE_NONE, SUITE_AES_CM_128_HMAC_SHA1_80, SUITE_AES_CM_128_HMAC_SHA1_32, SUITE_AEAD_AES_128_GCM, SUITE_AEAD_AES_256_GCM };
