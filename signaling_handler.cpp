@@ -12,10 +12,10 @@
 
 SignalingHandler::SignalingHandler(SignalingSession::SessionInfo& session_info) : session_info_{session_info} {}
 
-std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& signaling) {
+std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
+  nlohmann::json response_json;
   try {
     auto request_json = nlohmann::json::parse(signaling);
-    nlohmann::json response_json;
     const std::string& action = request_json.at("action");
     response_json["error"] = true;
     if (request_json.find("requestId") != request_json.end())
@@ -75,9 +75,9 @@ std::optional<std::string> SignalingHandler::HandleSignaling(const std::string& 
       response_json["error"] = true;
     }
 
-    return response_json.dump();
   } catch (const std::exception& e) {
+    response_json["error"] = true;
     spdlog::error("Handle signaling failed, signaling: {}, exception: {}", signaling, e.what());
-    return std::nullopt;
   }
+  return response_json.dump();
 }

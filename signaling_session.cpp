@@ -77,10 +77,7 @@ void SignalingSession::OnRead(beast::error_code ec, std::size_t bytes_transferre
 
   const auto signaling = boost::beast::buffers_to_string(read_buffer_.data());
   read_buffer_.consume(read_buffer_.size());
-
-  auto response = signaling_handler_->HandleSignaling(signaling);
-  if (response)
-    SendText(*response);
+  SendText(signaling_handler_->HandleSignaling(signaling));
   DoRead();
 }
 
