@@ -69,14 +69,14 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
   if (twsn)
     receive_side_twcc_->IncomingPacket(TimeMillis(), rtp_packet->Ssrc(), *twsn);
   ssrc_track_map_[rtp_packet->Ssrc()]->ReceiveRtpPacket(rtp_packet);
-  for (auto observer : data_observers_)
+  for (auto& observer : data_observers_)
     observer->OnPublishStreamRtpPacketReceive(rtp_packet);
 }
 
 void PublishStream::SendRequestkeyFrame() {
   auto self(shared_from_this());
   work_thread_->PostAsync([self, this] {
-    for (auto track : tracks_) {
+    for (auto& track : tracks_) {
       auto& config = track->Config();
       if (!config.audio)
         track->SendRequestkeyFrame();
@@ -87,8 +87,8 @@ void PublishStream::SendRequestkeyFrame() {
 void PublishStream::RegisterDataObserver(std::shared_ptr<SubscribeStream> observer) {
   auto self(shared_from_this());
   work_thread_->PostSync([self, this, observer]() {
-    auto result = std::find(data_observers_.begin(), data_observers_.end(), observer);
-    if (result == data_observers_.end())
+    auto result = std::find(data_observers_.cbegin(), data_observers_.cend(), observer);
+    if (result == data_observers_.cend())
       data_observers_.push_back(observer);
   });
 }
@@ -96,8 +96,8 @@ void PublishStream::RegisterDataObserver(std::shared_ptr<SubscribeStream> observ
 void PublishStream::UnregisterDataObserver(std::shared_ptr<SubscribeStream> observer) {
   auto self(shared_from_this());
   work_thread_->PostSync([self, this, observer]() {
-    auto result = std::find(data_observers_.begin(), data_observers_.end(), observer);
-    if (result != data_observers_.end())
+    auto result = std::find(data_observers_.cbegin(), data_observers_.cend(), observer);
+    if (result != data_observers_.cend())
       data_observers_.erase(result);
   });
 }

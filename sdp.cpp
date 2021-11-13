@@ -21,7 +21,7 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
     // https://datatracker.ietf.org/doc/html/draft-ietf-mmusic-sdp-bundle-negotiation
     if (publish_offer_sdp.find("groups") != publish_offer_sdp.end()) {
       auto& groups = publish_offer_sdp.at("groups");
-      auto resutl = std::count_if(groups.begin(), groups.end(), [](auto obj) { return obj.at("type") == "BUNDLE"; });
+      auto resutl = std::count_if(groups.cbegin(), groups.cend(), [](auto obj) { return obj.at("type") == "BUNDLE"; });
 
       if (resutl != 1) {
         spdlog::error("Only support one BUNDLE.");
