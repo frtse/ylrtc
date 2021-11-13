@@ -45,8 +45,9 @@ void WorkerThreadPool::StopAll() {
 
 WorkerThreadPool::WorkerThreadPool() {
   int threads = std::thread::hardware_concurrency();
+  work_threads_.reserve(threads);
   for (int i = 0; i < threads; ++i) {
     auto worker = std::make_shared<WorkerThread>();
-    work_threads_.insert(worker);
+    work_threads_.push_back(worker);
   }
 }

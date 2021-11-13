@@ -3,7 +3,7 @@
 #include <boost/asio.hpp>
 #include <future>
 #include <memory>
-#include <unordered_set>
+#include <vector>
 #include <thread>
 
 class Thread {
@@ -63,5 +63,5 @@ class WorkerThreadPool {
 
  private:
   WorkerThreadPool();
-  std::unordered_set<std::shared_ptr<WorkerThread>> work_threads_;
+  std::vector<std::shared_ptr<WorkerThread>> work_threads_;
 };
