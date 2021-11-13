@@ -48,6 +48,7 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
       if (rtp_packet->PayloadType() == config.payload_type) {
         config.ssrc = rtp_packet->Ssrc();
         config.rid = *rid;
+        config.extension_capability = extension_capability;
         std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), this);
         tracks_.push_back(track);
         ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
@@ -62,19 +63,8 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
       }
     }
   }
-  if (ssrc_track_map_[rtp_packet->Ssrc()]->Config().audio) {
-    if (section_type_extensions_map_.find("audio") != section_type_extensions_map_.end())
-      rtp_packet->SetExtensionCapability(section_type_extensions_map_.at("audio"));
-    else
-      return;
-  }
-  else {
-    if (section_type_extensions_map_.find("video") != section_type_extensions_map_.end())
-      rtp_packet->SetExtensionCapability(section_type_extensions_map_.at("video"));
-    else
-      return;
-  }
 
+  rtp_packet->SetExtensionCapability(ssrc_track_map_[rtp_packet->Ssrc()]->Config().extension_capability);
   auto twsn = rtp_packet->GetExtensionValue<TransportSequenceNumberExtension>();
   if (twsn)
     receive_side_twcc_->IncomingPacket(TimeMillis(), rtp_packet->Ssrc(), *twsn);
@@ -215,12 +205,10 @@ void PublishStream::SetLocalDescription() {
       }
     }
     if (media_section.find("ext") != media_section.end()) {
-      RtpHeaderExtensionCapability extension_capability;
       const auto& extensions = media_section.at("ext");
       for (const auto& extension : extensions)
-        extension_capability.Register(extension.at("value"), extension.at("uri"));
-      section_type_extensions_map_.insert(std::make_pair(media_section.at("type"), extension_capability));
-      extension_capabilities_.push_back(extension_capability);
+        config.extension_capability.Register(extension.at("value"), extension.at("uri"));
+      extension_capabilities_.push_back(config.extension_capability);
     }
     if (has_ssrc) {
       std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), this);
