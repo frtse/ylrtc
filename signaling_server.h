@@ -1,12 +1,10 @@
 #pragma once
 
-#include <boost/asio.hpp>
-#include <boost/beast/ssl.hpp>
 #include <cstdint>
 #include <memory>
-#include <set>
-#include <string>
+#include <unordered_set>
 #include <string_view>
+#include <boost/asio.hpp>
 
 #include "notification.h"
 #include "signaling_session.h"
@@ -31,5 +29,5 @@ class SignalingServer : public SignalingSession::Observer {
   net::io_context& ioc_;
   tcp::acceptor acceptor_;
   ssl::context ssl_ctx_{ssl::context::tlsv12};
-  std::set<std::shared_ptr<SignalingSession>> sessions_;
+  std::unordered_set<std::shared_ptr<SignalingSession>> sessions_;
 };

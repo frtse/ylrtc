@@ -1,7 +1,5 @@
 #include "threads.h"
 
-#include <cstdlib>
-
 boost::asio::io_context& Thread::MessageLoop() {
   return message_loop_;
 }

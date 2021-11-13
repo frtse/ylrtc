@@ -9,8 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "sdptransform/json.hpp"
-
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace websocket = beast::websocket;
