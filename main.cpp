@@ -19,14 +19,14 @@ int main(int argc, char* argv[]) {
     std::cout << "Parameter error. Usage: WebrtcSFU [Configuration file path]." << std::endl;
     return EXIT_FAILURE;
   }
-
   // TODO: More detailed log configuration.
 #ifdef NDEBUG
   spdlog::set_level(spdlog::level::info);
 #else
   spdlog::set_level(spdlog::level::debug);
 #endif
-  spdlog::set_pattern("[%H:%M:%S.%e][thread %t][%l] : %v");
+  auto console = spdlog::stdout_color_mt("console");
+  spdlog::set_default_logger(console);
 
   rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
   setrlimit(RLIMIT_CORE, &l);
@@ -64,7 +64,5 @@ int main(int argc, char* argv[]) {
   });
 
   MainThread::GetInstance().MessageLoop().run();
-  // Clean up resources.
-  RoomManager::GetInstance().Clear();
   return EXIT_SUCCESS;
 }

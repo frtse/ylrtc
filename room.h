@@ -14,6 +14,7 @@
 class Room : public WebrtcStream::Observer {
  public:
   explicit Room(const std::string& id);
+  ~Room();
   const std::string& Id() const;
 
   bool Join(const std::string& participant_id);
@@ -32,7 +33,7 @@ class Room : public WebrtcStream::Observer {
   std::string id_;
   std::unordered_set<std::string> participant_id_set_;
   std::unordered_map<std::string, std::unordered_set<std::shared_ptr<PublishStream>>> participant_publishs_map_;
-  std::unordered_map<std::string, std::unordered_set<std::shared_ptr<SubscribeStream>>> participant_subscribes_map_;
   std::unordered_map<std::shared_ptr<PublishStream>, std::unordered_set<std::shared_ptr<SubscribeStream>>> publish_subscribes_map_;
+  std::unordered_map<std::string, std::unordered_set<std::shared_ptr<SubscribeStream>>> participant_subscribes_map_;
   Random random_;
 };

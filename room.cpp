@@ -153,7 +153,6 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
         subscribe_stream_set.erase(subscribe_stream_set_iter);
       }
     }
-
 #if 1
     spdlog::debug("Print participant id set.");
     for (auto id : participant_id_set_) {
@@ -207,4 +206,43 @@ nlohmann::json Room::GetRoomInfo() {
   }
   info["streams"] = streams;
   return info;
+}
+
+Room::~Room() {
+  MainThread::GetInstance().PostAsync([this] {
+    for (auto iter = participant_publishs_map_.begin(); iter != participant_publishs_map_.end(); ++iter) {
+      auto& publish_stream_set = iter->second;
+      for (auto publish_stream : publish_stream_set) {
+        auto notification = Notification::MakeStreamRemovedNotification(id_, iter->first, publish_stream->GetStreamId());
+        SignalingServer::GetInstance().Notify(notification);
+        auto publish_subscribes_map_iter = publish_subscribes_map_.find(publish_stream);
+        if (publish_subscribes_map_iter != publish_subscribes_map_.end()) {
+          auto& subscribe_stream_set = publish_subscribes_map_iter->second;
+          for (auto subscribe_stream : subscribe_stream_set) {
+            publish_stream->UnregisterDataObserver(subscribe_stream);
+          }
+          publish_subscribes_map_.erase(publish_subscribes_map_iter);
+        }
+        publish_stream_set.erase(publish_stream);
+      }
+    }
+
+    for (auto iter = participant_subscribes_map_.begin(); iter != participant_subscribes_map_.end(); ++iter) {
+      auto& subscribe_stream_set = iter->second;
+      for (auto subscribe_stream : subscribe_stream_set) {
+        for (auto publish_subscribes_map_iter = publish_subscribes_map_.begin(); publish_subscribes_map_iter != publish_subscribes_map_.end(); ++publish_subscribes_map_iter) {
+          auto& subscribe_stream_set = publish_subscribes_map_iter->second;
+          auto publish_stream = publish_subscribes_map_iter->first;
+          for (auto subscribe_stream_set_iter = subscribe_stream_set.begin(); subscribe_stream_set_iter != subscribe_stream_set.end();) {
+            if ((*subscribe_stream_set_iter)->GetStreamId() == subscribe_stream->GetStreamId()) {
+              publish_stream->UnregisterDataObserver(*subscribe_stream_set_iter);
+              subscribe_stream_set.erase(subscribe_stream_set_iter++);
+            } else
+              ++subscribe_stream_set_iter;
+          }
+        }
+        subscribe_stream_set.erase(subscribe_stream);
+      }
+    }
+  });
 }
