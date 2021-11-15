@@ -1,16 +1,12 @@
 #pragma once
 
-#include <boost/asio.hpp>
 #include <cstddef>
-#include <list>
 #include <memory>
 #include <string>
-#include <thread>
 
 #include "dtls_transport.h"
 #include "ice_lite.h"
 #include "sdp.h"
-#include "sdptransform/json.hpp"
 #include "srtp_session.h"
 #include "threads.h"
 #include "udp_socket.h"

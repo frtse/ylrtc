@@ -6,7 +6,6 @@
 #include <memory>
 #include <queue>
 #include <string_view>
-#include <thread>
 
 using udp = boost::asio::ip::udp;
 

@@ -1,16 +1,11 @@
 #include "webrtc_stream.h"
 
-#include <iostream>
-
 #include "dtls_context.h"
-#include "rtcp_packet.h"
-#include "rtp_packet.h"
 #include "rtp_utils.h"
-#include "sdptransform/sdptransform.hpp"
 #include "server_config.h"
-#include "signaling_server.h"
-#include "stun_message.h"
 #include "utils.h"
+#include "stun_message.h"
+#include "rtcp_packet.h"
 #include "spdlog/spdlog.h"
 
 WebrtcStream::WebrtcStream(const std::string& stream_id, Observer* observer)

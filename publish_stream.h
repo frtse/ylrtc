@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include <list>
 
 #include "publish_stream_track.h"
 #include "rtp_packet.h"
