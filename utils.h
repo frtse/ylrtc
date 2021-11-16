@@ -35,7 +35,7 @@ class NtpTime {
 };
 
 std::vector<std::string> StringSplit(const std::string& s, const char* delim);
-std::string StringToLower(std::string str);
+std::string StringToLower(const std::string& str);
 
 #define CHECK(expression)                                             \
   do {                                                                  \

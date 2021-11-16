@@ -67,7 +67,8 @@ std::vector<std::string> StringSplit(const std::string& s, const char* delim) {
   return ret;
 }
 
-std::string StringToLower(std::string str) {
-  std::transform(str.begin(), str.end(), str.begin(), towlower);
-  return str;
+std::string StringToLower(const std::string& str) {
+  std::string result(str.size(), '\0');
+  std::transform(str.begin(), str.end(), result.begin(), towlower);
+  return result;
 }

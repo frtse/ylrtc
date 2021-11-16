@@ -1,5 +1,6 @@
 #include "udp_socket.h"
 
+#include "boost/bind.hpp"
 #include "utils.h"
 #include "spdlog/spdlog.h"
 

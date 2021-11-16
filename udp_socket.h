@@ -1,7 +1,6 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
 #include <cstddef>
 #include <memory>
 #include <queue>
