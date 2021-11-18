@@ -38,11 +38,25 @@ bool SignalingServer::Start(std::string_view ip, uint16_t port) {
   return true;
 }
 
+void SignalingServer::Close() {
+  boost::system::error_code err;
+  acceptor_.cancel();
+  acceptor_.close(err);
+  closed_ = true;
+  for (auto& session : sessions_)
+    session->Close();
+  sessions_.clear();
+}
+
 void SignalingServer::DoAccept() {
+  if (closed_)
+    return;
   acceptor_.async_accept(std::bind(&SignalingServer::OnAccept, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 void SignalingServer::OnAccept(boost::system::error_code ec, tcp::socket socket) {
+  if (closed_)
+    return;
   if (ec) {
     spdlog::error("Signaling server accept failed. ec = {}", ec.message());
   } else {

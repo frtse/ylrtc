@@ -11,7 +11,7 @@
 #include "subscribe_stream.h"
 #include "webrtc_stream.h"
 
-class Room : public WebrtcStream::Observer {
+class Room : public WebrtcStream::Observer, public std::enable_shared_from_this<Room> {
  public:
   explicit Room(const std::string& id);
   ~Room();
@@ -23,7 +23,7 @@ class Room : public WebrtcStream::Observer {
   std::shared_ptr<SubscribeStream> ParticipantSubscribe(const std::string& src_participant_id, const std::string& dst_participant_id, const std::string& stream_id, const std::string& sdp);
 
   nlohmann::json GetRoomInfo();
-
+  void Destroy();
  private:
   void OnWebrtcStreamConnected(const std::string& stream_id) override;
   void OnWebrtcStreamShutdown(const std::string& stream_id) override;

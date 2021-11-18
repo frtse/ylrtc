@@ -7,15 +7,15 @@ RoomManager& RoomManager::GetInstance() {
   return instance;
 }
 
-Room* RoomManager::CreateRoom(const std::string& room_id) {
+std::shared_ptr<Room> RoomManager::CreateRoom(const std::string& room_id) {
   if (id_room_map_.find(room_id) != id_room_map_.end())
     return nullptr;
-  auto new_room = new Room(room_id);
+  auto new_room = std::make_shared<Room>(room_id);
   id_room_map_[room_id] = new_room;
   return new_room;
 }
 
-Room* RoomManager::GetRoomById(const std::string& room_id) {
+std::shared_ptr<Room> RoomManager::GetRoomById(const std::string& room_id) {
   auto result = id_room_map_.find(room_id);
   if (result == id_room_map_.end())
     return nullptr;
@@ -25,14 +25,12 @@ Room* RoomManager::GetRoomById(const std::string& room_id) {
 void RoomManager::DestroyRoom(const std::string& room_id) {
   auto result = id_room_map_.find(room_id);
   if (result != id_room_map_.end()) {
-    delete result->second;
     id_room_map_.erase(result);
   }
 }
 
 void RoomManager::Clear() {
-  for (auto& i : id_room_map_) {
-    delete i.second;
-  }
+  for (auto& p : id_room_map_)
+    p.second->Destroy();
   id_room_map_.clear();
 }

@@ -14,9 +14,9 @@
 #include "rtp_header_extension.h"
 
 class SubscribeStream;
-class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer, public std::enable_shared_from_this<PublishStream> {
+class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer {
  public:
-  PublishStream(const std::string& stream_id, WebrtcStream::Observer* observer);
+  PublishStream(const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer);
   ~PublishStream();
   bool SetRemoteDescription(const std::string& offer) override;
   std::string CreateAnswer() override;

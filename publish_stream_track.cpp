@@ -35,8 +35,6 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
   receive_statistician_.ReceivePacket(rtp_packet); // TODO: Separate RTX.
   if (!configuration_.audio && !rtp_packet->ParsePayload(configuration_.codec))
     return;
-  if (rtp_packet->IsKeyFrame())
-    spdlog::debug("Recv key frame.");
   if (configuration_.nack_enabled) {
     if (is_rtx)
       nack_request_->OnReceivedPacket(rtp_packet->SequenceNumber(), rtp_packet->IsKeyFrame(), true);

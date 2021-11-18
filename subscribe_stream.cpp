@@ -15,7 +15,7 @@ std::string SubscribeStream::CreateAnswer() {
   return sdp_.CreateSubscribeAnswer();
 }
 
-SubscribeStream::SubscribeStream(const std::string& stream_id, WebrtcStream::Observer* observer) : WebrtcStream(stream_id, observer) {}
+SubscribeStream::SubscribeStream(const std::string& stream_id,std::shared_ptr<WebrtcStream::Observer> observer) : WebrtcStream(stream_id, observer) {}
 
 SubscribeStream::~SubscribeStream() {}
 

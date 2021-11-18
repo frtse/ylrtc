@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 #include "boost/asio.hpp"
 #include "dtls_context.h"
@@ -13,6 +14,7 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "srtp_session.h"
 #include "threads.h"
+#include "webrtc_stream.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -59,10 +61,11 @@ int main(int argc, char* argv[]) {
   signals.async_wait([&](const boost::system::error_code &error, int signal_number) {
     if (signal_number == SIGINT && !error) {
       spdlog::info("Recv signal {}, Exit eventloop.", signal_number);
-      MainThread::GetInstance().MessageLoop().stop();
+      SignalingServer::GetInstance().Close();
+      RoomManager::GetInstance().Clear();
+      WorkerThreadPool::GetInstance().StopAll();
     }
   });
-
   MainThread::GetInstance().MessageLoop().run();
   return EXIT_SUCCESS;
 }

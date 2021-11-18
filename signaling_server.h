@@ -18,6 +18,7 @@ class SignalingServer : public SignalingSession::Observer {
   static SignalingServer& GetInstance();
   bool LoadCertKeyFile(std::string_view cert, std::string_view key);
   bool Start(std::string_view ip, uint16_t port);
+  void Close();
   void Notify(const Notification& notification);
 
  private:
@@ -28,6 +29,7 @@ class SignalingServer : public SignalingSession::Observer {
 
   net::io_context& ioc_;
   tcp::acceptor acceptor_;
+  bool closed_{false};
   ssl::context ssl_ctx_{ssl::context::tlsv12};
   std::unordered_set<std::shared_ptr<SignalingSession>> sessions_;
 };

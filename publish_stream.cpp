@@ -9,7 +9,7 @@
 #include "byte_buffer.h"
 #include "spdlog/spdlog.h"
 
-PublishStream::PublishStream(const std::string& stream_id, WebrtcStream::Observer* observer) : WebrtcStream(stream_id, observer) {
+PublishStream::PublishStream(const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer) : WebrtcStream(stream_id, observer) {
   receive_side_twcc_.reset(new ReceiveSideTWCC(work_thread_->MessageLoop(), [this](std::vector<std::unique_ptr<RtcpPacket>> packets) {
     uint8_t buffer[1500];
     for (auto& packet : packets) {

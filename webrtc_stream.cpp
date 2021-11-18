@@ -8,8 +8,9 @@
 #include "rtcp_packet.h"
 #include "spdlog/spdlog.h"
 
-WebrtcStream::WebrtcStream(const std::string& stream_id, Observer* observer)
-    : observer_{observer}, connection_established_(false), stream_id_{stream_id}, work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {}
+WebrtcStream::WebrtcStream(const std::string& stream_id, std::shared_ptr<Observer> observer)
+    : observer_{observer}, connection_established_(false), stream_id_{stream_id}, work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {
+    }
 
 bool WebrtcStream::Start() {
   udp_socket_.reset(new UdpSocket(work_thread_->MessageLoop(), this, 5000));
@@ -30,13 +31,23 @@ bool WebrtcStream::Start() {
 }
 
 WebrtcStream::~WebrtcStream() {
-  Stop();
-}
-
-void WebrtcStream::Stop() {
   udp_socket_->Close();
   if (dtls_transport_)
     dtls_transport_->Stop();
+}
+
+const std::string& WebrtcStream::GetStreamId() const {
+  return stream_id_;
+}
+
+void WebrtcStream::Stop() {
+  auto self(shared_from_this());
+  work_thread_->PostAsync([self, this] {
+    udp_socket_->Close();
+    if (dtls_transport_)
+      dtls_transport_->Stop();
+    Shutdown();
+  });
 }
 
 void WebrtcStream::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::endpoint* remote_ep) {
@@ -116,8 +127,11 @@ void WebrtcStream::OnDtlsTransportShutdown() {
 }
 
 void WebrtcStream::Shutdown() {
+  if (stoped_)
+    return;
   if (observer_)
     observer_->OnWebrtcStreamShutdown(stream_id_);
+  stoped_ = true;
 }
 
 void WebrtcStream::SendRtp(uint8_t* data, size_t size) {

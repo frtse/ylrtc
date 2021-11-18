@@ -10,8 +10,8 @@ void Thread::CheckInThisThread() {
 }
 
 MainThread& MainThread::GetInstance() {
-  static MainThread instance;
-  return instance;
+  static MainThread* instance = new MainThread;
+  return *instance;
 }
 
 MainThread::MainThread() {

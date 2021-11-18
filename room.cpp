@@ -34,8 +34,7 @@ std::shared_ptr<PublishStream> Room::ParticipantPublish(const std::string& parti
   if (participant_id_set_.find(participant_id) == participant_id_set_.end())
     return nullptr;
   std::string stream_id = random_.RandomString(64);
-  auto publish_stream = std::make_shared<PublishStream>(stream_id, this);
-
+  auto publish_stream = std::make_shared<PublishStream>(stream_id, shared_from_this());
   if (!publish_stream->SetRemoteDescription(offer)) {
     return nullptr;
   }
@@ -65,7 +64,7 @@ std::shared_ptr<SubscribeStream> Room::ParticipantSubscribe(const std::string& s
   auto publish_stream = *publish_stream_set_iter;
 
   std::string subscribe_stream_id = random_.RandomString(64);
-  auto subscribe_stream = std::make_shared<SubscribeStream>(subscribe_stream_id, this);
+  auto subscribe_stream = std::make_shared<SubscribeStream>(subscribe_stream_id, shared_from_this());
 
   subscribe_stream->SetPublishSdp(publish_stream->GetSdp());
 
@@ -85,7 +84,8 @@ std::shared_ptr<SubscribeStream> Room::ParticipantSubscribe(const std::string& s
 }
 
 void Room::OnWebrtcStreamConnected(const std::string& stream_id) {
-  MainThread::GetInstance().PostAsync([this, stream_id] {
+  auto self(shared_from_this());
+  MainThread::GetInstance().PostAsync([self, this, stream_id] {
     for (auto iter = participant_publishs_map_.begin(); iter != participant_publishs_map_.end(); ++iter) {
       auto& publish_streams = iter->second;
       auto publish_streams_iter = std::find_if(publish_streams.begin(), publish_streams.end(), [stream_id](auto s) { return s->GetStreamId() == stream_id; });
@@ -112,7 +112,8 @@ void Room::OnWebrtcStreamConnected(const std::string& stream_id) {
 }
 
 void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
-  MainThread::GetInstance().PostAsync([this, stream_id] {
+  auto self(shared_from_this());
+  MainThread::GetInstance().PostAsync([self, this, stream_id] {
     for (auto iter = participant_publishs_map_.begin(); iter != participant_publishs_map_.end(); ++iter) {
       auto& publish_stream_set = iter->second;
       auto publish_stream_set_iter = std::find_if(publish_stream_set.begin(), publish_stream_set.end(), [stream_id](auto stream) { return stream_id == stream->GetStreamId(); });
@@ -209,40 +210,18 @@ nlohmann::json Room::GetRoomInfo() {
 }
 
 Room::~Room() {
-  MainThread::GetInstance().PostAsync([this] {
-    for (auto iter = participant_publishs_map_.begin(); iter != participant_publishs_map_.end(); ++iter) {
-      auto& publish_stream_set = iter->second;
-      for (auto publish_stream : publish_stream_set) {
-        auto notification = Notification::MakeStreamRemovedNotification(id_, iter->first, publish_stream->GetStreamId());
-        SignalingServer::GetInstance().Notify(notification);
-        auto publish_subscribes_map_iter = publish_subscribes_map_.find(publish_stream);
-        if (publish_subscribes_map_iter != publish_subscribes_map_.end()) {
-          auto& subscribe_stream_set = publish_subscribes_map_iter->second;
-          for (auto subscribe_stream : subscribe_stream_set) {
-            publish_stream->UnregisterDataObserver(subscribe_stream);
-          }
-          publish_subscribes_map_.erase(publish_subscribes_map_iter);
-        }
-        publish_stream_set.erase(publish_stream);
-      }
-    }
+  spdlog::debug("~Room");
+}
 
-    for (auto iter = participant_subscribes_map_.begin(); iter != participant_subscribes_map_.end(); ++iter) {
-      auto& subscribe_stream_set = iter->second;
-      for (auto subscribe_stream : subscribe_stream_set) {
-        for (auto publish_subscribes_map_iter = publish_subscribes_map_.begin(); publish_subscribes_map_iter != publish_subscribes_map_.end(); ++publish_subscribes_map_iter) {
-          auto& subscribe_stream_set = publish_subscribes_map_iter->second;
-          auto publish_stream = publish_subscribes_map_iter->first;
-          for (auto subscribe_stream_set_iter = subscribe_stream_set.begin(); subscribe_stream_set_iter != subscribe_stream_set.end();) {
-            if ((*subscribe_stream_set_iter)->GetStreamId() == subscribe_stream->GetStreamId()) {
-              publish_stream->UnregisterDataObserver(*subscribe_stream_set_iter);
-              subscribe_stream_set.erase(subscribe_stream_set_iter++);
-            } else
-              ++subscribe_stream_set_iter;
-          }
-        }
-        subscribe_stream_set.erase(subscribe_stream);
-      }
-    }
-  });
+void Room::Destroy() {
+  for (auto iter = participant_publishs_map_.begin(); iter != participant_publishs_map_.end(); ++iter) {
+    auto& publish_stream_set = iter->second;
+    for (auto publish_stream : publish_stream_set)
+      publish_stream->Stop();
+  }
+  for (auto iter = participant_subscribes_map_.begin(); iter != participant_subscribes_map_.end(); ++iter) {
+    auto& subscribe_stream_set = iter->second;
+    for (auto subscribe_stream : subscribe_stream_set)
+      subscribe_stream->Stop();
+  }
 }

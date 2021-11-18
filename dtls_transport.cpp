@@ -182,6 +182,7 @@ void DtlsTransport::Stop() {
     timer_.reset();
 
   if (ssl_) {
+    SSL_set_ex_data(ssl_, 0, nullptr);
     SSL_free(ssl_);
     ssl_ = NULL;
     read_bio_ = NULL;
@@ -195,7 +196,7 @@ bool DtlsTransport::CheckRemoteCertificate() {
   unsigned char fingerprint[EVP_MAX_MD_SIZE];
   unsigned int size = 0;
 
-  certificate = SSL_get_peer_certificate(this->ssl_);
+  certificate = SSL_get_peer_certificate(ssl_);
 
   if (!certificate) {
     spdlog::error("No certificate was provided by the peer");
@@ -305,7 +306,7 @@ void DtlsTransport::OnSSLInfo(int where, int ret) {
     role = "undefined";
 
   if ((where & SSL_CB_LOOP) != 0) {
-    spdlog::debug("[role:{}, action:'{}']", role, SSL_state_string_long(this->ssl_));
+    spdlog::debug("[role:{}, action:'{}']", role, SSL_state_string_long(ssl_));
   } else if ((where & SSL_CB_ALERT) != 0) {
     const char* alertType;
 
@@ -331,9 +332,9 @@ void DtlsTransport::OnSSLInfo(int where, int ret) {
     }
   } else if ((where & SSL_CB_EXIT) != 0) {
     if (ret == 0)
-      spdlog::debug("[role:{}, failed:'{}']", role, SSL_state_string_long(this->ssl_));
+      spdlog::debug("[role:{}, failed:'{}']", role, SSL_state_string_long(ssl_));
     else if (ret < 0)
-      spdlog::debug("role: {}, waiting:'{}']", role, SSL_state_string_long(this->ssl_));
+      spdlog::debug("role: {}, waiting:'{}']", role, SSL_state_string_long(ssl_));
   } else if ((where & SSL_CB_HANDSHAKE_START) != 0) {
     spdlog::debug("DTLS handshake start");
   } else if ((where & SSL_CB_HANDSHAKE_DONE) != 0) {

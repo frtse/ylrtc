@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <atomic>
 
 #include "dtls_transport.h"
 #include "ice_lite.h"
@@ -11,20 +12,17 @@
 #include "threads.h"
 #include "udp_socket.h"
 
-class WebrtcStream : public UdpSocket::Observer, public IceLite::Observer, public DtlsTransport::Observer {
+class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>, public UdpSocket::Observer, public IceLite::Observer, public DtlsTransport::Observer {
  public:
   class Observer {
    public:
     virtual void OnWebrtcStreamConnected(const std::string& stream_id) = 0;
     virtual void OnWebrtcStreamShutdown(const std::string& stream_id) = 0;
   };
-
-  WebrtcStream(const std::string& stream_id, Observer* observer);
+  WebrtcStream(const std::string& stream_id, std::shared_ptr<Observer> observer);
   ~WebrtcStream();
 
-  std::string GetStreamId() const {
-    return stream_id_;
-  }
+  const std::string& GetStreamId() const;
   virtual bool SetRemoteDescription(const std::string& offser) = 0;
   virtual std::string CreateAnswer() = 0;
   virtual void SetLocalDescription() = 0;
@@ -62,5 +60,6 @@ class WebrtcStream : public UdpSocket::Observer, public IceLite::Observer, publi
   std::shared_ptr<WorkerThread> work_thread_;
   Sdp sdp_;
   std::string stream_id_;
-  Observer* observer_;
+  std::atomic<bool> stoped_{false};
+  std::shared_ptr<Observer> observer_;
 };

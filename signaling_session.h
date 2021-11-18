@@ -35,7 +35,7 @@ class SignalingSession : public std::enable_shared_from_this<SignalingSession> {
 
   // Start the asynchronous operation.
   void Run();
-
+  void Close();
   void SendText(const std::string& text);
   const SessionInfo& GetSessionInfo() const;
 

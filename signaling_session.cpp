@@ -32,6 +32,11 @@ void SignalingSession::Run() {
   net::dispatch(ws_.get_executor(), beast::bind_front_handler(&SignalingSession::OnRun, shared_from_this()));
 }
 
+void SignalingSession::Close() {
+  boost::system::error_code err;
+  ws_.close(websocket::close_reason(websocket::close_code::normal), err);
+}
+
 void SignalingSession::OnRun() {
   // Set the timeout.
   beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(kSslTimeoutSeconds));
@@ -103,7 +108,6 @@ void SignalingSession::Fail(beast::error_code ec, char const* what) {
 }
 
 SignalingSession::~SignalingSession() {
-  spdlog::debug("call ~SignalingSession");
 }
 
 const SignalingSession::SessionInfo& SignalingSession::GetSessionInfo() const {

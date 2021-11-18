@@ -10,9 +10,9 @@
 #include "subscribe_stream_track.h"
 #include "webrtc_stream.h"
 
-class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observer, public std::enable_shared_from_this<SubscribeStream> {
+class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observer {
  public:
-  SubscribeStream(const std::string& stream_id, WebrtcStream::Observer* observer);
+  SubscribeStream(const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer);
   ~SubscribeStream();
   void SetPublishSdp(const Sdp& publish_sdp);
   bool SetRemoteDescription(const std::string& offer) override;
