@@ -57,10 +57,10 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  boost::asio::signal_set signals(MainThread::GetInstance().MessageLoop(), SIGINT);
+  boost::asio::signal_set signals(MainThread::GetInstance().MessageLoop(), SIGINT, SIGTERM);
   signals.async_wait([&](const boost::system::error_code &error, int signal_number) {
-    if (signal_number == SIGINT && !error) {
-      spdlog::info("Recv signal {}, Exit eventloop.", signal_number);
+    if (!error && (signal_number == SIGINT || signal_number == SIGTERM)) {
+      spdlog::info("Capture signal[{}], Perform a clean shutdown.", signal_number);
       SignalingServer::GetInstance().Close();
       RoomManager::GetInstance().Clear();
       WorkerThreadPool::GetInstance().StopAll();
