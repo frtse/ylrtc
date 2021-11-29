@@ -29,20 +29,15 @@ SignalingSession::SignalingSession(tcp::socket&& socket, ssl::context& ctx, Obse
 
 // Start the asynchronous operation
 void SignalingSession::Run() {
-  net::dispatch(ws_.get_executor(), beast::bind_front_handler(&SignalingSession::OnRun, shared_from_this()));
+  // Set the timeout.
+  beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(kSslTimeoutSeconds));
+  // Perform the SSL handshake
+  ws_.next_layer().async_handshake(ssl::stream_base::server, beast::bind_front_handler(&SignalingSession::OnHandshake, shared_from_this()));
 }
 
 void SignalingSession::Close() {
   boost::system::error_code err;
   ws_.close(websocket::close_reason(websocket::close_code::normal), err);
-}
-
-void SignalingSession::OnRun() {
-  // Set the timeout.
-  beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(kSslTimeoutSeconds));
-
-  // Perform the SSL handshake
-  ws_.next_layer().async_handshake(ssl::stream_base::server, beast::bind_front_handler(&SignalingSession::OnHandshake, shared_from_this()));
 }
 
 void SignalingSession::OnHandshake(beast::error_code ec) {

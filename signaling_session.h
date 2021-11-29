@@ -46,7 +46,6 @@ class SignalingSession : public std::enable_shared_from_this<SignalingSession> {
   boost::beast::multi_buffer read_buffer_;
 
   void DoRead();
-  void OnRun();
   void OnRead(beast::error_code ec, std::size_t bytes_transferred);
   void DoWrite();
   void OnWrite(beast::error_code ec, std::size_t bytes_transferred);
