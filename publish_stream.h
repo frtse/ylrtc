@@ -25,6 +25,9 @@ class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer {
   void RegisterDataObserver(std::shared_ptr<SubscribeStream> observer);
   void UnregisterDataObserver(std::shared_ptr<SubscribeStream> observer);
   void SendRequestkeyFrame();
+  void UpdateMuteInfo(const std::string& type, bool muted);
+  bool HasVideo() const;
+  bool HasAudio() const;
 
  private:
   void OnRtpPacketReceive(uint8_t* data, size_t length) override;
@@ -37,4 +40,7 @@ class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer {
   std::unordered_map<std::string, PublishStreamTrack::Configuration> rid_configuration_map_;
   std::unordered_map<std::string, RtpHeaderExtensionCapability> section_type_extensions_map_;
   std::vector<RtpHeaderExtensionCapability> extension_capabilities_;
+  // Stream mute info.
+  bool has_video_;
+  bool has_audio_;
 };

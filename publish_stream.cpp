@@ -9,7 +9,8 @@
 #include "byte_buffer.h"
 #include "spdlog/spdlog.h"
 
-PublishStream::PublishStream(const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer) : WebrtcStream(stream_id, observer) {
+PublishStream::PublishStream(const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer)
+  : WebrtcStream(stream_id, observer), has_video_{false}, has_audio_{false} {
   receive_side_twcc_.reset(new ReceiveSideTWCC(work_thread_->MessageLoop(), [this](std::vector<std::unique_ptr<RtcpPacket>> packets) {
     uint8_t buffer[1500];
     for (auto& packet : packets) {
@@ -84,6 +85,21 @@ void PublishStream::SendRequestkeyFrame() {
   });
 }
 
+void PublishStream::UpdateMuteInfo(const std::string& type, bool muted) {
+  if (type == "audio")
+    has_audio_ = !muted;
+  else if (type == "video")
+    has_video_ = !muted;
+}
+
+bool PublishStream::HasVideo() const {
+  return has_video_;
+}
+
+bool PublishStream::HasAudio() const {
+  return has_audio_;
+}
+
 void PublishStream::RegisterDataObserver(std::shared_ptr<SubscribeStream> observer) {
   auto self(shared_from_this());
   work_thread_->PostSync([self, this, observer]() {
@@ -144,8 +160,13 @@ void PublishStream::SetLocalDescription() {
     PublishStreamTrack::Configuration config;
     bool has_ssrc = false;
     auto& media_section = media_sections[i];
-    if (media_section.at("type") == "audio")
+    if (media_section.at("type") == "audio") {
       config.audio = true;
+      has_audio_ = true;
+    }
+    else if (media_section.at("type") == "video") {
+      has_video_ = true;
+    }
     if (media_section.find("ssrcs") != media_section.end()) {
       auto& ssrcs = media_section.at("ssrcs");
       if (!ssrcs.empty()) {

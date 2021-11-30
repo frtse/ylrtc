@@ -200,13 +200,26 @@ nlohmann::json Room::GetRoomInfo() {
       nlohmann::json stream;
       stream["participantId"] = participant_id;
       stream["publishStreamId"] = j->GetStreamId();
-      stream["hasVideo"] = j->GetSdp().HasVideo();
-      stream["hasAudio"] = j->GetSdp().HasAudio();
+      stream["hasVideo"] = j->HasVideo();
+      stream["hasAudio"] = j->HasAudio();
       streams.push_back(stream);
     }
   }
   info["streams"] = streams;
   return info;
+}
+
+std::shared_ptr<PublishStream> Room::GetPublishStreamById(const std::string& id) {
+  for (auto iter = participant_publishs_map_.begin(); iter != participant_publishs_map_.end(); ++iter) {
+    auto& publish_stream_set = iter->second;
+    auto result = std::find_if(publish_stream_set.cbegin(), publish_stream_set.cend(), [&id](auto e) {
+      return e->GetStreamId() == id;
+    });
+    if (result != publish_stream_set.cend())
+      return *result;
+  }
+
+  return nullptr;
 }
 
 Room::~Room() {

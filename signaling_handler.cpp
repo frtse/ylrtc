@@ -93,10 +93,23 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
       const std::string& publish_stream_id = request_json.at("streamId");
       bool muted = request_json["muted"];
       const std::string& type = request_json.at("type");
-      auto notification = Notification::MakePublishMuteOrUnmuteNotification(session_info_.room_id, muted, type, publish_stream_id);
-      SignalingServer::GetInstance().Notify(notification);
-      response_json["detail"] = "Succeed.";
-      response_json["error"] = false;
+      auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
+      if (room) {
+        auto publish_stream = room->GetPublishStreamById(publish_stream_id);
+        if (publish_stream) {
+          publish_stream->UpdateMuteInfo(type, muted);
+          auto notification = Notification::MakePublishMuteOrUnmuteNotification(session_info_.room_id, muted, type, publish_stream_id);
+          SignalingServer::GetInstance().Notify(notification);
+          response_json["detail"] = "Succeed.";
+          response_json["error"] = false;
+        }
+        else {
+          response_json["error"] = true;
+        }
+      }
+      else {
+        response_json["error"] = true;
+      }
     } else {
       response_json["detail"] = "Unsupported actions.";
       response_json["error"] = true;
