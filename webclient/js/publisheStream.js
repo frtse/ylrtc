@@ -78,14 +78,14 @@ class PublisheStream {
         e.enabled = false;
       });
       let request = { action: "publish_muteOrUnmute", streamId: this.streamId_, muted : true, type: "audio"};
-      this.signaling_.send(request);
+      this.signaling_.send(JSON.stringify(request));
     }
     else if (type === "video") {
       this.mediaStream_.getVideoTracks().forEach(function (e) {
         e.enabled = false;
       });
       let request = { action: "publish_muteOrUnmute", streamId: this.streamId_, muted : true, type: "video"};
-      this.signaling_.send(request);
+      this.signaling_.send(JSON.stringify(request));
     }
     else
       throw "Invalid type";
@@ -97,14 +97,14 @@ class PublisheStream {
         e.enabled = true;
       });
       let request = { action: "publish_muteOrUnmute", streamId: this.streamId_, muted : false, type: "audio"};
-      this.signaling_.send(request);
+      this.signaling_.send(JSON.stringify(request));
     }
     else if (type === "video") {
       this.mediaStream_.getVideoTracks().forEach(function (e) {
         e.enabled = true;
       });
       let request = { action: "publish_muteOrUnmute", streamId: this.streamId_, muted : false, type: "video"};
-      this.signaling_.send(request);
+      this.signaling_.send(JSON.stringify(request));
     }
     else
       throw "Invalid type";
