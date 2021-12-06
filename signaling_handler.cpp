@@ -18,8 +18,8 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
   try {
     auto request_json = nlohmann::json::parse(signaling);
     const std::string& action = request_json.at("action");
-    if (request_json.find("requestId") != request_json.end())
-      response_json["requestId"] = request_json.at("requestId");
+    if (request_json.find("transactionId") != request_json.end())
+      response_json["transactionId"] = request_json.at("transactionId");
 
     if (action == "subscribe") {
       // { action: "subscribe", streamId: streamId, offer: offer.sdp }

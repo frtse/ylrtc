@@ -22,16 +22,16 @@ class Signaling extends EventDispatcher {
 
       this.wss.onmessage = (e) => {
         let data = JSON.parse(e.data);
-        if (data.requestId === undefined) {
+        if (data.transactionId === undefined) {
           super.dispatchEvent("onsignaling", e.data);
         }
         else {
-          if (this.promisePool.hasOwnProperty(data.requestId)) {
-            const requestId = data.requestId;
-            const req = this.promisePool[data.requestId];
-            delete data.requestId;
+          if (this.promisePool.hasOwnProperty(data.transactionId)) {
+            const transactionId = data.transactionId;
+            const req = this.promisePool[data.transactionId];
+            delete data.transactionId;
             req.resolve(data);
-            delete this.promisePool[requestId];
+            delete this.promisePool[transactionId];
           }
         }
       };
@@ -49,10 +49,15 @@ class Signaling extends EventDispatcher {
   }
 
   sendRequest(msg) {
-    var requestId = Math.round(Math.random() * 1000000000000000000) + '';
-    msg.requestId = requestId;
+    var transactionId = '';
+    while (true) {
+      transactionId = Math.round(Math.random() * 1000000000000000000) + '';
+      if (!this.promisePool.hasOwnProperty(transactionId))
+        break;
+    }
+    msg.transactionId = transactionId;
     return new Promise((resolve, reject) => {
-      this.promisePool[msg.requestId] = {
+      this.promisePool[msg.transactionId] = {
         resolve,
         reject
       };
