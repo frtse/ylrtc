@@ -110,7 +110,11 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
       else {
         response_json["error"] = true;
       }
-    } else {
+    }
+    else if (action == "keepAlive") {
+      response_json["error"] = true;
+    }
+    else {
       response_json["detail"] = "Unsupported actions.";
       response_json["error"] = true;
     }

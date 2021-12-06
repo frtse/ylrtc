@@ -3,13 +3,16 @@ class Signaling extends EventDispatcher {
     super();
     this.promisePool = {};
     this.wss = null;
+    this.keepAliveTimerId = undefined;
   }
 
   open(url) {
+    var classThis = this;
     return new Promise((resolve, reject) => {
       this.wss = new WebSocket(url);
       this.wss.onopen = (e) => {
         resolve();
+        classThis._keepAlive();
       };
       this.wss.onerror = (e) => {
         reject(e);
@@ -39,6 +42,7 @@ class Signaling extends EventDispatcher {
   }
 
   close() {
+    _cancelKeepAlive();
     if (this.wss != null)
       this.wss.close();
     this.wss = null;
@@ -63,5 +67,20 @@ class Signaling extends EventDispatcher {
       };
       this.wss.send(JSON.stringify(msg));
     });
+  }
+
+  _keepAlive() {
+    var timeout = 1000;
+    if (this.wss.readyState == this.wss.OPEN) {
+      var request = { action: "keepAlive" };
+      this.wss.send(JSON.stringify(request));
+    }  
+    this.keepAliveTimerId = setTimeout(this._keepAlive.bind(this), timeout);
+  }
+
+  _cancelKeepAlive() {
+    if (this.keepAliveTimerId) {
+      clearTimeout(this.keepAliveTimerId);
+    }
   }
 }
