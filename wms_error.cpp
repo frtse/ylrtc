@@ -1,7 +1,7 @@
 #include "wms_error.h"
 
-const char* WmsResultToString(WmsResult result) {
-  switch(result) {
+const char* WmsErrorToString(WmsError error) {
+  switch(error) {
     case kWmsOk:
       return "Ok.";
     default:

@@ -2,7 +2,8 @@
 
 #include <cstddef>
 
-using WmsResult = size_t;
-constexpr size_t kWmsOk = 0;
+enum WmsError : int {
+  kWmsOk = 0
+};
 
-const char* WmsResultToString(WmsResult result);
+const char* WmsErrorToString(WmsError error);
