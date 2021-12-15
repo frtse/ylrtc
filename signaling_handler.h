@@ -2,14 +2,14 @@
 
 #include <string>
 
-#include "signaling_session.h"
-
+class websocket_session_base;
+struct SessionInfo;
 class SignalingHandler {
  public:
-  SignalingHandler(SignalingSession::SessionInfo& session_info);
+  SignalingHandler(SessionInfo& session_info);
 
   std::string HandleSignaling(const std::string& signaling);
 
  private:
-  SignalingSession::SessionInfo& session_info_;
+  SessionInfo& session_info_;
 };

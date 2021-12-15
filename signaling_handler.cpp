@@ -10,8 +10,9 @@
 #include "signaling_server.h"
 #include "spdlog/spdlog.h"
 #include "subscribe_stream.h"
+#include "signaling_server_base.h"
 
-SignalingHandler::SignalingHandler(SignalingSession::SessionInfo& session_info) : session_info_{session_info} {}
+SignalingHandler::SignalingHandler(SessionInfo& session_info) : session_info_{session_info} {}
 
 std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
   nlohmann::json response_json;
