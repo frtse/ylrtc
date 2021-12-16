@@ -1,25 +1,12 @@
 #pragma once
 
-#include <boost/asio.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <boost/beast/ssl.hpp>
-#include <boost/beast/websocket.hpp>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <unordered_set>
 
 #include "notification.h"
 #include "signaling_handler.h"
-#include "spdlog/spdlog.h"
-
-namespace beast = boost::beast;
-namespace http = beast::http;
-namespace websocket = beast::websocket;
-namespace net = boost::asio;
-namespace ssl = boost::asio::ssl;
-using tcp = boost::asio::ip::tcp;
+#include "utils.h"
 
 void HandleError(beast::error_code ec, char const* what);
 

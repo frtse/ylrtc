@@ -6,7 +6,7 @@
 #include <queue>
 #include <string_view>
 
-using udp = boost::asio::ip::udp;
+#include "utils.h"
 
 class UdpSocket : public std::enable_shared_from_this<UdpSocket> {
  public:

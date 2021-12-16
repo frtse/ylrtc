@@ -1,6 +1,7 @@
 #include "signaling_server.h"
 
 #include "threads.h"
+#include "spdlog/spdlog.h"
 
 PlainHttpSession::PlainHttpSession(beast::tcp_stream&& stream, beast::flat_buffer&& buffer, std::shared_ptr<WebsocketSessionSet> websocket_sessions)
     : HttpSession<PlainHttpSession>(std::move(buffer), websocket_sessions), stream_(std::move(stream)) {}
