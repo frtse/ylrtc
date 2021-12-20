@@ -70,11 +70,10 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
       const std::string& room_id = request_json.at("roomId");
       const std::string& participant_id = request_json.at("participantId");
       auto room = RoomManager::GetInstance().GetRoomById(room_id);
-      auto room_info = room->GetRoomInfo();
       if (room) {
         if (room->Join(participant_id)) {
           response_json["error"] = false;
-          response_json["roomInfo"] = room_info;
+          response_json["roomInfo"] = room->GetRoomInfo();
           response_json["detail"] = "Succeed.";
           session_info_.room_id = room_id;
           session_info_.participant_id = participant_id;
