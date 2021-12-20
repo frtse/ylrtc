@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "sdptransform/json.hpp"
 #include "room_manager.h"
+#include "spdlog/spdlog.h"
 
 class ManageApi {
  public:
@@ -44,7 +45,7 @@ class ManageApi {
 
     std::string res_body;
     try {
-      std::string target = req.target().data(); 
+      std::string target(req.target().data(), req.target().length()); 
       if (target.find("/rooms") != std::string::npos) {
         if (req.method() == http::verb::post) {
           std::string req_body = req.body();
@@ -65,10 +66,12 @@ class ManageApi {
           res_body = response.dump();
         }
         else if (req.method() == http::verb::delete_) {
-          auto pos = target.rfind('/');
+          auto pos = target.rfind("/");
           if (pos == std::string::npos)
             return send(bad_request("Request parse error"));
-          std::string room_id = res_body.substr(pos);
+          if (pos + 1 >= target.size())
+            return send(bad_request("Request parse error"));
+          std::string room_id = target.substr(pos + 1);
           RoomManager::GetInstance().DestroyRoom(room_id);
         }
         else {
