@@ -9,54 +9,6 @@
 #include "signaling_server_base.h"
 #include "utils.h"
 
-template <class Body, class Allocator, class Send>
-void HandleRequest(http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
-  // Returns a bad request response
-  auto const bad_request = [&req](beast::string_view why) {
-    http::response<http::string_body> res{http::status::bad_request, req.version()};
-    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-    res.set(http::field::content_type, "text/html");
-    res.keep_alive(req.keep_alive());
-    res.body() = std::string(why);
-    res.prepare_payload();
-    return res;
-  };
-
-  // Returns a server error response
-  auto const server_error = [&req](beast::string_view what) {
-    http::response<http::string_body> res{http::status::internal_server_error, req.version()};
-    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-    res.set(http::field::content_type, "text/html");
-    res.keep_alive(req.keep_alive());
-    res.body() = "An error occurred: '" + std::string(what) + "'";
-    res.prepare_payload();
-    return res;
-  };
-
-  // Make sure we can handle the method
-  if (req.method() != http::verb::get && req.method() != http::verb::post && req.method() != http::verb::delete_)
-    return send(bad_request("Unknown HTTP-method"));
-
-  // Request path must be absolute and not contain "..".
-  if (req.target().empty() || req.target()[0] != '/' || req.target().find("..") != beast::string_view::npos)
-    return send(bad_request("Illegal request-target"));
-
-  // TODO web api.
-  // Handle an unknown error
-  if (false)
-    return send(server_error("error"));
-
-  std::string res_body;
-  auto const res_body_size = res_body.size();
-  // Respond to request
-  http::response<http::string_body> res{std::piecewise_construct, std::make_tuple(std::move(res_body)), std::make_tuple(http::status::ok, req.version())};
-  res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-  res.set(http::field::content_type, "application/json");
-  res.content_length(res_body_size);
-  res.keep_alive(req.keep_alive());
-  return send(std::move(res));
-}
-
 // Handles a plain WebSocket connection
 class PlainWebsocketSession : public WebsocketSession<PlainWebsocketSession> {
   websocket::stream<beast::tcp_stream> ws_;

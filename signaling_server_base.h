@@ -6,6 +6,7 @@
 
 #include "notification.h"
 #include "signaling_handler.h"
+#include "manage_api.h"
 #include "utils.h"
 
 void HandleError(beast::error_code ec, char const* what);
@@ -260,7 +261,7 @@ class HttpSession {
     }
 
     // Send the response
-    HandleRequest(parser_->release(), queue_);
+    ManageApi::HandleRequest(parser_->release(), queue_);
 
     // If we aren't at the queue limit, try to pipeline another request
     if (!queue_.IsFull())
