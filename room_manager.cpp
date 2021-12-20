@@ -32,6 +32,7 @@ std::vector<std::string> RoomManager::GetAllRoomId() const {
 void RoomManager::DestroyRoom(const std::string& room_id) {
   auto result = id_room_map_.find(room_id);
   if (result != id_room_map_.end()) {
+    result->second->Destroy();
     id_room_map_.erase(result);
   }
 }
