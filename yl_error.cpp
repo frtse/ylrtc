@@ -4,7 +4,9 @@ const char* YlErrorToString(YlError error) {
   switch(error) {
     case kOk:
       return "Ok.";
+    case kRoomIdAlreadyExists:
+      return "Room ID already exists.";
     default:
-      return "Unknown result.";
+      return "Unknown error.";
   }
 }

@@ -6,6 +6,7 @@
 #include "sdptransform/json.hpp"
 #include "room_manager.h"
 #include "spdlog/spdlog.h"
+#include "yl_error.h"
 
 class ManageApi {
  public:
@@ -52,9 +53,9 @@ class ManageApi {
           std::string req_body = req.body();
           auto req_json = nlohmann::json::parse(req_body);
           std::string room_id = req_json.at("id");
-          auto room = RoomManager::GetInstance().CreateRoom(room_id);
-          if (!room)
-            return send(bad_request("Room ID already exists"));
+          YlError result = RoomManager::GetInstance().CreateRoom(room_id);
+          if (result != kOk)
+            return send(bad_request(YlErrorToString(result)));
           nlohmann::json response;
           response["id"] = room_id;
           res_body = response.dump();

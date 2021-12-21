@@ -7,11 +7,12 @@
 #include <vector>
 
 #include "room.h"
+#include "yl_error.h"
 
 class RoomManager {
  public:
   static RoomManager& GetInstance();
-  std::shared_ptr<Room> CreateRoom(const std::string& room_id);
+  YlError CreateRoom(const std::string& room_id);
   std::shared_ptr<Room> GetRoomById(const std::string& room_id);
   std::vector<std::string> GetAllRoomId() const;
   void DestroyRoom(const std::string& room_id);

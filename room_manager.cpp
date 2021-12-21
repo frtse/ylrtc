@@ -5,12 +5,12 @@ RoomManager& RoomManager::GetInstance() {
   return instance;
 }
 
-std::shared_ptr<Room> RoomManager::CreateRoom(const std::string& room_id) {
+YlError RoomManager::CreateRoom(const std::string& room_id) {
   if (id_room_map_.find(room_id) != id_room_map_.end())
-    return nullptr;
+    return kRoomIdAlreadyExists;
   auto new_room = std::make_shared<Room>(room_id);
   id_room_map_[room_id] = new_room;
-  return new_room;
+  return kOk;
 }
 
 std::shared_ptr<Room> RoomManager::GetRoomById(const std::string& room_id) {

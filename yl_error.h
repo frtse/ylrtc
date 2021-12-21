@@ -3,7 +3,8 @@
 #include <cstddef>
 
 enum YlError : int {
-  kWmsOk = 0
+  kOk = 0,
+  kRoomIdAlreadyExists,
 };
 
 const char* YlErrorToString(YlError error);
