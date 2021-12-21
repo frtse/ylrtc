@@ -1,8 +1,8 @@
-#include "wms_error.h"
+#include "yl_error.h"
 
-const char* WmsErrorToString(WmsError error) {
+const char* YlErrorToString(YlError error) {
   switch(error) {
-    case kWmsOk:
+    case kOk:
       return "Ok.";
     default:
       return "Unknown result.";
