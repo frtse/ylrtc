@@ -6,7 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
-class Room;
+#include "room.h"
+
 class RoomManager {
  public:
   static RoomManager& GetInstance();

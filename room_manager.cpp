@@ -1,7 +1,5 @@
 #include "room_manager.h"
 
-#include "room.h"
-
 RoomManager& RoomManager::GetInstance() {
   static RoomManager instance;
   return instance;

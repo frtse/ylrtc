@@ -46,7 +46,8 @@ class ManageApi {
     std::string res_body;
     try {
       std::string target(req.target().data(), req.target().length()); 
-      if (target.find("/rooms") != std::string::npos) {
+      if (target.find("/rooms") != std::string::npos
+        && target.find("/participants") == std::string::npos) {
         if (req.method() == http::verb::post) {
           std::string req_body = req.body();
           auto req_json = nlohmann::json::parse(req_body);
@@ -77,6 +78,30 @@ class ManageApi {
         else {
           return send(bad_request("Unsupported HTTP-method"));
         }
+      }
+      else if (target.find("/participants") != std::string::npos) {
+         // /rooms/{roomId}/participants/{participantId}
+         if (req.method() == http::verb::delete_) {
+           auto result = StringSplit(target, "/");
+           if (result.size() == 4) {
+             std::string& room_id = result[1];
+             std::string& participant_id = result[3];
+             auto room = RoomManager::GetInstance().GetRoomById(room_id);
+             if (room)
+              room->KickoutParticipant(participant_id);
+             else
+              return send(bad_request("Request parse error"));
+           }
+           else {
+             return send(bad_request("Request parse error"));
+           }
+         }
+         else {
+           return send(bad_request("Request parse error"));
+         }
+      }
+      else {
+        return send(bad_request("Request parse error"));
       }
     } catch (...) {
       return send(bad_request("Request parse error"));

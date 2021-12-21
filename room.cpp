@@ -30,6 +30,23 @@ void Room::Leave(const std::string& participant_id) {
   }
 }
 
+void Room::KickoutParticipant(const std::string& participant_id) {
+  auto participant_publishs_map_iter = participant_publishs_map_.find(participant_id);
+  if (participant_publishs_map_iter == participant_publishs_map_.end())
+    return;
+  auto& publish_stream_set = participant_publishs_map_iter->second;
+  for (auto publish_stream : publish_stream_set)
+    publish_stream->Stop();
+
+  auto participant_subscribes_map_iter = participant_subscribes_map_.find(participant_id);
+  if (participant_subscribes_map_iter == participant_subscribes_map_.end())
+    return;
+  auto& subscribe_stream_set = participant_subscribes_map_iter->second;
+  for (auto subscribe_stream : subscribe_stream_set)
+    subscribe_stream->Stop();
+  Leave(participant_id);
+}
+
 std::shared_ptr<PublishStream> Room::ParticipantPublish(const std::string& participant_id, const std::string& offer) {
   if (participant_id_set_.find(participant_id) == participant_id_set_.end())
     return nullptr;
