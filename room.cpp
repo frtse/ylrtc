@@ -12,13 +12,13 @@ const std::string& Room::Id() const {
   return id_;
 }
 
-bool Room::Join(const std::string& participant_id) {
+YlError Room::Join(const std::string& participant_id) {
   if (participant_id_set_.find(participant_id) != participant_id_set_.end())
-    return false;
+    return kParticipantAlreadyJoined;
   participant_id_set_.insert(participant_id);
   auto notification = Notification::MakeParticipantJoinedNotification(id_, participant_id);
   SignalingServer::GetInstance().Notify(notification);
-  return true;
+  return kOk;
 }
 
 void Room::Leave(const std::string& participant_id) {

@@ -11,6 +11,7 @@
 #include "spdlog/spdlog.h"
 #include "subscribe_stream.h"
 #include "signaling_server_base.h"
+#include "yl_error.h"
 
 SignalingHandler::SignalingHandler(SessionInfo& session_info) : session_info_{session_info} {}
 
@@ -71,10 +72,11 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
       const std::string& participant_id = request_json.at("participantId");
       auto room = RoomManager::GetInstance().GetRoomById(room_id);
       if (room) {
-        if (room->Join(participant_id)) {
+        YlError result = room->Join(participant_id);
+        if (result == kOk || result == kParticipantAlreadyJoined) {
           response_json["error"] = false;
           response_json["roomInfo"] = room->GetRoomInfo();
-          response_json["detail"] = "Succeed.";
+          response_json["detail"] = YlErrorToString(result);
           session_info_.room_id = room_id;
           session_info_.participant_id = participant_id;
         }

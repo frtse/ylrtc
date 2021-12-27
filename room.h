@@ -10,6 +10,7 @@
 #include "sdptransform/json.hpp"
 #include "subscribe_stream.h"
 #include "webrtc_stream.h"
+#include "yl_error.h"
 
 class Room : public WebrtcStream::Observer, public std::enable_shared_from_this<Room> {
  public:
@@ -17,7 +18,7 @@ class Room : public WebrtcStream::Observer, public std::enable_shared_from_this<
   ~Room();
   const std::string& Id() const;
 
-  bool Join(const std::string& participant_id);
+  YlError Join(const std::string& participant_id);
   void Leave(const std::string& participant_id);
   void KickoutParticipant(const std::string& participant_id);
   std::shared_ptr<PublishStream> ParticipantPublish(const std::string& participant_id, const std::string& offer);
