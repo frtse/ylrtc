@@ -105,7 +105,7 @@ install_libsdptransform() {
 install_boost() {
   if [ -d $BUILD_LIB_DIR ]; then
     cd $BUILD_LIB_DIR
-    wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.zip
+    cp $PATHNAME/3rdparty/boost_1_76_0.zip $BUILD_LIB_DIR
     unzip boost_1_76_0.zip
     cd boost_1_76_0
     chmod +x bootstrap.sh
@@ -120,9 +120,9 @@ install_boost() {
 
 install_toml11() {
   if [ -d $BUILD_LIB_DIR ]; then
+    cp $PATHNAME/3rdparty/toml11-3.7.0.zip $BUILD_LIB_DIR
     cd $BUILD_LIB_DIR
-    wget -O toml11_v3.7.0.zip https://github.com/ToruNiina/toml11/archive/refs/tags/v3.7.0.zip
-    unzip toml11_v3.7.0.zip
+    unzip toml11-3.7.0.zip
     cd toml11-3.7.0
     mkdir build
     cd build
@@ -139,7 +139,7 @@ install_toml11() {
 install_gperftools() {
   if [ -d $BUILD_LIB_DIR ]; then
     cd $BUILD_LIB_DIR
-    wget -O gperftools-2.9.1.zip https://github.com/gperftools/gperftools/releases/download/gperftools-2.9.1/gperftools-2.9.1.zip
+    cp $PATHNAME/3rdparty/gperftools-2.9.1.zip $BUILD_LIB_DIR
     unzip gperftools-2.9.1.zip
     cd gperftools-2.9.1
     ./configure --prefix=$PREFIX_DIR
