@@ -52,9 +52,10 @@ void WebrtcStream::Stop() {
 
 void WebrtcStream::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::endpoint* remote_ep) {
   if (StunMessage::IsStun(data, len)) {
+    CHECK(ice_lite_);
     ice_lite_->ProcessStunMessage(data, len, remote_ep);
   } else if (DtlsContext::IsDtls(data, len)) {
-    if (dtls_ready_)
+    if (dtls_ready_ && dtls_transport_)
       dtls_transport_->ProcessDataFromPeer(data, len);
     else
       spdlog::warn("Dtls is not ready yet.");
@@ -87,12 +88,12 @@ void WebrtcStream::OnStunMessageSend(uint8_t* data, size_t size, udp::endpoint* 
 
 void WebrtcStream::OnIceConnectionCompleted() {
   selected_endpoint_ = *ice_lite_->GetFavoredCandidate();
-
-  if (!dtls_transport_->Start(sdp_.GetRemoteDtlsSetup())) {
+  if (!dtls_transport_)
+    return;
+  if (!dtls_transport_->Start(sdp_.GetRemoteDtlsSetup()))
     spdlog::error("DtlsTransport start failed!");
-  } else {
+  else
     dtls_ready_ = true;
-  }
 }
 
 void WebrtcStream::OnIceConnectionError() {
@@ -107,6 +108,7 @@ void WebrtcStream::OnDtlsTransportSendData(const uint8_t* data, size_t len) {
 
 void WebrtcStream::OnDtlsTransportSetup(SrtpSession::CipherSuite suite, uint8_t* localMasterKey, int localMasterKeySize, uint8_t* remoteMasterKey, int remoteMasterKeySize) {
   spdlog::debug("DTLS ready.");
+  CHECK(send_srtp_session_ != nullptr && recv_srtp_session_ != nullptr);
   if (!send_srtp_session_->Init(false, suite, localMasterKey, localMasterKeySize)
     || !recv_srtp_session_->Init(true, suite, remoteMasterKey, remoteMasterKeySize)) {
     spdlog::error("Srtp session init failed.");
