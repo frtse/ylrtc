@@ -111,6 +111,7 @@ void WebrtcStream::OnDtlsTransportSetup(SrtpSession::CipherSuite suite, uint8_t*
   if (!send_srtp_session_->Init(false, suite, localMasterKey, localMasterKeySize)
     || !recv_srtp_session_->Init(true, suite, remoteMasterKey, remoteMasterKeySize)) {
     spdlog::error("Srtp session init failed.");
+    Shutdown();
     return;
   }
   if (observer_)
