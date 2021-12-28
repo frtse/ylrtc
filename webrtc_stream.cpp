@@ -108,10 +108,11 @@ void WebrtcStream::OnDtlsTransportSendData(const uint8_t* data, size_t len) {
 
 void WebrtcStream::OnDtlsTransportSetup(SrtpSession::CipherSuite suite, uint8_t* localMasterKey, int localMasterKeySize, uint8_t* remoteMasterKey, int remoteMasterKeySize) {
   spdlog::debug("DTLS ready.");
-  if (!send_srtp_session_->Init(false, suite, localMasterKey, localMasterKeySize))
-    spdlog::error("Srtp send session init failed.");
-  if (!recv_srtp_session_->Init(true, suite, remoteMasterKey, remoteMasterKeySize))
-    spdlog::error("Srtp revc session init failed.");
+  if (!send_srtp_session_->Init(false, suite, localMasterKey, localMasterKeySize)
+    || !recv_srtp_session_->Init(true, suite, remoteMasterKey, remoteMasterKeySize)) {
+    spdlog::error("Srtp session init failed.");
+    return;
+  }
   if (observer_)
     observer_->OnWebrtcStreamConnected(stream_id_);
   connection_established_ = true;
