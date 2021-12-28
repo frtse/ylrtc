@@ -59,19 +59,18 @@ void WebrtcStream::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::endpoi
     else
       spdlog::warn("Dtls is not ready yet.");
   } else if (RtcpPacket::IsRtcp(data, len)) {
+    if (!connection_established_)
+      return;
     int length = 0;
-    if (!recv_srtp_session_->UnprotectRtcp(data, len, &length)) {
-      spdlog::warn("Failed to unprotect the incoming RTCP packet.");
-    }
-
+    if (recv_srtp_session_&& !recv_srtp_session_->UnprotectRtcp(data, len, &length))
+      return;
     OnRtcpPacketReceive(data, length);
-
   } else if (IsRtpPacket(data, len)) {
+    if (!connection_established_)
+      return;
     int length = 0;
-    if (!recv_srtp_session_->UnprotectRtp(data, len, &length)) {
-      spdlog::warn("Failed to unprotect the incoming RTP packet.");
-    }
-
+    if (recv_srtp_session_ && !recv_srtp_session_->UnprotectRtp(data, len, &length))
+      return;
     OnRtpPacketReceive(data, length);
   }
 }
