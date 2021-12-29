@@ -152,7 +152,8 @@ std::optional<PayloadInfo> RtpPayloadParserVp8::Parse(uint8_t* data, size_t size
     // Weak check for corrupt payload_data: PartID MUST NOT be larger than 8.
     return std::nullopt;
   }
-  payload_info.is_first_packet_in_frame = vp8_header.beginningOfPartition && vp8_header.partitionId == 0;
+  bool is_first_packet_in_frame = false;
+  is_first_packet_in_frame = vp8_header.beginningOfPartition && vp8_header.partitionId == 0;
 
   int vp8_payload_size = size - descriptor_size;
   if (vp8_payload_size == 0) {
@@ -162,8 +163,8 @@ std::optional<PayloadInfo> RtpPayloadParserVp8::Parse(uint8_t* data, size_t size
   const uint8_t* vp8_payload = data + descriptor_size;
 
   // Read P bit from payload header (only at beginning of first partition).
-  if (payload_info.is_first_packet_in_frame && (*vp8_payload & 0x01) == 0) {
-    payload_info.frame_type = VideoFrameType::kVideoFrameKey;
+  if (is_first_packet_in_frame && (*vp8_payload & 0x01) == 0) {
+    payload_info.keyframe = true;
 
     if (vp8_payload_size < 10) {
       // For an I-frame we should always have the uncompressed VP8 header
@@ -171,7 +172,7 @@ std::optional<PayloadInfo> RtpPayloadParserVp8::Parse(uint8_t* data, size_t size
       return std::nullopt;
     }
   } else {
-    payload_info.frame_type = VideoFrameType::kVideoFrameDelta;
+    payload_info.keyframe = false;
   }
 
   return payload_info;

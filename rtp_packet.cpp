@@ -220,7 +220,7 @@ size_t RtpPacket::HeaderSize() const {
 }
 
 bool RtpPacket::IsKeyFrame() const {
-  return payload_info_.frame_type == VideoFrameType::kVideoFrameKey;
+  return payload_info_.keyframe;
 }
 
 void RtpPacket::SetExtensionCapability(const RtpHeaderExtensionCapability& extension_capability) {
