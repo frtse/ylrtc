@@ -11,6 +11,10 @@
 #include "sequence_number_util.h"
 #include "timer.h"
 
+/**
+ * @brief This class is base on webrtc::NackRequester
+ * and is used to generate NACK requests.
+ */
 class NackRequester : public Timer::Listener, public std::enable_shared_from_this<NackRequester> {
  public:
   class Observer {
@@ -48,7 +52,7 @@ class NackRequester : public Timer::Listener, public std::enable_shared_from_thi
   };
 
   struct BackoffSettings {
-    // Matches magic number in RTPSender::OnReceivedNack().
+    // Minimum retry interval.
     static constexpr int64_t kDefaultMinRetryInterval = 5;  // Millis
     // Upper bound on link-delay considered for exponential backoff.
     // Selected so that cumulative delay with 1.25 base and 10 retries ends up
