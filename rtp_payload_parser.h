@@ -6,7 +6,7 @@
 #include <string_view>
 
 struct PayloadInfo {
-  bool keyframe;
+  bool keyframe {false};
 };
 
 class RtpPayloadParser {
