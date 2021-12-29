@@ -181,7 +181,7 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
     for (auto e : participant_publishs_map_) {
       spdlog::debug("Participant id {}.", e.first);
       for (auto s : e.second) {
-        spdlog::debug("Publish strem id {}.", s->GetStreamId());
+        spdlog::debug("Publish stream id {}.", s->GetStreamId());
       }
     }
 
@@ -189,15 +189,15 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
     for (auto e : participant_subscribes_map_) {
       spdlog::debug("Participant id {}.", e.first);
       for (auto s : e.second) {
-        spdlog::debug("Subscribe strem id {}.", s->GetStreamId());
+        spdlog::debug("Subscribe stream id {}.", s->GetStreamId());
       }
     }
 
     spdlog::debug("Print publish subscribes map.");
     for (auto e : publish_subscribes_map_) {
-      spdlog::debug("Publish strem id {}.", e.first->GetStreamId());
+      spdlog::debug("Publish stream id {}.", e.first->GetStreamId());
       for (auto s : e.second) {
-        spdlog::debug("Subscribe strem id {}.", s->GetStreamId());
+        spdlog::debug("Subscribe stream id {}.", s->GetStreamId());
       }
     }
 #endif
