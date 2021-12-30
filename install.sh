@@ -15,6 +15,23 @@ fi
 
 echo $PREFIX_DIR
 mkdir -p $PREFIX_DIR
+install_gtest() {
+  if [ -d $BUILD_LIB_DIR ]; then
+    cp $PATHNAME/3rdparty/googletest-release-1.11.0.zip $BUILD_LIB_DIR
+    cd $BUILD_LIB_DIR
+    unzip googletest-release-1.11.0.zip
+    cd googletest-release-1.11.0
+    mkdir build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX=$PREFIX_DIR ..
+    make
+    make install
+    cd $THIRDPARTY_ROOT_DIR
+  else
+    mkdir -p $BUILD_LIB_DIR
+    install_gtest
+  fi
+}
 
 ${SUDO} apt-get update -y
 ${SUDO} apt-get install make gcc g++ python-dev libglib2.0-dev docbook2x pkg-config nasm yasm m4 autoconf libtool liblzma-dev libbz2-dev automake cmake unzip wget -y
@@ -152,6 +169,24 @@ install_gperftools() {
   fi
 }
 
+install_gtest() {
+  if [ -d $BUILD_LIB_DIR ]; then
+    cp $PATHNAME/3rdparty/googletest-release-1.11.0.zip $BUILD_LIB_DIR
+    cd $BUILD_LIB_DIR
+    unzip googletest-release-1.11.0.zip
+    cd googletest-release-1.11.0
+    mkdir build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX=$PREFIX_DIR ..
+    make
+    make install
+    cd $THIRDPARTY_ROOT_DIR
+  else
+    mkdir -p $BUILD_LIB_DIR
+    install_gtest
+  fi
+}
+
 install_spdlog
 install_json_hpp
 install_openssl
@@ -160,3 +195,4 @@ install_libsdptransform
 install_boost
 install_toml11
 install_gperftools
+install_gtest

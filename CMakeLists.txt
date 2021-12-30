@@ -17,9 +17,16 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty_dir/lib)
 
 file(GLOB SRC_LIST ./*.cpp)
+LIST(FILTER SRC_LIST EXCLUDE REGEX unittest.cpp$)
+LIST(FILTER SRC_LIST EXCLUDE REGEX test_main.cpp$)
+
+file(GLOB TEST_SRC_LIST ./test_main.cpp)
+#LIST(FILTER TEST_SRC_LIST INCLUDE REGEX test_main.cpp$)
 
 set(LINK_LIBRARYS sdptransform srtp2 ssl crypto spdlog boost_thread dl bz2 lzma z pthread)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST})
+add_executable(${PROJECT_NAME}_test ${TEST_SRC_LIST})
 
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARYS})
+target_link_libraries(${PROJECT_NAME}_test ${LINK_LIBRARYS} gtest)
