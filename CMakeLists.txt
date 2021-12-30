@@ -19,6 +19,7 @@ link_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty_dir/lib)
 set(LINK_LIBRARYS sdptransform srtp2 ssl crypto spdlog boost_thread dl bz2 lzma z pthread)
 file(GLOB LIB_SRC_LIST ./*.cpp)
 LIST(FILTER LIB_SRC_LIST EXCLUDE REGEX main.cpp$)
+LIST(FILTER LIB_SRC_LIST EXCLUDE REGEX _unittest.cpp$)
 add_library(${PROJECT_NAME}-lib STATIC ${LIB_SRC_LIST})
 target_link_libraries(${PROJECT_NAME}-lib ${LINK_LIBRARYS})
 
