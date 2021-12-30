@@ -1,5 +1,7 @@
 #include "threads.h"
 
+#include "server_config.h"
+
 boost::asio::io_context& Thread::MessageLoop() {
   return message_loop_;
 }
@@ -44,9 +46,14 @@ void WorkerThreadPool::StopAll() {
 }
 
 WorkerThreadPool::WorkerThreadPool() {
-  int threads = std::thread::hardware_concurrency();
-  work_threads_.reserve(threads);
-  for (int i = 0; i < threads; ++i) {
+  uint32_t thread_count = ServerConfig::GetInstance().GetWebrtcWorkerThreadCount();
+  if (thread_count == 0) {
+    thread_count = std::thread::hardware_concurrency();
+    if (thread_count == 0)
+      thread_count = kDefaultThreadCount;
+  }
+  work_threads_.reserve(thread_count);
+  for (int i = 0; i < thread_count; ++i) {
     auto worker = std::make_shared<WorkerThread>();
     work_threads_.push_back(worker);
   }

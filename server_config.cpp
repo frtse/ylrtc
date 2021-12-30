@@ -18,6 +18,7 @@ bool ServerConfig::Load(std::string_view json_file_name) {
     announced_ip_ = toml::find<std::string>(webrtc, "announcedIp");
     webrtc_min_port_ = toml::find<uint16_t>(webrtc, "webrtcMinPort");
     webrtc_max_port_ = toml::find<uint16_t>(webrtc, "webrtcMaxPort");
+    webrtc_worker_thread_count_ = toml::find<uint32_t>(webrtc, "workerThreadCount");
 
     const auto& signaling_server = toml::find(config_file, "signaling_server");
     signaling_server_port_ = toml::find<uint16_t>(signaling_server, "signalingServerPort");
@@ -49,6 +50,10 @@ uint16_t ServerConfig::GetWebRtcMaxPort() const {
 
 uint16_t ServerConfig::GetWebRtcMinPort() const {
   return webrtc_min_port_;
+}
+
+uint32_t ServerConfig::GetWebrtcWorkerThreadCount() const {
+  return webrtc_worker_thread_count_;
 }
 
 std::string_view ServerConfig::GetCertFile() {

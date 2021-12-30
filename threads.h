@@ -84,6 +84,7 @@ class WorkerThread : public Thread {
  */
 class WorkerThreadPool {
  public:
+  static constexpr uint32_t kDefaultThreadCount = 1;
   static WorkerThreadPool& GetInstance();
 
   /**

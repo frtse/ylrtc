@@ -13,6 +13,7 @@ class ServerConfig {
   uint16_t GetSignalingServerPort() const;
   uint16_t GetWebRtcMaxPort() const;
   uint16_t GetWebRtcMinPort() const;
+  uint32_t GetWebrtcWorkerThreadCount() const;
   std::string_view GetCertFile();
   std::string_view GetKeyFile();
 
@@ -23,6 +24,7 @@ class ServerConfig {
   uint16_t signaling_server_port_;
   uint16_t webrtc_max_port_;
   uint16_t webrtc_min_port_;
+  uint32_t webrtc_worker_thread_count_;
   std::string ssl_cert_file_;
   std::string ssl_key_file_;
 };
