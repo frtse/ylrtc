@@ -6,13 +6,27 @@
 #include <vector>
 #include <thread>
 
+/**
+ * @brief Base class of thread.
+ * 
+ */
 class Thread {
  public:
+  /**
+   * @brief Ask this thread to execute given handler asynchronously.
+   * 
+   * @param f The handler to be called.
+   */
   template <typename F>
   void PostAsync(F&& f) {
     boost::asio::post(message_loop_, [f = std::forward<F>(f)] { f(); });
   }
 
+  /**
+   * @brief Ask this thread to execute given handler synchronously.
+   * 
+   * @param f The handler to be called.
+   */
   template <typename F>
   void PostSync(F&& f) {
     std::promise<void> promise;
@@ -21,12 +35,15 @@ class Thread {
       f();
       promise.set_value();
     });
-
     future.wait();
   }
 
   boost::asio::io_context& MessageLoop();
 
+  /**
+   * @brief Assert that the code here runs in this thread.
+   * 
+   */
   void CheckInThisThread();
 
  protected:
@@ -34,6 +51,10 @@ class Thread {
   std::thread::id thread_id_;
 };
 
+/**
+ * @brief Main thread, which is used to process signaling and signals.
+ * 
+ */
 class MainThread : public Thread {
  public:
   static MainThread& GetInstance();
@@ -42,6 +63,10 @@ class MainThread : public Thread {
   MainThread();
 };
 
+/**
+ * @brief Worker thread, which is used to handle Webrtc connections.
+ * 
+ */
 class WorkerThread : public Thread {
  public:
   WorkerThread();
@@ -53,12 +78,25 @@ class WorkerThread : public Thread {
   std::thread work_thread_;
 };
 
+/**
+ * @brief Worker thread pool.
+ * 
+ */
 class WorkerThreadPool {
  public:
   static WorkerThreadPool& GetInstance();
 
+  /**
+   * @brief Gets the least used thread in the thread pool.
+   * 
+   * @return std::shared_ptr<WorkerThread> 
+   */
   std::shared_ptr<WorkerThread> GetWorkerThread();
 
+  /**
+   * @brief Stop all threads in the thread pool.
+   * 
+   */
   void StopAll();
 
  private:
