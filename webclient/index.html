@@ -28,7 +28,7 @@
   <div id="input">
     Signaling Server Setting.
     <br />
-    <input id="inputIp" type="text" name="ip" value="192.168.1.104">IP address of server.</input>
+    <input id="inputIp" type="text" name="ip" value="ffrtc.com">IP address of server.</input>
     <br />
     <input id="inputPort" type="text" name="port" value=8000>Listening port of server.</input>
     <br />
@@ -45,7 +45,6 @@
     <button id="unmuteVideoSubscribe">unmuteVideoSubscribe</button>
   </div>
 </body>
-<script src="js/jquery-3.2.1.min.js"></script>
 <script src="js/adapter.js"></script>
 <script src="js/eventDispatcher.js"></script>
 <script src="js/device.js"></script>
@@ -91,7 +90,7 @@
   var client = new Client(inputIp.value, inputPort.value);
 
   joinRoom.addEventListener('click', () => {
-    client.join("9527", randomString(32)).then((roomInfo) => {
+    client.join("9527", "8888").then((roomInfo) => {
       console.log("Join room success.");
       console.log("room info = ", roomInfo);
       startPublish.disabled = false;
@@ -122,7 +121,7 @@
                                     {rid: 'f', active: true, maxBitrate: 900000}];
     }
     else {
-      videoRtpEncodingParameters = [{ maxBitrate: 2000000, maxFramerate: 50}];
+      videoRtpEncodingParameters = [{ maxBitrate: 500000, maxFramerate: 15}];
     }
     await publisheStream.publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters);
   });
@@ -134,9 +133,14 @@
   function subscribe(remoteStream) {
     subscribeStream = client.CreateSubscribeStream();
     subscribeStream.subscribe(remoteStream).then((mediaStream) => {
-      let $video = $(`<video controls autoplay id=${subscribeStream.Id()}></video>`);
-      $video.get(0).srcObject = mediaStream;
-      $('body').append($video);
+      let video = document.createElement('video');
+      video.srcObject = mediaStream;
+      video.autoplay = true;
+      video.controls = true;
+      video.muted = true;
+      video.id = subscribeStream.Id();
+      let body = document.getElementsByTagName('body')[0];
+      body.append(video);
     }).catch((e) => {
       console.log("Subscribe failed. ", e);
     });
@@ -149,7 +153,7 @@
     });
     subscribeStream.addEventListener("ended", (subscribeStreamId) => {
       console.log("subscribeStream end ", subscribeStreamId);
-      $(`#${subscribeStream.Id()}`).remove();
+      document.getElementById(`${subscribeStream.Id()}`).remove();
     });
   }
 
