@@ -1,5 +1,5 @@
 class SubscribeStream extends EventDispatcher {
-  constructor(signaling) {
+  constructor(signaling, pc, subscribeStreamId, publishStreamId, mediaStream) {
     super();
     this.signaling_ = signaling;
     this.signaling_.addEventListener("onsignaling", (e) => {
@@ -19,38 +19,17 @@ class SubscribeStream extends EventDispatcher {
         }
       }
     });
-    this.pc_ = null;
-    this.subscribeStreamId_ = '';
-    this.publishStreamId_ = '';
-    this.mediaStream_ = new MediaStream();
+    this.pc_ = pc;
+    this.subscribeStreamId_ = subscribeStreamId;
+    this.publishStreamId_ = publishStreamId;
+    this.mediaStream_ = mediaStream;
   }
 
   Id() {
     return this.subscribeStreamId_;
   }
 
-  async subscribe(remoteStream) {
-    const configuration = {bundlePolicy: "max-bundle"};
-    this.pc_ = new RTCPeerConnection(configuration);
-    if (remoteStream.hasAudio)
-      this.pc_.addTransceiver("audio", { direction: "recvonly" });
-    if (remoteStream.hasVideo)
-      this.pc_.addTransceiver("video", { direction: "recvonly" });
-    this.pc_.ontrack = this._ontrack.bind(this);
-    const offer = await this.pc_.createOffer();
-    await this.pc_.setLocalDescription(offer);
-
-    let request = { action: "subscribe", streamId: remoteStream.publishStreamId, participantId: remoteStream.participantId, offer: offer.sdp };
-    let res = await this.signaling_.sendRequest(request);
-
-    if (res.error)
-      throw "Connect failed.";
-    var answerSdp = new RTCSessionDescription();
-    answerSdp.sdp = res.answer;
-    answerSdp.type = 'answer';
-    await this.pc_.setRemoteDescription(answerSdp);
-    this.subscribeStreamId_ = res.streamId;
-    this.publishStreamId_ = remoteStream.publishStreamId;
+  mediaStream() {
     return this.mediaStream_;
   }
 

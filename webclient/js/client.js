@@ -6,6 +6,7 @@ class Client extends EventDispatcher {
     this.signallingServerPort = signallingServerPort;
     this.participantId_ = '';
     this.joined_ = false;
+    this.mediaStream_ = null;
   }
 
   async join(roomId, participantId) {
@@ -85,11 +86,42 @@ class Client extends EventDispatcher {
     return new PublisheStream(mediaStream, streamId, pc, this.signaling);
   }
 
+  async subscribe(remoteStream) {
+    const configuration = {bundlePolicy: "max-bundle"};
+    let pc = new RTCPeerConnection(configuration);
+    if (remoteStream.hasAudio)
+      pc.addTransceiver("audio", { direction: "recvonly" });
+    if (remoteStream.hasVideo)
+      pc.addTransceiver("video", { direction: "recvonly" });
+    pc.ontrack = this._ontrack.bind(this);
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    let request = { action: "subscribe", streamId: remoteStream.publishStreamId, participantId: remoteStream.participantId, offer: offer.sdp };
+    let res = await this.signaling.sendRequest(request);
+
+    if (res.error)
+      throw "Connect failed.";
+    var answerSdp = new RTCSessionDescription();
+    answerSdp.sdp = res.answer;
+    answerSdp.type = 'answer';
+    await pc.setRemoteDescription(answerSdp);
+    let subscribeStreamId = res.streamId;
+    let publishStreamId = remoteStream.publishStreamId;
+    return new SubscribeStream(this.signaling, pc, subscribeStreamId, publishStreamId, this.mediaStream_);
+  }
+
   leave() {
     if (this.joined_) {
       this.joined_ = false;
       this.signaling.close();
     }
+  }
+
+  _ontrack(e) {
+    this.mediaStream_ = null;
+    this.mediaStream_ = new MediaStream();
+    this.mediaStream_.addTrack(e.track);
   }
 
   CreateSubscribeStream() {
