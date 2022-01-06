@@ -10,7 +10,7 @@ class PublisheStream {
     return this.streamId_;
   }
 
-  unpublish() {
+  close() {
     if (this.pc_) {
       this.pc_.close();
       this.pc_ = null;

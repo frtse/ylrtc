@@ -1,9 +1,9 @@
 class Client extends EventDispatcher {
   constructor(signallingServerIp, signallingServerPort) {
     super();
-    this.signaling = new Signaling();
-    this.signallingServerIp = signallingServerIp;
-    this.signallingServerPort = signallingServerPort;
+    this.signaling_ = new Signaling();
+    this.signallingServerIp_ = signallingServerIp;
+    this.signallingServerPort_ = signallingServerPort;
     this.participantId_ = '';
     this.joined_ = false;
     this.mediaStream_ = null;
@@ -12,17 +12,17 @@ class Client extends EventDispatcher {
   async join(roomId, participantId) {
     if (this.joined_)
       throw "Already joined meeting.";
-    let signalingUrl = "wss://" + this.signallingServerIp + ":" + this.signallingServerPort;
-    this.signaling.addEventListener("onsignaling", (e) => {
+    let signalingUrl = "wss://" + this.signallingServerIp_ + ":" + this.signallingServerPort_;
+    this.signaling_.addEventListener("onsignaling", (e) => {
       let notification = JSON.parse(e);
       if (notification.type === "streamAdded" || notification.type === "participantJoined" || notification.type === "participantLeft")
         super.dispatchEvent(notification.type, notification.data);
       if (notification.type === "signalingDisconnected")
         this.leave();
     });
-    await this.signaling.open(signalingUrl);
+    await this.signaling_.open(signalingUrl);
     let request = { action: "join", roomId: roomId, participantId: participantId };
-    let res = await this.signaling.sendRequest(request);
+    let res = await this.signaling_.sendRequest(request);
     if (res.error != undefined && res.error)
       throw "Join room failed.";
     this.participantId_ = participantId;
@@ -75,7 +75,7 @@ class Client extends EventDispatcher {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     var request = { action: "publish", offer: offer.sdp };
-    let res = await this.signaling.sendRequest(request);
+    let res = await this.signaling_.sendRequest(request);
     if (res.error)
       throw "Publish failed.";
     var answerSdp = new RTCSessionDescription();
@@ -83,7 +83,7 @@ class Client extends EventDispatcher {
     answerSdp.type = 'answer';
     let streamId = res.streamId;
     await pc.setRemoteDescription(answerSdp);
-    return new PublisheStream(mediaStream, streamId, pc, this.signaling);
+    return new PublisheStream(mediaStream, streamId, pc, this.signaling_);
   }
 
   async subscribe(remoteStream) {
@@ -98,7 +98,7 @@ class Client extends EventDispatcher {
     await pc.setLocalDescription(offer);
 
     let request = { action: "subscribe", streamId: remoteStream.publishStreamId, participantId: remoteStream.participantId, offer: offer.sdp };
-    let res = await this.signaling.sendRequest(request);
+    let res = await this.signaling_.sendRequest(request);
 
     if (res.error)
       throw "Connect failed.";
@@ -108,13 +108,13 @@ class Client extends EventDispatcher {
     await pc.setRemoteDescription(answerSdp);
     let subscribeStreamId = res.streamId;
     let publishStreamId = remoteStream.publishStreamId;
-    return new SubscribeStream(this.signaling, pc, subscribeStreamId, publishStreamId, this.mediaStream_);
+    return new SubscribeStream(this.signaling_, pc, subscribeStreamId, publishStreamId, this.mediaStream_);
   }
 
   leave() {
     if (this.joined_) {
       this.joined_ = false;
-      this.signaling.close();
+      this.signaling_.close();
     }
   }
 
@@ -122,15 +122,5 @@ class Client extends EventDispatcher {
     this.mediaStream_ = null;
     this.mediaStream_ = new MediaStream();
     this.mediaStream_.addTrack(e.track);
-  }
-
-  CreateSubscribeStream() {
-    let subscriber = new SubscribeStream(this.signaling);
-    return subscriber;
-  }
-
-  CreatePublisheStream() {
-    let publisher = new PublisheStream(this.signaling);
-    return publisher;
   }
 };

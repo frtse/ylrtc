@@ -33,7 +33,7 @@ class SubscribeStream extends EventDispatcher {
     return this.mediaStream_;
   }
 
-  unsubscribe() {
+  close() {
     if (this.pc_) {
       this.pc_.close();
       this.pc_ = null;

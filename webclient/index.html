@@ -111,7 +111,6 @@
     let device = await Device.CreateDevice("camera", {audio: true, video: true});
     localPlayer.srcObject = device.mediaStream();
     localPlayer.play();
-    publisheStream = client.CreatePublisheStream();
     const simulcast = false;
     let audioRtpEncodingParameters = [{maxBitrate: 64000}];
     let videoRtpEncodingParameters = null;
@@ -123,7 +122,7 @@
     else {
       videoRtpEncodingParameters = [{ maxBitrate: 500000, maxFramerate: 15}];
     }
-    await publisheStream.publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters);
+    publisheStream = await client.publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters);
   });
 
   stopPublish.addEventListener('click', () => {
@@ -131,29 +130,28 @@
   });
 
   function subscribe(remoteStream) {
-    subscribeStream = client.CreateSubscribeStream();
-    subscribeStream.subscribe(remoteStream).then((mediaStream) => {
+    client.subscribe(remoteStream).then((stream) => {
+      subscribeStream = stream;
       let video = document.createElement('video');
-      video.srcObject = mediaStream;
+      video.srcObject = subscribeStream.mediaStream();
       video.autoplay = true;
       video.controls = true;
       video.muted = true;
       video.id = subscribeStream.Id();
       let body = document.getElementsByTagName('body')[0];
       body.append(video);
+      subscribeStream.addEventListener("mute", (type) => {
+        console.log("subscribeStream mute event type = ", type);
+      });
+      subscribeStream.addEventListener("unmute", (type) => {
+        console.log("subscribeStream unmute event type = ", type);
+      });
+      subscribeStream.addEventListener("ended", (subscribeStreamId) => {
+        console.log("subscribeStream end ", subscribeStreamId);
+        document.getElementById(`${subscribeStream.Id()}`).remove();
+      });
     }).catch((e) => {
       console.log("Subscribe failed. ", e);
-    });
-
-    subscribeStream.addEventListener("mute", (type) => {
-      console.log("subscribeStream mute event type = ", type);
-    });
-    subscribeStream.addEventListener("unmute", (type) => {
-      console.log("subscribeStream unmute event type = ", type);
-    });
-    subscribeStream.addEventListener("ended", (subscribeStreamId) => {
-      console.log("subscribeStream end ", subscribeStreamId);
-      document.getElementById(`${subscribeStream.Id()}`).remove();
     });
   }
 
