@@ -42,7 +42,7 @@ class Signaling extends EventDispatcher {
   }
 
   close() {
-    _cancelKeepAlive();
+    this._cancelKeepAlive();
     if (this.wss != null)
       this.wss.close();
     this.wss = null;
