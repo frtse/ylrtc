@@ -1,6 +1,7 @@
 #include "signaling_server_base.h"
 
 #include "spdlog/spdlog.h"
+#include "room_manager.h"
 
 void HandleError(beast::error_code ec, char const* what) {
   // ssl::error::stream_truncated, also known as an SSL "short read",
@@ -24,6 +25,12 @@ void HandleError(beast::error_code ec, char const* what) {
     return;
 
   spdlog::warn("{}: {}", what, ec.message());
+}
+
+void WebsocketSessionBase::HandleWsError(beast::error_code ec, char const* what) {
+  auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
+  if (room)
+    room->Leave(session_info_.participant_id);
 }
 
 WebsocketSessionBase::WebsocketSessionBase() : signaling_handler_{std::make_unique<SignalingHandler>(session_info_)} {}

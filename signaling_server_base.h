@@ -26,6 +26,7 @@ class WebsocketSessionBase : public std::enable_shared_from_this<WebsocketSessio
   virtual void Close() = 0;
 
  protected:
+  void HandleWsError(beast::error_code ec, char const* what);
   SessionInfo session_info_;
   std::unique_ptr<SignalingHandler> signaling_handler_;
 };
@@ -105,7 +106,7 @@ class WebsocketSession : public WebsocketSessionBase {
 
   void OnAccept(beast::error_code ec) {
     if (ec)
-      return HandleError(ec, "accept");
+      return HandleWsError(ec, "accept");
 
     DoRead();
   }
@@ -117,10 +118,10 @@ class WebsocketSession : public WebsocketSessionBase {
   void OnRead(beast::error_code ec, std::size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
     if (ec == websocket::error::closed)
-      return;
+      return HandleWsError(ec, "closed");
 
     if (ec)
-      return HandleError(ec, "read");
+      return HandleWsError(ec, "read");
     const auto signaling = boost::beast::buffers_to_string(read_buffer_.data());
     read_buffer_.consume(read_buffer_.size());
     SendText(signaling_handler_->HandleSignaling(signaling));
@@ -130,7 +131,7 @@ class WebsocketSession : public WebsocketSessionBase {
   void OnWrite(beast::error_code ec, std::size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
     if (ec)
-      return HandleError(ec, "write");
+      return HandleWsError(ec, "write");
 
     write_buffers_.erase(write_buffers_.begin());
 
