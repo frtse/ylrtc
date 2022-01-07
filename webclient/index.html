@@ -3,46 +3,134 @@
 
 <head>
   <title>SFU Demo</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.7, user-scalable=no, shrink-to-fit=no">
   <style>
-    video {
-      border: 1px solid #000;
-      width: 800px;
-      height: 600px;
-    }
-
-    #input {
-      border: 1px solid #000;
-      width: 800px;
-    }
-
-    #controls {
-      border: 1px solid #000;
-      width: 800px;
-    }
+  *{
+      margin: 0;
+      padding: 0;
+  }
+  html{
+      width: 100%;
+      height: 100%;
+  }
+  body{
+      width: 100%;
+      height: 100%;
+      background-color: rgb(64, 72, 83);
+      font-family: Futura,sans-serif;
+  }
+  #root {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+  }
+  #left {
+    flex-basis: 20%;
+    display: flex;
+    flex-direction: column;
+  }
+  #left-title {
+    background-color: rgb(35, 31, 82);
+    flex-basis: 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  #left-title-top {
+    width: 100%;
+    height: 100%;
+    flex-basis: 20%;
+  }
+  #left-title-text {
+    color: rgb(248, 244, 244);
+    font-size: 30px;
+    text-align: center;
+  }
+  #left-title-middle {
+    width: 100%;
+    height: 100%;
+    flex-basis: 5%;
+  }
+  #left-title-invitation-link {
+    height: 30px;
+    background-color: rgb(94, 188, 243);
+  }
+  #left-title-bottom {
+    width: 100%;
+    height: 100%;
+    flex-basis: 40%;
+  }
+  #left-local-video {
+    display: flex;
+    flex-direction: column;
+    border-style: solid;
+    border-color:rgb(2, 2, 2);
+    flex-basis: 40%;
+  }
+  #local-video-header {
+    flex-basis: 10%;
+    display: flex;
+    height: 32px;
+    padding: 5px;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  #local-video-header-title {
+    font-size : 28px;
+    flex-basis: 60%;
+    flex-grow: 1;
+    text-align: center;
+    color: rgb(240, 212, 228);
+  }
+  #local-video-camera {
+    width: 32px;
+    height: 32px;
+  }
+  #local-video-microphone {
+    width: 32px;
+    height: 32px;
+  }
+  #local-video {
+    flex-basis: 90%;
+  }
+  #right {
+    flex-basis: 80%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 300px);
+    grid-template-rows: repeat(auto-fill, 300px);
+  }
+  video {
+    background-color: rgb(7, 7, 7);
+    width:100%;
+    height: 100%;
+  }
   </style>
 </head>
-
 <body>
-  <video id="localPlayer" autoplay muted controls></video>
-
-  <div id="input">
-    Signaling Server Setting.
-    <br />
-    <input id="inputIp" type="text" name="ip" value="ffrtc.com">IP address of server.</input>
-    <br />
-    <input id="inputPort" type="text" name="port" value=8000>Listening port of server.</input>
-    <br />
+  <div id="root">
+  <div id="left">
+  <div id="left-title">
+  <div id="left-title-top"></div>
+  <div id="left-title-text">
+    ylsfu demo
   </div>
-  <div id="controls">
-    Controls
-    <br />
-    <button id="joinRoom">joinRoom</button>
-    <button id="startPublish">startPublish</button>
-    <button id="stopPublish">stopPublish</button>
-    <button id="muteVideoPublish">muteVideoPublish</button>
-    <button id="unmuteVideoPublish">unmuteVideoPublish</button>
-    <button id="muteVideoSubscribe">muteVideoSubscribe</button>
-    <button id="unmuteVideoSubscribe">unmuteVideoSubscribe</button>
+  <div id="left-title-middle"></div>
+  <button id="left-title-invitation-link">COPY INVITATION LINK</button id="left-title-button">
+  <div id="left-title-bottom"></div>
+  </div>
+  <div id="left-local-video">
+  <div id="local-video-header">
+  <div id="local-video-header-title">Local Video</div>
+  <img id="local-video-camera" src="./img/camera-close.png" alt="">
+  <img id="local-video-microphone" src="./img/microphone-close.png" alt="">
+  </div>
+  <video id="local-video" loop autoplay muted> </video>
+  </div>
+  </div>
+  <div id="right">
+  </div>
   </div>
 </body>
 <script src="js/adapter.js"></script>
@@ -53,30 +141,92 @@
 <script src="js/publisheStream.js"></script>
 <script src="js/client.js"></script>
 <script>
-  var inputIp = document.getElementById('inputIp');
-  var inputPort = document.getElementById('inputPort');
-  var localPlayer = document.getElementById('localPlayer');
+  class RemoteStreamView {
+    constructor(streamId, UserId, hasVideo, hasAudio, subscribeStream) {
+      this.subscribeStream = subscribeStream;
+      let self = this;
+      this.subscribeStream.addEventListener("mute", (type) => {
+        if (type == "video")
+          self._changeRemoteStreamCameraImg(true);
+        else if (type == "audio")
+          self._changeRemoteStreamMicrophoneImg(true);
+      });
+      this.subscribeStream.addEventListener("unmute", (type) => {
+        if (type == "video")
+          self._changeRemoteStreamCameraImg(false);
+        else if (type == "audio")
+          self._changeRemoteStreamMicrophoneImg(false);
+      });
+      this.subscribeStream.addEventListener("ended", (subscribeStreamId) => {
+        document.getElementById(subscribeStreamId).remove();
+      });
+      this.streamId = streamId;
+      this.hasVideo = hasVideo;
+      this.hasAudio = hasAudio;
+      let remoteStreamDiv = document.createElement('div');
+      remoteStreamDiv.id = streamId;
+      remoteStreamDiv.style = "display: flex; flex-direction: column; border-style: solid; border-color:rgb(10, 18, 56);";
+      let video = document.createElement('video');
+      video.srcObject = this.subscribeStream.mediaStream();
+      video.autoplay = true;
+      video.muted = true;
+      video.controls = false;
+      video.style = "flex-basis: 90%;";
+      remoteStreamDiv.append(video);
+      let right = document.getElementById("right");
+      let remoteStreamControls = document.createElement('div');
+      remoteStreamControls.style = "display: flex; flex-basis: 10%; flex-direction: row; background-color: rgb(64, 72, 83); \
+      height: 32px; padding: 5px; justify-content: flex-end;";
+      let remoteStreamUserName = document.createElement('div');
+      remoteStreamUserName.textContent = UserId;
+      remoteStreamUserName.style = "color: rgb(240, 212, 228); font-size : 28px; text-align: center; flex-basis: 60%; flex-grow: 1;";
+      remoteStreamControls.append(remoteStreamUserName);
+      this.remoteStreamCamera = document.createElement('img');
+      if (this.hasVideo)
+        this.remoteStreamCamera.src = "./img/camera-open.png";
+      else
+        this.remoteStreamCamera.src = "./img/camera-close.png";
+      this.remoteStreamCamera.style = "width: 32px; height: 32px;";
+      this.remoteStreamCamera.onclick = this._onRemoteStreamCameraImgClicked.bind(this);
+      remoteStreamControls.append(this.remoteStreamCamera);
+      this.remoteStreamMicrophone = document.createElement('img');
+      if (this.hasAudio)
+        this.remoteStreamMicrophone.src = "./img/microphone-open.png";
+      else
+        this.remoteStreamMicrophone.src = "./img/microphone-close.png";
+      this.remoteStreamMicrophone.style = "width: 32px; height: 32px;";
+      this.remoteStreamMicrophone.onclick = this._onRemoteStreamMicrophoneImgClicked.bind(this);
+      remoteStreamControls.append(this.remoteStreamMicrophone);
+      remoteStreamDiv.append(remoteStreamControls);
+      right.append(remoteStreamDiv);
+    }
 
-  var joinRoom = document.getElementById("joinRoom");
-  var startPublish = document.getElementById("startPublish");
-  var stopPublish = document.getElementById("stopPublish");
-  var muteVideoPublish = document.getElementById("muteVideoPublish");
-  var unmuteVideoPublish = document.getElementById("unmuteVideoPublish");
-  var muteVideoSubscribe = document.getElementById("muteVideoSubscribe");
-  var unmuteVideoSubscribe = document.getElementById("unmuteVideoSubscribe");
+    _changeRemoteStreamCameraImg(muted) {
+      if (muted)
+        this.remoteStreamCamera.src = "./img/camera-close.png";
+      else
+        this.remoteStreamCamera.src = "./img/camera-open.png";
+    }
 
-  startPublish.disabled = true;
-  stopPublish.disabled = true;
-  muteVideoPublish.disabled = true;
-  unmuteVideoPublish.disabled = true;
-  muteVideoSubscribe.disabled = true;
-  unmuteVideoSubscribe.disabled = true;
+    _changeRemoteStreamMicrophoneImg(muted) {
+      if (muted)
+        this.remoteStreamMicrophone.src = "./img/microphone-close.png";
+      else
+        this.remoteStreamMicrophone.src = "./img/microphone-open.png";
+    }
 
-  var gLocalMediaStream = null;
-  var gRemoteMediaStream = null;
-  var publisheStream = null;
-  var subscribeStream = null;
+    _onRemoteStreamCameraImgClicked() {
+      if (!this.hasVideo)
+        return;
+      console.log("_onRemoteStreamCameraImgClicked");
+    }
 
+    _onRemoteStreamMicrophoneImgClicked() {
+      if (!this.hasAudio)
+        return;
+      console.log("_onRemoteStreamMicrophoneImgClicked");
+    }
+  };
   function randomString(e) {    
     e = e || 32;
     var t = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678",
@@ -86,103 +236,92 @@
       n += t.charAt(Math.floor(Math.random() * a));
     return n
   }
+  var copyInvitationLinkBtn = document.getElementById("left-title-invitation-link");
+  copyInvitationLinkBtn.onclick = () => {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.href);
+    } else {
+        var textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+        textarea.style.position = 'fixed';
+        textarea.style.clip = 'rect(0 0 0 0)';
+        textarea.style.top = '10px';
+        textarea.value = window.location.href;
+        textarea.select();
+        document.execCommand('copy', true);
+        document.body.removeChild(textarea);
+    }
+  }
+  var client = new Client("ffrtc.com", 8000);
+  var has_local_video = true;
+  var has_local_audio = true;
+  var publisheStream = null;
+  var userName = "";
+  var remoteStreamMap = new Map();
 
-  var client = new Client(inputIp.value, inputPort.value);
-
-  joinRoom.addEventListener('click', () => {
-    client.join("9527", "8888").then((roomInfo) => {
+  window.onload = function() {
+    userName = randomString(8);
+    client.join("9527", userName).then(async (roomInfo) => {
       console.log("Join room success.");
       console.log("room info = ", roomInfo);
-      startPublish.disabled = false;
-      stopPublish.disabled = false;
-      muteVideoPublish.disabled = false;
-      unmuteVideoPublish.disabled = false;
-      muteVideoSubscribe.disabled = false;
-      unmuteVideoSubscribe.disabled = false;
-      roomInfo.streams.forEach(function (e) {
-        subscribe(e);
+      client.addEventListener("streamAdded", async (e) => {
+        console.log("add stream id = " + e.publishStreamId);
+        if (e.participantId === userName)
+          return;
+        let subscribeStream = await client.subscribe(e);
+        let subscribeStreamView = new RemoteStreamView(subscribeStream.id(), e.participantId, e.hasVideo, e.hasAudio, subscribeStream);
+        remoteStreamMap.set(subscribeStream.id(), subscribeStreamView);
+      });
+
+      let device = await Device.CreateDevice("camera", {audio: true, video: true});
+      let localPlayer = document.getElementById('local-video');
+      localPlayer.srcObject = device.mediaStream();
+      let local_video_header_title = document.getElementById("local-video-header-title");
+      local_video_header_title.textContent = userName;
+      let audioRtpEncodingParameters = [{maxBitrate: 64000}];
+      videoRtpEncodingParameters = [{ maxBitrate: 500000, maxFramerate: 15}];
+      publisheStream = await client.publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters);
+      let localStreamCameraImg = document.getElementById('local-video-camera');
+      localStreamCameraImg.src = "./img/camera-open.png";
+      localStreamCameraImg.onclick = () => {
+        has_local_video = !has_local_video;
+        if (has_local_video) {
+          publisheStream.unmute("video");
+          localStreamCameraImg.src = "./img/camera-open.png";
+        }
+        else {
+          publisheStream.mute("video");
+          localStreamCameraImg.src = "./img/camera-close.png";
+        }
+      }
+      let localStreamMicrophone = document.getElementById('local-video-microphone');
+      localStreamMicrophone.src = "./img/microphone-open.png";
+      localStreamMicrophone.onclick = () => {
+        has_local_audio = !has_local_audio;
+        if (has_local_audio) {
+          publisheStream.unmute("audio");
+          localStreamMicrophone.src = "./img/microphone-open.png";
+        }
+        else {
+          publisheStream.mute("audio");
+          localStreamMicrophone.src = "./img/microphone-close.png";
+        }
+      }
+
+      roomInfo.streams.forEach( async function(e) {
+        if (e.participantId === userName)
+          return;
+        let subscribeStream = await client.subscribe(e);
+        let subscribeStreamView = new RemoteStreamView(subscribeStream.id(), e.participantId, e.hasVideo, e.hasAudio, subscribeStream);
+        remoteStreamMap.set(subscribeStream.id(), subscribeStreamView);
       });
     }).catch(() => {
       console.log("Join room failed.");
     });
-  });
 
-  startPublish.addEventListener('click', async() => {
-    let device = await Device.CreateDevice("camera", {audio: true, video: true});
-    localPlayer.srcObject = device.mediaStream();
-    localPlayer.play();
-    const simulcast = false;
-    let audioRtpEncodingParameters = [{maxBitrate: 64000}];
-    let videoRtpEncodingParameters = null;
-    if (simulcast) {
-      videoRtpEncodingParameters = [{rid: 'q', active: true, maxBitrate: 100000},
-                                    {rid: 'h', active: true, maxBitrate: 300000},
-                                    {rid: 'f', active: true, maxBitrate: 900000}];
-    }
-    else {
-      videoRtpEncodingParameters = [{ maxBitrate: 500000, maxFramerate: 15}];
-    }
-    publisheStream = await client.publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters);
-  });
-
-  stopPublish.addEventListener('click', () => {
-    publisheStream.unpublish();
-  });
-
-  function subscribe(remoteStream) {
-    client.subscribe(remoteStream).then((stream) => {
-      subscribeStream = stream;
-      let video = document.createElement('video');
-      video.srcObject = subscribeStream.mediaStream();
-      video.autoplay = true;
-      video.controls = true;
-      video.muted = true;
-      video.id = subscribeStream.Id();
-      let body = document.getElementsByTagName('body')[0];
-      body.append(video);
-      subscribeStream.addEventListener("mute", (type) => {
-        console.log("subscribeStream mute event type = ", type);
-      });
-      subscribeStream.addEventListener("unmute", (type) => {
-        console.log("subscribeStream unmute event type = ", type);
-      });
-      subscribeStream.addEventListener("ended", (subscribeStreamId) => {
-        console.log("subscribeStream end ", subscribeStreamId);
-        document.getElementById(`${subscribeStream.Id()}`).remove();
-      });
-    }).catch((e) => {
-      console.log("Subscribe failed. ", e);
-    });
   }
-
-  muteVideoPublish.addEventListener('click', () => {
-    publisheStream.mute("video");
-  });
-
-  unmuteVideoPublish.addEventListener('click', () => {
-    publisheStream.unmute("video");
-  });
-
-  muteVideoSubscribe.addEventListener('click', () => {
-    subscribeStream.mute("video");
-  });
-
-  unmuteVideoSubscribe.addEventListener('click', () => {
-    subscribeStream.unmute("video");
-  });
-
-  client.addEventListener("streamAdded", (remoteStream) => {
-    console.log("add stream id = " + remoteStream.publishStreamId);
-    subscribe(remoteStream);
-  });
-
-  client.addEventListener("participantJoined", (id) => {
-    console.log("participantJoined id = ", id);
-  });
-
-  client.addEventListener("participantLeft", (id) => {
-    console.log("participantLeft id = ", id);
-  });
+  window.onbeforeunload = function (event) {
+  }
 </script>
 
 </html>
