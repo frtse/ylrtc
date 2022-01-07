@@ -7,7 +7,7 @@ class SubscribeStream extends EventDispatcher {
       if (notification.type === "publishMuteOrUnmute") {
         if (notification.data.publishStreamId === this.publishStreamId_) {
           let eventType = notification.data.muted ? 'mute' : 'unmute';
-          super.dispatchEvent(eventType, notification.type);
+          super.dispatchEvent(eventType, notification.data.type);
         }
       }
     });
@@ -25,7 +25,7 @@ class SubscribeStream extends EventDispatcher {
     this.mediaStream_ = mediaStream;
   }
 
-  Id() {
+  id() {
     return this.subscribeStreamId_;
   }
 
@@ -79,10 +79,5 @@ class SubscribeStream extends EventDispatcher {
     } else {
       throw "PeerConnection is null";
     }
-  }
-
-  _ontrack(e) {
-    //https://webrtc.org/getting-started/remote-streams
-    this.mediaStream_.addTrack(e.track);
   }
 };
