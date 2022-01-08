@@ -22,15 +22,6 @@ YlError Room::Join(const std::string& participant_id) {
 }
 
 void Room::Leave(const std::string& participant_id) {
-  auto result = participant_id_set_.find(participant_id);
-  if (result != participant_id_set_.end()) {
-    participant_id_set_.erase(result);
-    auto notification = Notification::MakeParticipantLeftNotification(id_, participant_id);
-    SignalingServer::GetInstance().Notify(notification);
-  }
-}
-
-void Room::KickoutParticipant(const std::string& participant_id) {
   auto participant_publishs_map_iter = participant_publishs_map_.find(participant_id);
   if (participant_publishs_map_iter == participant_publishs_map_.end())
     return;
@@ -44,6 +35,15 @@ void Room::KickoutParticipant(const std::string& participant_id) {
   auto& subscribe_stream_set = participant_subscribes_map_iter->second;
   for (auto subscribe_stream : subscribe_stream_set)
     subscribe_stream->Stop();
+  auto result = participant_id_set_.find(participant_id);
+  if (result != participant_id_set_.end()) {
+    participant_id_set_.erase(result);
+    auto notification = Notification::MakeParticipantLeftNotification(id_, participant_id);
+    SignalingServer::GetInstance().Notify(notification);
+  }
+}
+
+void Room::KickoutParticipant(const std::string& participant_id) {
   Leave(participant_id);
 }
 
