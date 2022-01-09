@@ -163,6 +163,8 @@
       this.streamId = streamId;
       this.hasVideo = hasVideo;
       this.hasAudio = hasAudio;
+      this.videoMuted = !hasVideo;
+      this.audioMuted = !hasAudio;
       let remoteStreamDiv = document.createElement('div');
       remoteStreamDiv.id = streamId;
       remoteStreamDiv.style = "display: flex; flex-direction: column; border-style: solid; border-color:rgb(10, 18, 56);";
@@ -218,13 +220,23 @@
     _onRemoteStreamCameraImgClicked() {
       if (!this.hasVideo)
         return;
-      console.log("_onRemoteStreamCameraImgClicked");
+      this.videoMuted = !this.videoMuted;
+      this._changeRemoteStreamCameraImg(this.videoMuted);
+      if (this.videoMuted)
+        this.subscribeStream.mute("video");
+      else
+        this.subscribeStream.unmute("video");
     }
 
     _onRemoteStreamMicrophoneImgClicked() {
       if (!this.hasAudio)
         return;
-      console.log("_onRemoteStreamMicrophoneImgClicked");
+      this.audioMuted = !this.audioMuted;
+      this._changeRemoteStreamMicrophoneImg(this.audioMuted);
+      if (this.audioMuted)
+        this.subscribeStream.mute("audio");
+      else
+        this.subscribeStream.unmute("audio");
     }
   };
   function randomString(e) {    
