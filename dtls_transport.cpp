@@ -182,6 +182,8 @@ void DtlsTransport::Stop() {
     timer_.reset();
 
   if (ssl_) {
+    SSL_shutdown(ssl_);
+    TrySendPendingData();
     SSL_set_ex_data(ssl_, 0, nullptr);
     SSL_free(ssl_);
     ssl_ = NULL;
