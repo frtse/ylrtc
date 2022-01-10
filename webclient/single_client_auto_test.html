@@ -5,15 +5,14 @@
   <title>SFU Test</title>
   <style>
     video {
-      width: 200px;
-      height: 100px;
+      width: 300px;
+      height: 300px;
     }
   </style>
 </head>
 <body>
   <video id="localPlayer" autoplay muted controls></video>
 </body>
-<script src="js/jquery-3.2.1.min.js"></script>
 <script src="js/adapter.js"></script>
 <script src="js/eventDispatcher.js"></script>
 <script src="js/device.js"></script>
@@ -32,43 +31,44 @@
     return n
   }
 
-  window.onload = function() {
+  window.onload = async function() {
     var localPlayer = document.getElementById('localPlayer');
+    var device = await Device.CreateDevice("camera", {audio: true, video: true});
+    localPlayer.srcObject = device.mediaStream();
+
     var publisheStreamArr = new Array();
     var subscribeStreamArr = new Array();
 
-    var client = new Client("192.168.1.104", 8000);
+    var client = new Client("ffrtc.com", 8000);
     var times = 0;
     async function subscribe(remoteStream) {
-      let subscribeStream = client.CreateSubscribeStream();
-      let mediaStream = await subscribeStream.subscribe(remoteStream);
-      let $video = $(`<video controls autoplay id=${subscribeStream.Id()}></video>`);
-      $video.get(0).srcObject = mediaStream;
-      $('body').append($video);
+      let subscribeStream = await client.subscribe(remoteStream);
+      let video = document.createElement('video');
+      video.srcObject = subscribeStream.mediaStream();
+      video.autoplay = true;
+      video.muted = true;
+      video.controls = true;
+      video.style = "width: 300px; height: 300px;";
+      document.getElementsByTagName("body")[0].append(video);
       subscribeStreamArr.push(subscribeStream);
     }
 
     client.addEventListener("streamAdded", async (remoteStream) => {
-      console.log("add stream id = " + remoteStream.publishStreamId);
       await subscribe(remoteStream);
       times++;
-      if (times === 20)
+      if (times > 20)
         location.reload();
     });
     client.join("9527", randomString(32)).then(async(roomInfo) => {
-        roomInfo.streams.forEach(function (e) {
-          subscribe(e);
-        });
-        let device = await Device.CreateDevice("camera", {audio: true, video: true});
-        localPlayer.srcObject = device.mediaStream();
-        localPlayer.play();
-        for (let i = 0; i < 20; ++i) {
-          let publisheStream = client.CreatePublisheStream();
-          await publisheStream.publish(device);
-          publisheStreamArr.push(publisheStream);
-        }
-    }).catch(() => {
-      console.log("Join room failed.");
+      roomInfo.streams.forEach(function (e) {
+        subscribe(e);
+      });
+      for (let i = 0; i < 20; ++i) {
+        let publisheStream = await client.publish(device);
+        publisheStreamArr.push(publisheStream);
+      }
+    }).catch((e) => {
+      console.log("Join room failed.", e);
     });
   }
 </script>
