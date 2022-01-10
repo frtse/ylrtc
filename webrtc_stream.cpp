@@ -43,9 +43,10 @@ const std::string& WebrtcStream::GetStreamId() const {
 void WebrtcStream::Stop() {
   auto self(shared_from_this());
   work_thread_->PostAsync([self, this] {
-    udp_socket_->Close();
     if (dtls_transport_)
       dtls_transport_->Stop();
+    if (udp_socket_)
+      udp_socket_->Close();
     Shutdown();
   });
 }
