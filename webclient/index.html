@@ -167,7 +167,6 @@
       this.subscribeStream.addEventListener("ended", (subscribeStreamId) => {
         document.getElementById(subscribeStreamId).remove();
         remoteStreamMap.delete(subscribeStreamId);
-        this.subscribeStream.close();
       });
       this.streamId = streamId;
       this.hasVideo = hasVideo;

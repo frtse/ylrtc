@@ -15,6 +15,7 @@ class SubscribeStream extends EventDispatcher {
       let notification = JSON.parse(e);
       if (notification.type === "streamRemoved") {
         if (notification.data.publishStreamId === this.publishStreamId_) {
+          this.close();
           super.dispatchEvent("ended", this.subscribeStreamId_);
         }
       }
