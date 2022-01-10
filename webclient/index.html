@@ -55,7 +55,7 @@
   }
   #left-title-invitation-link {
     height: 30px;
-    background-color: rgb(94, 188, 243);
+    background-color: rgb(97, 91, 63);
   }
   #left-title-bottom {
     width: 100%;
@@ -66,11 +66,10 @@
     display: flex;
     flex-direction: column;
     border-style: solid;
-    border-color:rgb(2, 2, 2);
+    border-color:rgba(60, 108, 219, 0.466);
     flex-basis: 40%;
   }
   #local-video-header {
-    flex-basis: 10%;
     display: flex;
     height: 32px;
     padding: 5px;
@@ -78,15 +77,19 @@
     justify-content: flex-end;
   }
   #local-video-header-title {
+    vertical-align: middle;
     font-size : 28px;
+    line-height: 32px;
     flex-basis: 60%;
     flex-grow: 1;
     text-align: center;
+    padding: 2px;
     color: rgb(240, 212, 228);
   }
   #local-video-camera {
     width: 32px;
     height: 32px;
+    margin-right: 5px;
   }
   #local-video-microphone {
     width: 32px;
@@ -175,7 +178,7 @@
       this.audioMuted = !hasAudio;
       let remoteStreamDiv = document.createElement('div');
       remoteStreamDiv.id = streamId;
-      remoteStreamDiv.style = "display: flex; flex-direction: column; border-style: solid; border-color:rgb(10, 18, 56);";
+      remoteStreamDiv.style = "display: flex; flex-direction: column; border-style: solid; border-color:rgba(60, 108, 219, 0.466);";
       let video = document.createElement('video');
       video.srcObject = this.subscribeStream.mediaStream();
       video.autoplay = true;
@@ -185,18 +188,18 @@
       remoteStreamDiv.append(video);
       let right = document.getElementById("right");
       let remoteStreamControls = document.createElement('div');
-      remoteStreamControls.style = "display: flex; flex-basis: 10%; flex-direction: row; background-color: rgb(64, 72, 83); \
+      remoteStreamControls.style = "display: flex; flex-direction: row; background-color: rgb(64, 72, 83); \
       height: 32px; padding: 5px; justify-content: flex-end;";
       let remoteStreamUserName = document.createElement('div');
       remoteStreamUserName.textContent = UserId;
-      remoteStreamUserName.style = "color: rgb(240, 212, 228); font-size : 28px; text-align: center; flex-basis: 60%; flex-grow: 1;";
+      remoteStreamUserName.style = "vertical-align: middle; line-height: 32px; color: rgb(240, 212, 228); font-size : 28px; text-align: center; flex-basis: 60%; flex-grow: 1;";
       remoteStreamControls.append(remoteStreamUserName);
       this.remoteStreamCamera = document.createElement('img');
       if (this.hasVideo)
         this.remoteStreamCamera.src = "./img/camera-open.png";
       else
         this.remoteStreamCamera.src = "./img/camera-close.png";
-      this.remoteStreamCamera.style = "width: 32px; height: 32px;";
+      this.remoteStreamCamera.style = "margin-right: 5px; width: 32px; height: 32px;";
       this.remoteStreamCamera.onclick = this._onRemoteStreamCameraImgClicked.bind(this);
       remoteStreamControls.append(this.remoteStreamCamera);
       this.remoteStreamMicrophone = document.createElement('img');
