@@ -144,7 +144,8 @@
 <script src="js/publisheStream.js"></script>
 <script src="js/client.js"></script>
 <script>
-  var client = new Client("ffrtc.com", 8000);
+  var client = null;
+  client = new Client("ffrtc.com", 8000);
   var has_local_video = true;
   var has_local_audio = true;
   var publisheStream = null;
@@ -339,6 +340,8 @@
 
   }
   window.onbeforeunload = function (event) {
+    if (client)
+      client.leave();
   }
 </script>
 
