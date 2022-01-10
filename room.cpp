@@ -131,7 +131,7 @@ void Room::OnWebrtcStreamConnected(const std::string& stream_id) {
 void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
   auto self(shared_from_this());
   MainThread::GetInstance().PostAsync([self, this, stream_id] {
-    for (auto iter = participant_publishs_map_.begin(); iter != participant_publishs_map_.end(); ++iter) {
+    for (auto iter = participant_publishs_map_.begin(); iter != participant_publishs_map_.end();) {
       auto& publish_stream_set = iter->second;
       auto publish_stream_set_iter = std::find_if(publish_stream_set.begin(), publish_stream_set.end(), [stream_id](auto stream) { return stream_id == stream->GetStreamId(); });
       if (publish_stream_set_iter != publish_stream_set.end()) {
@@ -149,9 +149,13 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
         }
         publish_stream_set.erase(publish_stream_set_iter);
       }
+      if (publish_stream_set.empty())
+        participant_publishs_map_.erase(iter++);
+      else
+        ++iter;
     }
 
-    for (auto iter = participant_subscribes_map_.begin(); iter != participant_subscribes_map_.end(); ++iter) {
+    for (auto iter = participant_subscribes_map_.begin(); iter != participant_subscribes_map_.end();) {
       auto& subscribe_stream_set = iter->second;
       auto subscribe_stream_set_iter = std::find_if(subscribe_stream_set.begin(), subscribe_stream_set.end(), [&stream_id](auto stream) { return stream_id == stream->GetStreamId(); });
 
@@ -170,6 +174,10 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
         }
         subscribe_stream_set.erase(subscribe_stream_set_iter);
       }
+      if (subscribe_stream_set.empty())
+        participant_subscribes_map_.erase(iter++);
+      else
+        ++iter;
     }
 #if 1
     spdlog::debug("Print participant id set.");
