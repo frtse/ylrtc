@@ -53,8 +53,8 @@ void WebrtcStream::Stop() {
 
 void WebrtcStream::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::endpoint* remote_ep) {
   if (StunMessage::IsStun(data, len)) {
-    CHECK(ice_lite_);
-    ice_lite_->ProcessStunMessage(data, len, remote_ep);
+    if (ice_lite_)
+      ice_lite_->ProcessStunMessage(data, len, remote_ep);
   } else if (DtlsContext::IsDtls(data, len)) {
     if (dtls_ready_ && dtls_transport_)
       dtls_transport_->ProcessDataFromPeer(data, len);
