@@ -129,7 +129,7 @@
   <img id="local-video-camera" src="./img/camera-close.png" alt="">
   <img id="local-video-microphone" src="./img/microphone-close.png" alt="">
   </div>
-  <video id="local-video" loop autoplay muted> </video>
+  <video id="local-video"> </video>
   </div>
   </div>
   <div id="right">
@@ -151,6 +151,52 @@
   var publisheStream = null;
   var userName = "";
   var remoteStreamMap = new Map();
+
+  (function(w){
+    var promptBoxExist = false;
+    var promptBox = null;
+    var textShow = null;
+    var enter = null;
+
+    function promptWindow(text, cb){
+      var textContext = text ? text : "";
+      var callBack = cb ? cb : function() {};
+      if (promptBoxExist == false){
+        promptBox = document.createElement("div");
+        promptBox.style.cssText=`position:fixed;top:0;left:0px;z-index:10000;width:100%;height:100%;background-color:rgba(0,0,0,0.5);transition:all 0.5s;`;
+        promptBox.id="promptBox";
+
+        var enterContent = document.createElement("div");
+        enterContent.style.cssText = `position:absolute;top:50%;left:50%;width:350px;transform:translate(-50%,-50%);overflow:hidden;min-height:140px;background-color:rgba(247, 241, 244, 0.774);border-radius:10px;`;
+
+        textShow = document.createElement("div");
+        textShow.style.cssText = `padding:10px 10px 10px 20px;font-size:16px;min-height:60px;overflow:hidden;word-break:break-all;`;
+
+        var btnGroup = document.createElement("div");
+        btnGroup.style.cssText = `width:100%;height:40px;padding:10px;margin-bottom:10px;display:flex;justify-content:center;align-items:center;box-sizing: border-box;`;
+
+        enter = document.createElement("div");
+        enter.style.cssText = `color:white;padding:8px 16px;background-color:#0094c7;border-radius:20px;font-size:16px;`;
+        enter.innerText = "Ok";
+
+        btnGroup.appendChild(enter);
+        enterContent.appendChild(textShow);
+        enterContent.appendChild(btnGroup);
+        promptBox.appendChild(enterContent);
+        document.body.appendChild(promptBox);
+      } else if (promptBoxExist){
+        promptBox.style.display="block";
+      }
+      textShow.innerText= textContext;
+      promptBoxExist = true;
+
+      enter.onclick = function () {
+        promptBox.style.display = "none";
+        callBack && callBack();
+      }
+    }
+    w.promptWindow = promptWindow;
+  })(window);
 
   class RemoteStreamView {
     constructor(streamId, UserId, hasVideo, hasAudio, subscribeStream) {
@@ -182,10 +228,16 @@
       remoteStreamDiv.style = "display: flex; flex-direction: column; border-style: solid; border-color:rgba(60, 108, 219, 0.466);";
       let video = document.createElement('video');
       video.srcObject = this.subscribeStream.mediaStream();
-      video.autoplay = true;
-      video.muted = true;
-      video.controls = false;
       video.style = "flex-basis: 90%;";
+      let playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+        }).catch(error => {
+          window.promptWindow("Playback failed. Click resume playback.", () => {
+            video.play();
+          });
+        });
+      }
       remoteStreamDiv.append(video);
       let right = document.getElementById("right");
       let remoteStreamControls = document.createElement('div');
@@ -294,6 +346,15 @@
       let device = await Device.CreateDevice("camera", {audio: true, video: true});
       let localPlayer = document.getElementById('local-video');
       localPlayer.srcObject = device.mediaStream();
+      var playPromise = localPlayer.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+        }).catch(error => {
+          window.promptWindow("Playback failed. Click resume playback.", () => {
+            localPlayer.play();
+          });
+        });
+      }
       let local_video_header_title = document.getElementById("local-video-header-title");
       local_video_header_title.textContent = userName;
       let audioRtpEncodingParameters = [{maxBitrate: 64000}];
