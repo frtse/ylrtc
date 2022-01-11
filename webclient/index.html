@@ -117,7 +117,7 @@
   <div id="left-title">
   <div id="left-title-top"></div>
   <div id="left-title-text">
-    ylsfu demo
+    sfu demo
   </div>
   <div id="left-title-middle"></div>
   <button id="left-title-invitation-link">COPY INVITATION LINK</button id="left-title-button">
@@ -200,6 +200,7 @@
 
   class RemoteStreamView {
     constructor(streamId, UserId, hasVideo, hasAudio, subscribeStream) {
+      this.close = false;
       this.subscribeStream = subscribeStream;
       let self = this;
       this.subscribeStream.addEventListener("mute", (type) => {
@@ -215,6 +216,7 @@
           self._changeRemoteStreamMicrophoneImg(false);
       });
       this.subscribeStream.addEventListener("ended", (subscribeStreamId) => {
+        self.close = true;
         document.getElementById(subscribeStreamId).remove();
         remoteStreamMap.delete(subscribeStreamId);
       });
@@ -233,9 +235,11 @@
       if (playPromise !== undefined) {
         playPromise.then(() => {
         }).catch(error => {
-          window.promptWindow("Playback failed. Click resume playback.", () => {
-            video.play();
-          });
+          if (!self.close) {
+            window.promptWindow("Playback failed. Click resume playback.", () => {
+              video.play();
+            });
+          }
         });
       }
       remoteStreamDiv.append(video);
