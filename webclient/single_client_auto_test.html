@@ -56,7 +56,7 @@
     client.addEventListener("streamAdded", async (remoteStream) => {
       await subscribe(remoteStream);
       times++;
-      if (times > 20)
+      if (times >= 20)
         location.reload();
     });
     client.join("9527", randomString(32)).then(async(roomInfo) => {
