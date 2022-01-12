@@ -129,7 +129,7 @@
   <img id="local-video-camera" src="./img/camera-close.png" alt="">
   <img id="local-video-microphone" src="./img/microphone-close.png" alt="">
   </div>
-  <video id="local-video"> </video>
+  <video id="local-video" muted autoplay> </video>
   </div>
   </div>
   <div id="right">
@@ -350,15 +350,6 @@
       let device = await Device.CreateDevice("camera", {audio: true, video: true});
       let localPlayer = document.getElementById('local-video');
       localPlayer.srcObject = device.mediaStream();
-      var playPromise = localPlayer.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-        }).catch(error => {
-          window.promptWindow("Playback failed. Click resume playback.", () => {
-            localPlayer.play();
-          });
-        });
-      }
       let local_video_header_title = document.getElementById("local-video-header-title");
       local_video_header_title.textContent = userName;
       let audioRtpEncodingParameters = [{maxBitrate: 64000}];
