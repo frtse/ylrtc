@@ -13,7 +13,7 @@ class Timer : public std::enable_shared_from_this<Timer> {
   };
 
  public:
-  Timer(boost::asio::io_context& io_context, std::shared_ptr<Observer> observer);
+  Timer(boost::asio::io_context& io_context, std::weak_ptr<Observer> observer);
   Timer& operator=(const Timer&) = delete;
   Timer(const Timer&) = delete;
   ~Timer();

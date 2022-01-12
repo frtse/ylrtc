@@ -2,7 +2,7 @@
 
 #include <boost/bind/bind.hpp>
 
-Timer::Timer(boost::asio::io_context& io_context, std::shared_ptr<Observer> observer)
+Timer::Timer(boost::asio::io_context& io_context, std::weak_ptr<Observer> observer)
     : io_context_{io_context}, timer_{std::make_unique<boost::asio::deadline_timer>(io_context_)}, observer_{observer} {}
 
 Timer::~Timer() {
