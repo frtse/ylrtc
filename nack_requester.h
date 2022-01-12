@@ -15,7 +15,7 @@
  * @brief This class is base on webrtc::NackRequester
  * and is used to generate NACK requests.
  */
-class NackRequester : public Timer::Listener, public std::enable_shared_from_this<NackRequester> {
+class NackRequester : public Timer::Observer, public std::enable_shared_from_this<NackRequester> {
  public:
   class Observer {
    public:

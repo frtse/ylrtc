@@ -17,7 +17,7 @@
 // Class used when send-side BWE is enabled: This proxy is instantiated on the
 // receive side. It buffers a number of receive timestamps and then sends
 // transport feedback messages back too the send side.
-class ReceiveSideTWCC : public Timer::Listener, public std::enable_shared_from_this<ReceiveSideTWCC> {
+class ReceiveSideTWCC : public Timer::Observer, public std::enable_shared_from_this<ReceiveSideTWCC> {
  public:
   // Used for sending transport feedback messages when send side
   // BWE is used.

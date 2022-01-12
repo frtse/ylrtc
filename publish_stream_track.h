@@ -17,7 +17,7 @@
 #include "receive_statistician.h"
 #include "random.h"
 
-class PublishStreamTrack : public Timer::Listener
+class PublishStreamTrack : public Timer::Observer
   , public NackRequester::Observer
   , public std::enable_shared_from_this<PublishStreamTrack> {
  public:

@@ -12,7 +12,7 @@
 #include "rtp_packet_history.h"
 #include "timer.h"
 
-class SubscribeStreamTrack : public Timer::Listener, public std::enable_shared_from_this<SubscribeStreamTrack> {
+class SubscribeStreamTrack : public Timer::Observer, public std::enable_shared_from_this<SubscribeStreamTrack> {
  public:
   struct Configuration {
     uint32_t ssrc;
