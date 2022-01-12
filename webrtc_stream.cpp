@@ -13,7 +13,7 @@ WebrtcStream::WebrtcStream(const std::string& stream_id, std::shared_ptr<Observe
     }
 
 bool WebrtcStream::Start() {
-  udp_socket_.reset(new UdpSocket(work_thread_->MessageLoop(), this, 5000));
+  udp_socket_.reset(new UdpSocket(work_thread_->MessageLoop(), shared_from_this(), 5000));
   udp_socket_->SetMinMaxPort(ServerConfig::GetInstance().GetWebRtcMinPort(), ServerConfig::GetInstance().GetWebRtcMaxPort());
   if (!udp_socket_->Listen(ServerConfig::GetInstance().GetIp()))
     return false;

@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "spdlog/spdlog.h"
 
-UdpSocket::UdpSocket(boost::asio::io_context& io_context, Observer* listener, size_t init_receive_buffer_size)
+UdpSocket::UdpSocket(boost::asio::io_context& io_context, std::weak_ptr<Observer> listener, size_t init_receive_buffer_size)
     : io_context_(io_context), closed_(false), listener_(listener), max_port_(65535), min_port_(0), init_receive_buffer_size_(init_receive_buffer_size) {}
 
 UdpSocket::~UdpSocket() {
@@ -66,8 +66,9 @@ void UdpSocket::HandSend(const boost::system::error_code& ec, size_t bytes) {
   if (closed_)
     return;
   if (ec) {
-    if (listener_)
-      listener_->OnUdpSocketError();
+    auto sp = listener_.lock();
+    if (sp)
+      sp->OnUdpSocketError();
   }
 
   DCHECK(send_queue_.size() > 0);
@@ -112,13 +113,15 @@ void UdpSocket::HandleReceive(const boost::system::error_code& ec, size_t bytes)
   if (closed_)
     return;
   if (!ec || ec == boost::asio::error::message_size) {
-    if (listener_)
-      listener_->OnUdpSocketDataReceive(receive_data_.buffer.get(), bytes, &receive_data_.endpoint);
+    auto sp = listener_.lock();
+    if (sp)
+      sp->OnUdpSocketDataReceive(receive_data_.buffer.get(), bytes, &receive_data_.endpoint);
     StartReceive();
     return;
   } else {
-    if (listener_)
-      listener_->OnUdpSocketError();
+    auto sp = listener_.lock();
+    if (sp)
+      sp->OnUdpSocketError();
   }
 }
 
