@@ -81,7 +81,8 @@ void DtlsTransport::OnTimerTimeout() {
 void DtlsTransport::TrySendPendingData() {
   if (BIO_ctrl_pending(write_bio_)) {
     int read_sie = BIO_read(write_bio_, read_buffer_, kReadBufferSize);
-    listener_->OnDtlsTransportSendData(read_buffer_, read_sie);
+    if (listener_)
+      listener_->OnDtlsTransportSendData(read_buffer_, read_sie);
   }
 }
 
@@ -94,9 +95,10 @@ void DtlsTransport::SetTimeout() {
 }
 
 void DtlsTransport::CheckPending() {
-  if (BIO_ctrl_pending(write_bio_)) {
+  if (write_bio_ && BIO_ctrl_pending(write_bio_)) {
     int read_sie = BIO_read(write_bio_, read_buffer_, kReadBufferSize);
-    listener_->OnDtlsTransportSendData(read_buffer_, read_sie);
+    if (listener_)
+      listener_->OnDtlsTransportSendData(read_buffer_, read_sie);
   }
 
   SetTimeout();
@@ -124,7 +126,8 @@ void DtlsTransport::ProcessDataFromPeer(const uint8_t* buffer, size_t size) {
   if (SSL_get_shutdown(ssl_) & SSL_RECEIVED_SHUTDOWN) {
     spdlog::warn("Close_notify was received.");
     SSL_clear(ssl_);
-    listener_->OnDtlsTransportShutdown();
+    if (listener_)
+      listener_->OnDtlsTransportShutdown();
   }
 }
 
@@ -178,9 +181,6 @@ void DtlsTransport::SetRemoteFingerprint(const std::string& hash, const char* fi
 void DtlsTransport::Stop() {
   inited_ = false;
 
-  if (timer_)
-    timer_.reset();
-
   if (ssl_) {
     SSL_shutdown(ssl_);
     TrySendPendingData();
@@ -190,6 +190,9 @@ void DtlsTransport::Stop() {
     read_bio_ = NULL;
     write_bio_ = NULL;
   }
+
+  if (timer_)
+    timer_.reset();
 }
 
 bool DtlsTransport::CheckRemoteCertificate() {
@@ -283,8 +286,8 @@ bool DtlsTransport::ExtractSrtpParams() {
   memcpy(local_master_key + keysalt.key_length_, local_salt, keysalt.salt_length_);
   memcpy(remote_master_key, remote_key, keysalt.key_length_);
   memcpy(remote_master_key + keysalt.key_length_, remote_salt, keysalt.salt_length_);
-
-  listener_->OnDtlsTransportSetup(suite, local_master_key, total, remote_master_key, total);
+  if (listener_)
+    listener_->OnDtlsTransportSetup(suite, local_master_key, total, remote_master_key, total);
   return true;
 }
 
@@ -341,8 +344,10 @@ void DtlsTransport::OnSSLInfo(int where, int ret) {
     spdlog::debug("DTLS handshake start");
   } else if ((where & SSL_CB_HANDSHAKE_DONE) != 0) {
     spdlog::debug("DTLS handshake done");
-    if (!SetupSRTP())
-      listener_->OnDtlsTransportError();
+    if (!SetupSRTP()) {
+      if (listener_)
+        listener_->OnDtlsTransportError();
+    }
   }
 
   CheckPending();

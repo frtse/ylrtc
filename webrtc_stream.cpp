@@ -31,9 +31,10 @@ bool WebrtcStream::Start() {
 }
 
 WebrtcStream::~WebrtcStream() {
-  udp_socket_->Close();
   if (dtls_transport_)
     dtls_transport_->Stop();
+  if (udp_socket_)
+    udp_socket_->Close();
 }
 
 const std::string& WebrtcStream::GetStreamId() const {

@@ -43,7 +43,7 @@ class UdpSocket : public std::enable_shared_from_this<UdpSocket> {
   size_t init_receive_buffer_size_;
   std::unique_ptr<udp::socket> socket_;
   udp::endpoint remote_endpoint_;
-  bool is_closing_;
+  bool closed_;
   Observer* listener_;
   UdpMessage receive_data_;
   std::queue<UdpMessage> send_queue_;

@@ -5,7 +5,7 @@
 #include "spdlog/spdlog.h"
 
 UdpSocket::UdpSocket(boost::asio::io_context& io_context, Observer* listener, size_t init_receive_buffer_size)
-    : io_context_(io_context), is_closing_(false), listener_(listener), max_port_(65535), min_port_(0), init_receive_buffer_size_(init_receive_buffer_size) {}
+    : io_context_(io_context), closed_(false), listener_(listener), max_port_(65535), min_port_(0), init_receive_buffer_size_(init_receive_buffer_size) {}
 
 UdpSocket::~UdpSocket() {
   Close();
@@ -31,6 +31,8 @@ bool UdpSocket::Listen(std::string_view ip) {
 }
 
 void UdpSocket::SendData(const uint8_t* buf, size_t len, udp::endpoint* endpoint) {
+  if (closed_)
+    return;
   UdpMessage data;
   data.buffer.reset(new uint8_t[len]);
   memcpy(data.buffer.get(), buf, len);
@@ -43,13 +45,15 @@ void UdpSocket::SendData(const uint8_t* buf, size_t len, udp::endpoint* endpoint
 }
 
 void UdpSocket::SendData(UdpMessage&& message) {
+  if (closed_)
+    return;
   send_queue_.push(std::move(message));
   if (send_queue_.size() == 1)
     DoSend();
 }
 
 void UdpSocket::DoSend() {
-  if (is_closing_)
+  if (closed_)
     return;
   UdpMessage& data = send_queue_.front();
 
@@ -59,7 +63,7 @@ void UdpSocket::DoSend() {
 }
 
 void UdpSocket::HandSend(const boost::system::error_code& ec, size_t bytes) {
-  if (is_closing_)
+  if (closed_)
     return;
   if (ec) {
     if (listener_)
@@ -74,9 +78,9 @@ void UdpSocket::HandSend(const boost::system::error_code& ec, size_t bytes) {
 }
 
 void UdpSocket::Close() {
-  if (is_closing_)
+  if (closed_)
     return;
-  is_closing_ = true;
+  closed_ = true;
 
   boost::system::error_code ec;
   if (socket_) {
@@ -94,6 +98,8 @@ unsigned short UdpSocket::GetListeningPort() {
 }
 
 void UdpSocket::StartReceive() {
+  if (closed_)
+    return;
   if (!receive_data_.buffer)
     receive_data_.buffer.reset(new uint8_t[init_receive_buffer_size_]);
   DCHECK(socket_);
@@ -103,7 +109,7 @@ void UdpSocket::StartReceive() {
 }
 
 void UdpSocket::HandleReceive(const boost::system::error_code& ec, size_t bytes) {
-  if (is_closing_)
+  if (closed_)
     return;
   if (!ec || ec == boost::asio::error::message_size) {
     if (listener_)
