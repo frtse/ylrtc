@@ -26,7 +26,7 @@ bool WebrtcStream::Start() {
     return false;
   sdp_.SetLocalHostAddress(ServerConfig::GetInstance().GetAnnouncedIp(), udp_socket_->GetListeningPort());
   sdp_.SetLocalFingerprint("sha-256", DtlsContext::GetInstance().GetCertificateFingerPrint(DtlsContext::Hash::kSha256));
-  sdp_.SetLocalIceInfo(ice_lite_->GetLocalUfrag(), ice_lite_->GetLocalPassword());
+  sdp_.SetLocalIceInfo(ice_lite_->LocalUfrag(), ice_lite_->LocalPassword());
   return true;
 }
 
@@ -89,7 +89,7 @@ void WebrtcStream::OnStunMessageSend(uint8_t* data, size_t size, udp::endpoint* 
 }
 
 void WebrtcStream::OnIceConnectionCompleted() {
-  selected_endpoint_ = *ice_lite_->GetFavoredCandidate();
+  selected_endpoint_ = *ice_lite_->FavoredCandidate();
   if (!dtls_transport_)
     return;
   if (!dtls_transport_->Start(sdp_.GetRemoteDtlsSetup()))

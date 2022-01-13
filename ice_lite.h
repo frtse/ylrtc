@@ -21,11 +21,13 @@ class IceLite {
   IceLite(const std::string& remote_ufrag, Observer* observer);
 
   void ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remote_ep);
-  const std::string& GetLocalUfrag() const;
-  const std::string& GetLocalPassword() const;
-  const udp::endpoint* GetFavoredCandidate() const;
+  const std::string& LocalUfrag() const;
+  const std::string& LocalPassword() const;
+  const udp::endpoint* FavoredCandidate() const;
 
  private:
+  constexpr static uint32_t kDefaultUfragLength = 4;
+  constexpr static uint32_t kDefaultPasswordLength = 24;
   Random random_;
   std::string local_ufrag_;
   std::string local_password_;
