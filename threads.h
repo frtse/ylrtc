@@ -49,7 +49,7 @@ class Thread {
    * @brief Assert that the code here runs in this thread.
    * 
    */
-  void CheckInThisThread();
+  void AssertInThisThread();
 
  protected:
   boost::asio::io_context message_loop_;

@@ -1,14 +1,14 @@
 #include "threads.h"
 
 #include "server_config.h"
+#include "utils.h"
 
 boost::asio::io_context& Thread::MessageLoop() {
   return message_loop_;
 }
 
-void Thread::CheckInThisThread() {
-  if (thread_id_ != std::this_thread::get_id())
-    abort();
+void Thread::AssertInThisThread() {
+  CHECK(thread_id_ != std::this_thread::get_id());
 }
 
 MainThread& MainThread::GetInstance() {

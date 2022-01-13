@@ -17,12 +17,12 @@ TEST(TheadsTest, WorkerThreadPoolTest) {
   EXPECT_TRUE(WorkerThreadPool::GetInstance().GetWorkerThread());
 }
 
-TEST(TheadsTest, CheckInThisThreadTest) {
-  MainThread::GetInstance().CheckInThisThread();
+TEST(TheadsTest, AssertInThisThreadTest) {
+  MainThread::GetInstance().AssertInThisThread();
   auto work_thread = WorkerThreadPool::GetInstance().GetWorkerThread();
   EXPECT_TRUE(work_thread);
   work_thread->PostAsync([work_thread] {
-    work_thread->CheckInThisThread();
+    work_thread->AssertInThisThread();
   });
   WorkerThreadPool::GetInstance().StopAll();
 }

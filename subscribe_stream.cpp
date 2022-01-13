@@ -150,7 +150,7 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPac
   // |                  Original RTP Packet Payload                  |
   // |                                                               |
   // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  work_thread_->CheckInThisThread();
+  work_thread_->AssertInThisThread();
   if (!connection_established_)
     return;
   int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(rtp_packet->Size() + kRtxHeaderSize);

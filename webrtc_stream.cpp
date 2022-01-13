@@ -140,7 +140,7 @@ void WebrtcStream::Shutdown() {
 }
 
 void WebrtcStream::SendRtp(uint8_t* data, size_t size) {
-  work_thread_->CheckInThisThread();
+  work_thread_->AssertInThisThread();
   if (!connection_established_)
     return;
   int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(size);
@@ -161,7 +161,7 @@ void WebrtcStream::SendRtp(uint8_t* data, size_t size) {
 }
 
 void WebrtcStream::SendRtcp(uint8_t* data, size_t size) {
-  work_thread_->CheckInThisThread();
+  work_thread_->AssertInThisThread();
   if (!connection_established_)
     return;
   int protect_rtcp_need_len = send_srtp_session_->GetProtectRtcpNeedLength(size);
