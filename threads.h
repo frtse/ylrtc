@@ -38,6 +38,11 @@ class Thread {
     future.wait();
   }
 
+  /**
+   * @brief Return the internal boost ASIO iocontext.
+   * 
+   * @return boost::asio::io_context& 
+   */
   boost::asio::io_context& MessageLoop();
 
   /**
@@ -57,6 +62,11 @@ class Thread {
  */
 class MainThread : public Thread {
  public:
+  /**
+   * @brief Return a globally unique MainThread object.
+   * 
+   * @return MainThread& 
+   */
   static MainThread& GetInstance();
 
  private:

@@ -9,8 +9,8 @@ Timer::~Timer() {
   timer_->cancel();
 }
 
-void Timer::AsyncWait(uint64_t timeout) {
-  timer_->expires_from_now(boost::posix_time::milliseconds(timeout));
+void Timer::AsyncWait(uint64_t timeoutMillis) {
+  timer_->expires_from_now(boost::posix_time::milliseconds(timeoutMillis));
   timer_->async_wait(boost::bind(&Timer::OnTimeout, shared_from_this(), boost::asio::placeholders::error));
 }
 
