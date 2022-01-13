@@ -101,12 +101,12 @@
   #right {
     flex-basis: 80%;
     display: grid;
-    grid-template-columns: repeat(auto-fill, 300px);
-    grid-template-rows: repeat(auto-fill, 300px);
+    grid-template-columns: repeat(auto-fill, 20%);
+    grid-template-rows: repeat(auto-fill, 20%);
   }
   video {
     background-color: rgb(7, 7, 7);
-    width:100%;
+    width: 100%;
     height: 100%;
   }
   </style>
@@ -230,7 +230,7 @@
       remoteStreamDiv.style = "display: flex; flex-direction: column; border-style: solid; border-color:rgba(60, 108, 219, 0.466);";
       let video = document.createElement('video');
       video.srcObject = this.subscribeStream.mediaStream();
-      video.style = "flex-basis: 90%;";
+      video.style = "width: 100%;height: 100%; background-color: rgb(7, 7, 7);";
       let playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
@@ -246,7 +246,7 @@
       let right = document.getElementById("right");
       let remoteStreamControls = document.createElement('div');
       remoteStreamControls.style = "display: flex; flex-direction: row; background-color: rgb(64, 72, 83); \
-      height: 32px; padding: 5px; justify-content: flex-end;";
+      height: 32px; padding: 5px; justify-content: flex-end; flex-basis: 10%; flex-shrink: 0";
       let remoteStreamUserName = document.createElement('div');
       remoteStreamUserName.textContent = UserId;
       remoteStreamUserName.style = "vertical-align: middle; line-height: 32px; color: rgb(240, 212, 228); font-size : 28px; text-align: center; flex-basis: 60%; flex-grow: 1;";
