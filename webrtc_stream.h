@@ -19,7 +19,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>, public U
     virtual void OnWebrtcStreamConnected(const std::string& stream_id) = 0;
     virtual void OnWebrtcStreamShutdown(const std::string& stream_id) = 0;
   };
-  WebrtcStream(const std::string& stream_id, std::shared_ptr<Observer> observer);
+  WebrtcStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<Observer> observer);
   ~WebrtcStream();
 
   const std::string& GetStreamId() const;
@@ -60,6 +60,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>, public U
   std::shared_ptr<WorkerThread> work_thread_;
   Sdp sdp_;
   std::string stream_id_;
+  std::string room_id_;
   std::atomic<bool> stoped_{false};
   std::shared_ptr<Observer> observer_;
 };

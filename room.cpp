@@ -50,7 +50,7 @@ std::shared_ptr<PublishStream> Room::ParticipantPublish(const std::string& parti
   if (participant_id_set_.find(participant_id) == participant_id_set_.end())
     return nullptr;
   std::string stream_id = random_.RandomString(64);
-  auto publish_stream = std::make_shared<PublishStream>(stream_id, shared_from_this());
+  auto publish_stream = std::make_shared<PublishStream>(id_, stream_id, shared_from_this());
   if (!publish_stream->SetRemoteDescription(offer))
     return nullptr;
   if (!publish_stream->Start())
@@ -74,7 +74,7 @@ std::shared_ptr<SubscribeStream> Room::ParticipantSubscribe(const std::string& s
     return nullptr;
   auto publish_stream = *publish_stream_set_iter;
   std::string subscribe_stream_id = random_.RandomString(64);
-  auto subscribe_stream = std::make_shared<SubscribeStream>(subscribe_stream_id, shared_from_this());
+  auto subscribe_stream = std::make_shared<SubscribeStream>(id_, subscribe_stream_id, shared_from_this());
   subscribe_stream->SetPublishSdp(publish_stream->GetSdp());
   if (!subscribe_stream->SetRemoteDescription(sdp))
     return nullptr;

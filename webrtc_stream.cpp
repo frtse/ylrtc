@@ -8,8 +8,8 @@
 #include "rtcp_packet.h"
 #include "spdlog/spdlog.h"
 
-WebrtcStream::WebrtcStream(const std::string& stream_id, std::shared_ptr<Observer> observer)
-    : observer_{observer}, connection_established_(false), stream_id_{stream_id}, work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {
+WebrtcStream::WebrtcStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<Observer> observer)
+    : observer_{observer}, connection_established_(false), stream_id_{stream_id}, room_id_{room_id}, work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {
     }
 
 bool WebrtcStream::Start() {
@@ -18,6 +18,7 @@ bool WebrtcStream::Start() {
   if (!udp_socket_->Listen(ServerConfig::GetInstance().GetIp()))
     return false;
   ice_lite_.reset(new IceLite(sdp_.GetRemoteIceUfrag(), this));
+  ice_lite_->LocalUfrag(IceLite::MakeUfrag(room_id_, stream_id_));
   send_srtp_session_.reset(new SrtpSession());
   recv_srtp_session_.reset(new SrtpSession());
   dtls_transport_.reset(new DtlsTransport(work_thread_->MessageLoop(), this));

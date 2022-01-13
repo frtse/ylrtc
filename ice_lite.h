@@ -22,9 +22,11 @@ class IceLite {
 
   void ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remote_ep);
   const std::string& LocalUfrag() const;
+  void LocalUfrag(const std::string& ufrag);
   const std::string& LocalPassword() const;
   const udp::endpoint* FavoredCandidate() const;
-
+  static std::string MakeUfrag(const std::string& room_id, const std::string& stream_id);
+  static bool ExtractUfragInfor(const std::string& ufrag, std::string& room_id, std::string& stream_id);
  private:
   constexpr static uint32_t kDefaultUfragLength = 4;
   constexpr static uint32_t kDefaultPasswordLength = 24;

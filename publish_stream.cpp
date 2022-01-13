@@ -9,8 +9,8 @@
 #include "byte_buffer.h"
 #include "spdlog/spdlog.h"
 
-PublishStream::PublishStream(const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer)
-  : WebrtcStream(stream_id, observer), has_video_{false}, has_audio_{false} {
+PublishStream::PublishStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer)
+  : WebrtcStream(room_id, stream_id, observer), has_video_{false}, has_audio_{false} {
   receive_side_twcc_.reset(new ReceiveSideTWCC(work_thread_->MessageLoop(), [this](std::vector<std::unique_ptr<RtcpPacket>> packets) {
     uint8_t buffer[1500];
     for (auto& packet : packets) {
