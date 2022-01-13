@@ -1,16 +1,19 @@
 #include "webrtc_stream.h"
 
 #include "dtls_context.h"
+#include "rtcp_packet.h"
 #include "rtp_utils.h"
 #include "server_config.h"
-#include "utils.h"
-#include "stun_message.h"
-#include "rtcp_packet.h"
 #include "spdlog/spdlog.h"
+#include "stun_message.h"
+#include "utils.h"
 
 WebrtcStream::WebrtcStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<Observer> observer)
-    : observer_{observer}, connection_established_(false), stream_id_{stream_id}, room_id_{room_id}, work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {
-    }
+    : observer_{observer},
+      connection_established_(false),
+      stream_id_{stream_id},
+      room_id_{room_id},
+      work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {}
 
 bool WebrtcStream::Start() {
   udp_socket_.reset(new UdpSocket(work_thread_->MessageLoop(), shared_from_this(), 5000));
@@ -66,7 +69,7 @@ void WebrtcStream::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::endpoi
     if (!connection_established_)
       return;
     int length = 0;
-    if (recv_srtp_session_&& !recv_srtp_session_->UnprotectRtcp(data, len, &length))
+    if (recv_srtp_session_ && !recv_srtp_session_->UnprotectRtcp(data, len, &length))
       return;
     OnRtcpPacketReceive(data, length);
   } else if (IsRtpPacket(data, len)) {
@@ -109,11 +112,15 @@ void WebrtcStream::OnDtlsTransportSendData(const uint8_t* data, size_t len) {
     udp_socket_->SendData(data, len, &selected_endpoint_);
 }
 
-void WebrtcStream::OnDtlsTransportSetup(SrtpSession::CipherSuite suite, uint8_t* localMasterKey, int localMasterKeySize, uint8_t* remoteMasterKey, int remoteMasterKeySize) {
+void WebrtcStream::OnDtlsTransportSetup(SrtpSession::CipherSuite suite,
+                                        uint8_t* localMasterKey,
+                                        int localMasterKeySize,
+                                        uint8_t* remoteMasterKey,
+                                        int remoteMasterKeySize) {
   spdlog::debug("DTLS ready.");
   CHECK(send_srtp_session_ != nullptr && recv_srtp_session_ != nullptr);
-  if (!send_srtp_session_->Init(false, suite, localMasterKey, localMasterKeySize)
-    || !recv_srtp_session_->Init(true, suite, remoteMasterKey, remoteMasterKeySize)) {
+  if (!send_srtp_session_->Init(false, suite, localMasterKey, localMasterKeySize) ||
+      !recv_srtp_session_->Init(true, suite, remoteMasterKey, remoteMasterKeySize)) {
     spdlog::error("Srtp session init failed.");
     Shutdown();
     return;

@@ -5,8 +5,8 @@
 #include "room_manager.h"
 #include "server_config.h"
 #include "signaling_server.h"
-#include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
 #include "threads.h"
 
 int main(int argc, char* argv[]) {
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
   spdlog::info("Signaling service listening {} port.", ServerConfig::GetInstance().GetSignalingServerPort());
 
   boost::asio::signal_set signals(MainThread::GetInstance().MessageLoop(), SIGINT, SIGTERM);
-  signals.async_wait([&](const boost::system::error_code &error, int signal_number) {
+  signals.async_wait([&](const boost::system::error_code& error, int signal_number) {
     if (!error && (signal_number == SIGINT || signal_number == SIGTERM)) {
       spdlog::info("Capture signal[{}], Perform a clean shutdown.", signal_number);
       SignalingServer::GetInstance().Close();

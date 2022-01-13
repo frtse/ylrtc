@@ -3,10 +3,10 @@
 #include <regex>
 #include <string>
 
+#include "rtp_header_extension.h"
+#include "rtp_utils.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
-#include "rtp_utils.h"
-#include "rtp_header_extension.h"
 
 Sdp::Sdp() : local_dtls_setup_{"active"} {}
 
@@ -58,7 +58,8 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
       }
     }
 
-    if (remote_ice_ufrag_.empty() || remote_ice_pwd_.empty() || remote_fingerprint_type_.empty() || remote_fingerprint_hash_.empty() || remote_dtls_setup_.empty())
+    if (remote_ice_ufrag_.empty() || remote_ice_pwd_.empty() || remote_fingerprint_type_.empty() || remote_fingerprint_hash_.empty() ||
+        remote_dtls_setup_.empty())
       return false;
     publish_offer_sdp_ = publish_offer_sdp;
     return true;

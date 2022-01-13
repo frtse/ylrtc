@@ -17,7 +17,10 @@ const nlohmann::json& Notification::GetNotifyContext() const {
   return notify_context_;
 }
 
-Notification Notification::MakeStreamAddedNotification(const std::string& notify_room_id, const std::string& participant_id, const std::string& publish_stream_id, const Sdp& sdp) {
+Notification Notification::MakeStreamAddedNotification(const std::string& notify_room_id,
+                                                       const std::string& participant_id,
+                                                       const std::string& publish_stream_id,
+                                                       const Sdp& sdp) {
   nlohmann::json context;
   context["type"] = "streamAdded";
   nlohmann::json data;
@@ -29,7 +32,9 @@ Notification Notification::MakeStreamAddedNotification(const std::string& notify
   return Notification(notify_room_id, kNotifyAllParticipants, context);
 }
 
-Notification Notification::MakeStreamRemovedNotification(const std::string& notify_room_id, const std::string& participant_id, const std::string& publish_stream_id) {
+Notification Notification::MakeStreamRemovedNotification(const std::string& notify_room_id,
+                                                         const std::string& participant_id,
+                                                         const std::string& publish_stream_id) {
   nlohmann::json context;
   context["type"] = "streamRemoved";
   nlohmann::json data;
@@ -39,7 +44,10 @@ Notification Notification::MakeStreamRemovedNotification(const std::string& noti
   return Notification(notify_room_id, kNotifyAllParticipants, context);
 }
 
-Notification Notification::MakePublishMuteOrUnmuteNotification(const std::string& notify_room_id, bool muted, const std::string& type, const std::string& publish_stream_id) {
+Notification Notification::MakePublishMuteOrUnmuteNotification(const std::string& notify_room_id,
+                                                               bool muted,
+                                                               const std::string& type,
+                                                               const std::string& publish_stream_id) {
   nlohmann::json context;
   context["type"] = "publishMuteOrUnmute";
   nlohmann::json data;

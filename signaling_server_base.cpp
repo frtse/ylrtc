@@ -1,7 +1,7 @@
 #include "signaling_server_base.h"
 
-#include "spdlog/spdlog.h"
 #include "room_manager.h"
+#include "spdlog/spdlog.h"
 
 void HandleError(beast::error_code ec, char const* what) {
   // ssl::error::stream_truncated, also known as an SSL "short read",

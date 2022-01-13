@@ -2,7 +2,9 @@
 
 #include <arpa/inet.h>
 #include <string.h>
+
 #include <vector>
+
 #include "byte_buffer.h"
 
 enum NaluType : uint8_t {
@@ -20,9 +22,7 @@ enum NaluType : uint8_t {
   kFuA = 28
 };
 
-bool ParseStapAStartOffsets(const uint8_t* nalu_ptr,
-                            size_t length_remaining,
-                            std::vector<size_t>* offsets) {
+bool ParseStapAStartOffsets(const uint8_t* nalu_ptr, size_t length_remaining, std::vector<size_t>* offsets) {
   size_t offset = 0;
   while (length_remaining > 0) {
     if (length_remaining < sizeof(uint16_t))
@@ -52,8 +52,7 @@ std::optional<PayloadInfo> RtpPayloadParserH264::Parse(uint8_t* buffer, size_t l
     uint8_t original_nal_type = buffer[1] & 0x1F;
     if (original_nal_type == 5)
       info.keyframe = true;
-  }
-  else {
+  } else {
     std::vector<size_t> nalu_start_offsets;
     const uint8_t* nalu_start = buffer + 1;
     const size_t nalu_length = len - 1;
@@ -62,8 +61,7 @@ std::optional<PayloadInfo> RtpPayloadParserH264::Parse(uint8_t* buffer, size_t l
         return std::nullopt;
       if (!ParseStapAStartOffsets(nalu_start, nalu_length, &nalu_start_offsets))
         return std::nullopt;
-    }
-    else {
+    } else {
       nalu_start_offsets.push_back(0);
     }
 

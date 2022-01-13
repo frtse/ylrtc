@@ -45,7 +45,8 @@ void SubscribeStreamTrack::ReceiveNack(NackPacket* nack_packet) {
     if (!configuration_.rtx_enabled)
       observer_->OnSubscribeStreamTrackResendRtpPacket(std::move(packet));
     else
-      observer_->OnSubscribeStreamTrackSendRtxPacket(std::move(packet), configuration_.rtx_payload_type, configuration_.rtx_ssrc, rtx_sequence_number_++);
+      observer_->OnSubscribeStreamTrackSendRtxPacket(std::move(packet), configuration_.rtx_payload_type, configuration_.rtx_ssrc,
+                                                     rtx_sequence_number_++);
   }
 }
 

@@ -28,7 +28,8 @@ class RtpPacketHistory {
  private:
   class StoredPacket {
    public:
-    StoredPacket(std::unique_ptr<RtpPacket> packet, int64_t send_time_ms, uint64_t insert_order) : send_time_ms_(send_time_ms), packet_(std::move(packet)), insert_order_(insert_order), times_retransmitted_(0) {}
+    StoredPacket(std::unique_ptr<RtpPacket> packet, int64_t send_time_ms, uint64_t insert_order)
+        : send_time_ms_(send_time_ms), packet_(std::move(packet)), insert_order_(insert_order), times_retransmitted_(0) {}
 
     // The time of last transmission, including retransmissions.
     int64_t send_time_ms_;

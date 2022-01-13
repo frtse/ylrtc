@@ -2,15 +2,15 @@
 
 #include <algorithm>
 
+#include "byte_buffer.h"
 #include "rtcp_packet.h"
 #include "rtp_utils.h"
+#include "spdlog/spdlog.h"
 #include "subscribe_stream.h"
 #include "utils.h"
-#include "byte_buffer.h"
-#include "spdlog/spdlog.h"
 
 PublishStream::PublishStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer)
-  : WebrtcStream(room_id, stream_id, observer), has_video_{false}, has_audio_{false} {
+    : WebrtcStream(room_id, stream_id, observer), has_video_{false}, has_audio_{false} {
   receive_side_twcc_.reset(new ReceiveSideTWCC(work_thread_->MessageLoop(), [this](std::vector<std::unique_ptr<RtcpPacket>> packets) {
     uint8_t buffer[1500];
     for (auto& packet : packets) {
@@ -149,7 +149,6 @@ void PublishStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
         else
           spdlog::error("Unknown XR packet.");
       }
-
     }
   }
 }
@@ -163,8 +162,7 @@ void PublishStream::SetLocalDescription() {
     if (media_section.at("type") == "audio") {
       config.audio = true;
       has_audio_ = true;
-    }
-    else if (media_section.at("type") == "video") {
+    } else if (media_section.at("type") == "video") {
       has_video_ = true;
     }
     if (media_section.find("ssrcs") != media_section.end()) {
@@ -207,8 +205,7 @@ void PublishStream::SetLocalDescription() {
         if (rtcpFb.find("subtype") == rtcpFb.end()) {
           if (rtcpFb.at("payload") == std::to_string(config.payload_type) && rtcpFb.at("type") == "nack")
             config.nack_enabled = true;
-        }
-        else {
+        } else {
           if (rtcpFb.at("subtype") == "fir")
             config.rtcpfb_fir = true;
           else if (rtcpFb.at("subtype") == "pli")
@@ -220,7 +217,7 @@ void PublishStream::SetLocalDescription() {
       auto& simulcast = media_section.at("simulcast");
       if (simulcast.find("list1") != simulcast.end()) {
         std::string send_rids = simulcast.at("list1");
-        auto result = StringSplit(send_rids, ";"); // TODO FIXME : example[1,2,3;~4,~5].
+        auto result = StringSplit(send_rids, ";");  // TODO FIXME : example[1,2,3;~4,~5].
         for (auto& rid : result)
           rid_configuration_map_.insert(std::make_pair(rid, config));
       }

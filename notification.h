@@ -10,9 +10,17 @@ class Notification {
  public:
   static const std::string kNotifyAllParticipants;
 
-  static Notification MakeStreamAddedNotification(const std::string& notify_room_id, const std::string& participant_id, const std::string& publish_stream_id, const Sdp& sdp);
-  static Notification MakeStreamRemovedNotification(const std::string& notify_room_id, const std::string& participant_id, const std::string& publish_stream_id);
-  static Notification MakePublishMuteOrUnmuteNotification(const std::string& notify_room_id, bool muted, const std::string& type, const std::string& publish_stream_id);
+  static Notification MakeStreamAddedNotification(const std::string& notify_room_id,
+                                                  const std::string& participant_id,
+                                                  const std::string& publish_stream_id,
+                                                  const Sdp& sdp);
+  static Notification MakeStreamRemovedNotification(const std::string& notify_room_id,
+                                                    const std::string& participant_id,
+                                                    const std::string& publish_stream_id);
+  static Notification MakePublishMuteOrUnmuteNotification(const std::string& notify_room_id,
+                                                          bool muted,
+                                                          const std::string& type,
+                                                          const std::string& publish_stream_id);
   static Notification MakeParticipantJoinedNotification(const std::string& notify_room_id, const std::string& participant_id);
   static Notification MakeParticipantLeftNotification(const std::string& notify_room_id, const std::string& participant_id);
 

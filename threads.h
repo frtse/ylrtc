@@ -3,18 +3,18 @@
 #include <boost/asio.hpp>
 #include <future>
 #include <memory>
-#include <vector>
 #include <thread>
+#include <vector>
 
 /**
  * @brief Base class of thread.
- * 
+ *
  */
 class Thread {
  public:
   /**
    * @brief Ask this thread to execute given handler asynchronously.
-   * 
+   *
    * @param f The handler to be called.
    */
   template <typename F>
@@ -24,7 +24,7 @@ class Thread {
 
   /**
    * @brief Ask this thread to execute given handler synchronously.
-   * 
+   *
    * @param f The handler to be called.
    */
   template <typename F>
@@ -40,14 +40,14 @@ class Thread {
 
   /**
    * @brief Return the internal boost ASIO iocontext.
-   * 
-   * @return boost::asio::io_context& 
+   *
+   * @return boost::asio::io_context&
    */
   boost::asio::io_context& MessageLoop();
 
   /**
    * @brief Assert that the code here runs in this thread.
-   * 
+   *
    */
   void AssertInThisThread();
 
@@ -58,14 +58,14 @@ class Thread {
 
 /**
  * @brief Main thread, which is used to process signaling and signals.
- * 
+ *
  */
 class MainThread : public Thread {
  public:
   /**
    * @brief Return a globally unique MainThread object.
-   * 
-   * @return MainThread& 
+   *
+   * @return MainThread&
    */
   static MainThread& GetInstance();
 
@@ -75,7 +75,7 @@ class MainThread : public Thread {
 
 /**
  * @brief Worker thread, which is used to handle Webrtc connections.
- * 
+ *
  */
 class WorkerThread : public Thread {
  public:
@@ -90,7 +90,7 @@ class WorkerThread : public Thread {
 
 /**
  * @brief Worker thread pool.
- * 
+ *
  */
 class WorkerThreadPool {
  public:
@@ -99,14 +99,14 @@ class WorkerThreadPool {
 
   /**
    * @brief Gets the least used thread in the thread pool.
-   * 
-   * @return std::shared_ptr<WorkerThread> 
+   *
+   * @return std::shared_ptr<WorkerThread>
    */
   std::shared_ptr<WorkerThread> GetWorkerThread();
 
   /**
    * @brief Stop all threads in the thread pool.
-   * 
+   *
    */
   void StopAll();
 

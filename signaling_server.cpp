@@ -1,7 +1,7 @@
 #include "signaling_server.h"
 
-#include "threads.h"
 #include "spdlog/spdlog.h"
+#include "threads.h"
 
 PlainHttpSession::PlainHttpSession(beast::tcp_stream&& stream, beast::flat_buffer&& buffer, std::shared_ptr<WebsocketSessionSet> websocket_sessions)
     : HttpSession<PlainHttpSession>(std::move(buffer), websocket_sessions), stream_(std::move(stream)) {}
@@ -31,7 +31,10 @@ void PlainHttpSession::DoEof() {
 }
 
 // Create the http_session
-SslHttpSession::SslHttpSession(beast::tcp_stream&& stream, ssl::context& ctx, beast::flat_buffer&& buffer, std::shared_ptr<WebsocketSessionSet> websocket_sessions)
+SslHttpSession::SslHttpSession(beast::tcp_stream&& stream,
+                               ssl::context& ctx,
+                               beast::flat_buffer&& buffer,
+                               std::shared_ptr<WebsocketSessionSet> websocket_sessions)
     : HttpSession<SslHttpSession>(std::move(buffer), websocket_sessions), stream_(std::move(stream), ctx) {}
 
 // Start the session
@@ -104,7 +107,10 @@ void DetectSession::OnDetect(beast::error_code ec, bool result) {
   std::make_shared<PlainHttpSession>(std::move(stream_), std::move(buffer_), websocket_sessions_)->Run();
 }
 
-SignalingServer::SignalingServer() : ioc_(MainThread::GetInstance().MessageLoop()), acceptor_(net::make_strand(ioc_)), websocket_sessions_{std::make_shared<WebsocketSessionSet>()} {}
+SignalingServer::SignalingServer()
+    : ioc_(MainThread::GetInstance().MessageLoop()),
+      acceptor_(net::make_strand(ioc_)),
+      websocket_sessions_{std::make_shared<WebsocketSessionSet>()} {}
 
 SignalingServer& SignalingServer::GetInstance() {
   static SignalingServer instance;

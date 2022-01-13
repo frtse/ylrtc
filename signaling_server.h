@@ -44,12 +44,16 @@ class SslWebsocketSession : public WebsocketSession<SslWebsocketSession> {
 };
 
 template <class Body, class Allocator>
-void MakeWebsocketSession(beast::tcp_stream stream, http::request<Body, http::basic_fields<Allocator>> req, std::shared_ptr<WebsocketSessionSet> websocket_sessions) {
+void MakeWebsocketSession(beast::tcp_stream stream,
+                          http::request<Body, http::basic_fields<Allocator>> req,
+                          std::shared_ptr<WebsocketSessionSet> websocket_sessions) {
   std::make_shared<PlainWebsocketSession>(std::move(stream), websocket_sessions)->Run(std::move(req));
 }
 
 template <class Body, class Allocator>
-void MakeWebsocketSession(beast::ssl_stream<beast::tcp_stream> stream, http::request<Body, http::basic_fields<Allocator>> req, std::shared_ptr<WebsocketSessionSet> websocket_sessions) {
+void MakeWebsocketSession(beast::ssl_stream<beast::tcp_stream> stream,
+                          http::request<Body, http::basic_fields<Allocator>> req,
+                          std::shared_ptr<WebsocketSessionSet> websocket_sessions) {
   std::make_shared<SslWebsocketSession>(std::move(stream), websocket_sessions)->Run(std::move(req));
 }
 

@@ -34,10 +34,11 @@ struct IsSeqNumLessThan {
 // Sequence number unwrapper.
 template <typename T>
 class SeqNumUnwrapper {
-  static_assert(std::is_unsigned<T>::value && std::numeric_limits<T>::max() < std::numeric_limits<int64_t>::max(), "Type unwrapped must be an unsigned integer smaller than int64_t.");
+  static_assert(std::is_unsigned<T>::value && std::numeric_limits<T>::max() < std::numeric_limits<int64_t>::max(),
+                "Type unwrapped must be an unsigned integer smaller than int64_t.");
 
  public:
-   // Get the unwrapped value, and update the internal state.
+  // Get the unwrapped value, and update the internal state.
   int64_t Unwrap(T value) {
     if (!last_value_) {
       last_unwrapped_ = {value};
@@ -77,6 +78,7 @@ class SeqNumUnwrapper {
       last_value_ = last_without_update_value_;
     last_unwrapped_ = last_value;
   }
+
  private:
   int64_t last_unwrapped_ = 0;
   std::optional<T> last_value_;

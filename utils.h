@@ -1,17 +1,5 @@
 #pragma once
 
-#include <boost/stacktrace.hpp>
-#include <cmath>
-#include <cstddef>
-#include <cstdint>
-#include <functional>
-#include <limits>
-#include <memory>
-#include <numeric>
-#include <string>
-#include <vector>
-#include <iostream>
-
 #include <boost/asio.hpp>
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/dispatch.hpp>
@@ -25,6 +13,17 @@
 #include <boost/beast/websocket.hpp>
 #include <boost/make_unique.hpp>
 #include <boost/optional.hpp>
+#include <boost/stacktrace.hpp>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <numeric>
+#include <string>
+#include <vector>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -59,16 +58,15 @@ class NtpTime {
 std::vector<std::string> StringSplit(const std::string& s, const char* delim);
 std::string StringToLower(const std::string& str);
 
-#define CHECK(expression)                                             \
-  do {                                                                  \
-    if (!(expression)) {                                                \
-      std::cerr << "Assertion failed: " << __FILE__ << ":" << __LINE__ \
-                 << "\n\t"                                              \
-                 << "Expression: " << #expression << "\n\t"             \
-                 << "Stack trace:\n"                                    \
-                 << boost::stacktrace::stacktrace() << std::endl;       \
-      abort();                                                          \
-    }                                                                   \
+#define CHECK(expression)                                                        \
+  do {                                                                           \
+    if (!(expression)) {                                                         \
+      std::cerr << "Assertion failed: " << __FILE__ << ":" << __LINE__ << "\n\t" \
+                << "Expression: " << #expression << "\n\t"                       \
+                << "Stack trace:\n"                                              \
+                << boost::stacktrace::stacktrace() << std::endl;                 \
+      abort();                                                                   \
+    }                                                                            \
   } while (false)
 
 #ifdef NDEBUG

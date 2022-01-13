@@ -5,9 +5,9 @@
 #include <cstdint>
 #include <utility>
 
+#include "sequence_number_util.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
-#include "sequence_number_util.h"
 
 namespace {
 // Header size:
@@ -26,8 +26,7 @@ constexpr size_t kMaxSizeBytes = (1 << 16) * 4;
 // * 8 bytes FeedbackPacket header.
 // * 2 bytes for one chunk.
 constexpr size_t kMinPayloadSizeBytes = 8 + 8 + 2;
-constexpr int kBaseScaleFactor =
-    TransportFeedback::kDeltaScaleFactor * (1 << 8);
+constexpr int kBaseScaleFactor = TransportFeedback::kDeltaScaleFactor * (1 << 8);
 constexpr int64_t kTimeWrapPeriodUs = (1ll << 24) * kBaseScaleFactor;
 
 //    Message format
@@ -86,8 +85,7 @@ bool TransportFeedback::LastChunk::CanAdd(DeltaSize delta_size) const {
     return true;
   if (size_ < kMaxOneBitCapacity && !has_large_delta_ && delta_size != kLarge)
     return true;
-  if (size_ < kMaxRunLengthCapacity && all_same_ &&
-      delta_sizes_[0] == delta_size)
+  if (size_ < kMaxRunLengthCapacity && all_same_ && delta_sizes_[0] == delta_size)
     return true;
   return false;
 }
@@ -140,8 +138,7 @@ uint16_t TransportFeedback::LastChunk::EncodeLast() const {
 }
 
 // Appends content of the Lastchunk to `deltas`.
-void TransportFeedback::LastChunk::AppendTo(
-    std::vector<DeltaSize>* deltas) const {
+void TransportFeedback::LastChunk::AppendTo(std::vector<DeltaSize>* deltas) const {
   if (all_same_) {
     deltas->insert(deltas->end(), size_, delta_sizes_[0]);
   } else {
@@ -179,8 +176,7 @@ uint16_t TransportFeedback::LastChunk::EncodeOneBit() const {
   return chunk;
 }
 
-void TransportFeedback::LastChunk::DecodeOneBit(uint16_t chunk,
-                                                size_t max_size) {
+void TransportFeedback::LastChunk::DecodeOneBit(uint16_t chunk, size_t max_size) {
   DCHECK((chunk & 0xc000) == 0x8000);
   size_ = std::min(kMaxOneBitCapacity, max_size);
   has_large_delta_ = false;
@@ -208,9 +204,8 @@ uint16_t TransportFeedback::LastChunk::EncodeTwoBit(size_t size) const {
   return chunk;
 }
 
-void TransportFeedback::LastChunk::DecodeTwoBit(uint16_t chunk,
-                                                size_t max_size) {
-  DCHECK((chunk & 0xc000) ==  0xc000);
+void TransportFeedback::LastChunk::DecodeTwoBit(uint16_t chunk, size_t max_size) {
+  DCHECK((chunk & 0xc000) == 0xc000);
   size_ = std::min(kMaxTwoBitCapacity, max_size);
   has_large_delta_ = true;
   all_same_ = false;
@@ -235,8 +230,7 @@ uint16_t TransportFeedback::LastChunk::EncodeRunLength() const {
   return (delta_sizes_[0] << 13) | static_cast<uint16_t>(size_);
 }
 
-void TransportFeedback::LastChunk::DecodeRunLength(uint16_t chunk,
-                                                   size_t max_count) {
+void TransportFeedback::LastChunk::DecodeRunLength(uint16_t chunk, size_t max_count) {
   DCHECK((chunk & 0x8000) == 0);
   size_ = std::min<size_t>(chunk & 0x1fff, max_count);
   DeltaSize delta_size = (chunk >> 13) & 0x03;
@@ -247,8 +241,7 @@ void TransportFeedback::LastChunk::DecodeRunLength(uint16_t chunk,
     delta_sizes_[i] = delta_size;
 }
 
-TransportFeedback::TransportFeedback()
-    : TransportFeedback(/*include_timestamps=*/true, /*include_lost=*/true) {}
+TransportFeedback::TransportFeedback() : TransportFeedback(/*include_timestamps=*/true, /*include_lost=*/true) {}
 
 TransportFeedback::TransportFeedback(bool include_timestamps, bool include_lost)
     : include_lost_(include_lost),
@@ -280,8 +273,7 @@ TransportFeedback::TransportFeedback(TransportFeedback&& other)
 
 TransportFeedback::~TransportFeedback() {}
 
-void TransportFeedback::SetBase(uint16_t base_sequence,
-                                int64_t ref_timestamp_us) {
+void TransportFeedback::SetBase(uint16_t base_sequence, int64_t ref_timestamp_us) {
   DCHECK(num_seq_no_ == 0);
   DCHECK(ref_timestamp_us >= 0);
   base_seq_no_ = base_sequence;
@@ -293,19 +285,16 @@ void TransportFeedback::SetFeedbackSequenceNumber(uint8_t feedback_sequence) {
   feedback_seq_ = feedback_sequence;
 }
 
-bool TransportFeedback::AddReceivedPacket(uint16_t sequence_number,
-                                          int64_t timestamp_us) {
+bool TransportFeedback::AddReceivedPacket(uint16_t sequence_number, int64_t timestamp_us) {
   // Set delta to zero if timestamps are not included, this will simplify the
   // encoding process.
   int16_t delta = 0;
   if (include_timestamps_) {
     // Convert to ticks and round.
-    int64_t delta_full =
-        (timestamp_us - last_timestamp_us_) % kTimeWrapPeriodUs;
+    int64_t delta_full = (timestamp_us - last_timestamp_us_) % kTimeWrapPeriodUs;
     if (delta_full > kTimeWrapPeriodUs / 2)
       delta_full -= kTimeWrapPeriodUs;
-    delta_full +=
-        delta_full < 0 ? -(kDeltaScaleFactor / 2) : kDeltaScaleFactor / 2;
+    delta_full += delta_full < 0 ? -(kDeltaScaleFactor / 2) : kDeltaScaleFactor / 2;
     delta_full /= kDeltaScaleFactor;
 
     delta = static_cast<int16_t>(delta_full);
@@ -343,13 +332,11 @@ bool TransportFeedback::AddReceivedPacket(uint16_t sequence_number,
   return true;
 }
 
-const std::vector<TransportFeedback::ReceivedPacket>&
-TransportFeedback::GetReceivedPackets() const {
+const std::vector<TransportFeedback::ReceivedPacket>& TransportFeedback::GetReceivedPackets() const {
   return received_packets_;
 }
 
-const std::vector<TransportFeedback::ReceivedPacket>&
-TransportFeedback::GetAllPackets() const {
+const std::vector<TransportFeedback::ReceivedPacket>& TransportFeedback::GetAllPackets() const {
   DCHECK(include_lost_);
   return all_packets_;
 }
@@ -404,8 +391,7 @@ bool TransportFeedback::IsConsistent() const {
         spdlog::error("Expected to find delta for seq_no {}. Next delta is for {}.", seq_no, packet_it->sequence_number());
         return false;
       }
-      if (delta_size == 1 &&
-          (packet_it->delta_ticks() < 0 || packet_it->delta_ticks() > 0xff)) {
+      if (delta_size == 1 && (packet_it->delta_ticks() < 0 || packet_it->delta_ticks() > 0xff)) {
         spdlog::error("Delta {} for seq_no {} doesn't fit into one byte.", packet_it->delta_ticks(), seq_no);
         return false;
       }
@@ -600,7 +586,7 @@ bool TransportFeedback::Serialize(ByteWriter* byte_writer) {
   if (!byte_writer->WriteUInt24(base_time_ticks_))
     return false;
   if (!byte_writer->WriteUInt8(feedback_seq_))
-    return false; 
+    return false;
 
   for (uint16_t chunk : encoded_chunks_) {
     if (!byte_writer->WriteUInt16(chunk))

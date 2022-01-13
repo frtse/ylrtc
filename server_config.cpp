@@ -1,6 +1,7 @@
 #include "server_config.h"
 
 #include <exception>
+
 #include "spdlog/spdlog.h"
 #include "toml.hpp"
 

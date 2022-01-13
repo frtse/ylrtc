@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include "utils.h"
-#include "sdptransform/json.hpp"
 #include "room_manager.h"
+#include "sdptransform/json.hpp"
 #include "spdlog/spdlog.h"
+#include "utils.h"
 #include "yl_error.h"
 
 class ManageApi {
@@ -35,20 +35,17 @@ class ManageApi {
     };
 
     // Make sure we can handle the method
-    if (req.method() != http::verb::get && req.method() != http::verb::post
-      && req.method() != http::verb::delete_)
+    if (req.method() != http::verb::get && req.method() != http::verb::post && req.method() != http::verb::delete_)
       return send(bad_request("Unknown HTTP-method"));
 
     // Request path must be absolute and not contain "..".
-    if (req.target().empty() || req.target()[0] != '/'
-      || req.target().find("..") != beast::string_view::npos)
+    if (req.target().empty() || req.target()[0] != '/' || req.target().find("..") != beast::string_view::npos)
       return send(bad_request("Illegal request-target"));
 
     std::string res_body;
     try {
-      std::string target(req.target().data(), req.target().length()); 
-      if (target.find("/rooms") != std::string::npos
-        && target.find("/participants") == std::string::npos) {
+      std::string target(req.target().data(), req.target().length());
+      if (target.find("/rooms") != std::string::npos && target.find("/participants") == std::string::npos) {
         if (req.method() == http::verb::post) {
           std::string req_body = req.body();
           auto req_json = nlohmann::json::parse(req_body);
@@ -59,15 +56,13 @@ class ManageApi {
           nlohmann::json response;
           response["id"] = room_id;
           res_body = response.dump();
-        }
-        else if (req.method() == http::verb::get) {
+        } else if (req.method() == http::verb::get) {
           auto room_id_array = RoomManager::GetInstance().GetAllRoomId();
           nlohmann::json response = nlohmann::json::array();
           for (auto& room_id : room_id_array)
             response.push_back(room_id);
           res_body = response.dump();
-        }
-        else if (req.method() == http::verb::delete_) {
+        } else if (req.method() == http::verb::delete_) {
           auto pos = target.rfind("/");
           if (pos == std::string::npos)
             return send(bad_request("Request parse error"));
@@ -75,33 +70,28 @@ class ManageApi {
             return send(bad_request("Request parse error"));
           std::string room_id = target.substr(pos + 1);
           RoomManager::GetInstance().DestroyRoom(room_id);
-        }
-        else {
+        } else {
           return send(bad_request("Unsupported HTTP-method"));
         }
-      }
-      else if (target.find("/participants") != std::string::npos) {
-         // /rooms/{roomId}/participants/{participantId}
-         if (req.method() == http::verb::delete_) {
-           auto result = StringSplit(target, "/");
-           if (result.size() == 4) {
-             std::string& room_id = result[1];
-             std::string& participant_id = result[3];
-             auto room = RoomManager::GetInstance().GetRoomById(room_id);
-             if (room)
+      } else if (target.find("/participants") != std::string::npos) {
+        // /rooms/{roomId}/participants/{participantId}
+        if (req.method() == http::verb::delete_) {
+          auto result = StringSplit(target, "/");
+          if (result.size() == 4) {
+            std::string& room_id = result[1];
+            std::string& participant_id = result[3];
+            auto room = RoomManager::GetInstance().GetRoomById(room_id);
+            if (room)
               room->KickoutParticipant(participant_id);
-             else
+            else
               return send(bad_request("Request parse error"));
-           }
-           else {
-             return send(bad_request("Request parse error"));
-           }
-         }
-         else {
-           return send(bad_request("Request parse error"));
-         }
-      }
-      else {
+          } else {
+            return send(bad_request("Request parse error"));
+          }
+        } else {
+          return send(bad_request("Request parse error"));
+        }
+      } else {
         return send(bad_request("Request parse error"));
       }
     } catch (...) {
@@ -109,8 +99,8 @@ class ManageApi {
     }
 
     auto const res_body_size = res_body.size();
-    http::response<http::string_body> res{std::piecewise_construct,
-      std::make_tuple(std::move(res_body)), std::make_tuple(http::status::ok, req.version())};
+    http::response<http::string_body> res{std::piecewise_construct, std::make_tuple(std::move(res_body)),
+                                          std::make_tuple(http::status::ok, req.version())};
     res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
     if (!res_body.empty()) {
       res.set(http::field::content_type, "application/json");

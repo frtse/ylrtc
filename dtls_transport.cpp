@@ -7,12 +7,12 @@
 static const uint32_t kDtlsMtu = 1350;
 
 std::unordered_map<std::string, DtlsTransport::Setup> DtlsTransport::string_to_setup_ = {{"active", DtlsTransport::Setup::kActive},
-                                                                               {"passive", DtlsTransport::Setup::kPassive},
-                                                                               {"actpass", DtlsTransport::Setup::kActPass}};
+                                                                                         {"passive", DtlsTransport::Setup::kPassive},
+                                                                                         {"actpass", DtlsTransport::Setup::kActPass}};
 
 std::unordered_map<DtlsTransport::Setup, std::string> DtlsTransport::setup_to_string_ = {{DtlsTransport::Setup::kActive, "active"},
-                                                                               {DtlsTransport::Setup::kPassive, "passive"},
-                                                                               {DtlsTransport::Setup::kActPass, "actpass"}};
+                                                                                         {DtlsTransport::Setup::kPassive, "passive"},
+                                                                                         {DtlsTransport::Setup::kActPass, "actpass"}};
 
 DtlsTransport::DtlsTransport(boost::asio::io_context& io_context, Observer* listener) : io_context_{io_context}, listener_{listener} {
   setup_ = Setup::kUnknown;

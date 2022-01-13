@@ -1,7 +1,7 @@
 #include "rtp_header_extension.h"
 
-#include "utils.h"
 #include "byte_buffer.h"
+#include "utils.h"
 
 std::unordered_map<std::string, RTPHeaderExtensionType> UriRTPHeaderExtensionMap = {
     {"urn:ietf:params:rtp-hdrext:toffset", kRtpExtensionTransmissionTimeOffset},
@@ -41,21 +41,17 @@ std::optional<int> RtpHeaderExtensionCapability::GetTypeId(RTPHeaderExtensionTyp
 }
 
 std::optional<RTPHeaderExtensionType> RtpHeaderExtensionCapability::GetIdType(int id) {
-  auto result = std::find_if(type_id_map_.begin(), type_id_map_.end(), [id](auto& item) {
-    return item.second == id;
-  });
+  auto result = std::find_if(type_id_map_.begin(), type_id_map_.end(), [id](auto& item) { return item.second == id; });
   if (result == type_id_map_.end())
     return std::nullopt;
   return result->first;
 }
 
-std::unordered_map<RTPHeaderExtensionType, uint32_t> ServerSupportRtpExtensionIdMap::extension_id_map_ = {
-  {kRtpExtensionMid, 10},
-  {kRtpExtensionRtpStreamId, 11},
-  {kRtpExtensionRepairedRtpStreamId, 12},
-  {kRtpExtensionTransportSequenceNumber, 13},
-  {kRtpExtensionAudioLevel, 14}
-};
+std::unordered_map<RTPHeaderExtensionType, uint32_t> ServerSupportRtpExtensionIdMap::extension_id_map_ = {{kRtpExtensionMid, 10},
+                                                                                                          {kRtpExtensionRtpStreamId, 11},
+                                                                                                          {kRtpExtensionRepairedRtpStreamId, 12},
+                                                                                                          {kRtpExtensionTransportSequenceNumber, 13},
+                                                                                                          {kRtpExtensionAudioLevel, 14}};
 
 uint32_t ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType type) {
   if (extension_id_map_.find(type) == extension_id_map_.end())
@@ -88,8 +84,8 @@ nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std:
   extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id";
   extensions.push_back(extension);
   extension.clear();
-  // TODO 
-  
+  // TODO
+
   extension["value"] = 13;
   extension["direction"] = "";
   extension["encrypt-uri"] = "";
@@ -97,7 +93,7 @@ nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std:
   extension["uri"] = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
   extensions.push_back(extension);
   extension.clear();
-  
+
   if (media_type == "audio") {
     extension["value"] = 14;
     extension["direction"] = "";

@@ -3,14 +3,14 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <string_view>
 
+#include "rtp_header_extension.h"
 #include "sdptransform/json.hpp"
 #include "sdptransform/sdptransform.hpp"
-#include "rtp_header_extension.h"
 
 class Sdp {
  public:
@@ -37,6 +37,7 @@ class Sdp {
   const std::unordered_map<std::string, nlohmann::json>& GetMediaSectionRtpmapsMap() const;
   const nlohmann::json GetMediaSections() const;
   RtpHeaderExtensionCapability GetRtpHeaderExtensionCapability();
+
  private:
   nlohmann::json publish_offer_sdp_;
   nlohmann::json publish_anwser_sdp_;

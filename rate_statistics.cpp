@@ -9,7 +9,12 @@
 RateStatistics::Bucket::Bucket(int64_t timestamp) : sum(0), num_samples(0), timestamp(timestamp) {}
 
 RateStatistics::RateStatistics(int64_t window_size_ms, float scale)
-    : accumulated_count_(0), first_timestamp_(-1), num_samples_(0), scale_(scale), max_window_size_ms_(window_size_ms), current_window_size_ms_(max_window_size_ms_) {}
+    : accumulated_count_(0),
+      first_timestamp_(-1),
+      num_samples_(0),
+      scale_(scale),
+      max_window_size_ms_(window_size_ms),
+      current_window_size_ms_(max_window_size_ms_) {}
 
 RateStatistics::RateStatistics(const RateStatistics& other)
     : buckets_(other.buckets_),

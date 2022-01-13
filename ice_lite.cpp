@@ -5,7 +5,10 @@
 #include "utils.h"
 
 IceLite::IceLite(const std::string& remote_ufrag, Observer* observer)
-    : local_ufrag_{random_.RandomString(kDefaultUfragLength)}, local_password_{random_.RandomString(kDefaultPasswordLength)}, remote_ufrag_{remote_ufrag}, observer_{observer} {}
+    : local_ufrag_{random_.RandomString(kDefaultUfragLength)},
+      local_password_{random_.RandomString(kDefaultPasswordLength)},
+      remote_ufrag_{remote_ufrag},
+      observer_{observer} {}
 
 void IceLite::ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remote_ep) {
   StunMessage msg(local_ufrag_, local_password_, remote_ufrag_);

@@ -1,12 +1,12 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string_view>
 #include <type_traits>
 #include <vector>
-#include <algorithm>
 
 #include "rtp_header_extension.h"
 #include "rtp_payload_parser.h"
@@ -74,9 +74,7 @@ class RtpPacket {
     auto id = extension_capability_.GetTypeId(Extension::kType);
     if (!id)
       return std::nullopt;
-    auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) {
-      return extension.id == *id;
-    });
+    auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) { return extension.id == *id; });
     if (result == extension_entries_.end())
       return std::nullopt;
     return Extension::Parse(data_.get() + result->offset, result->length);
@@ -87,9 +85,7 @@ class RtpPacket {
     auto id = extension_capability_.GetTypeId(Extension::kType);
     if (!id)
       return;
-    auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) {
-      return extension.id == *id;
-    });
+    auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) { return extension.id == *id; });
     Extension::Serialize(data_.get() + result->offset, result->length, value);
   }
 

@@ -6,7 +6,7 @@
 
 /**
  * @brief This class wraps the boost::asio timer.
- * 
+ *
  */
 class Timer : public std::enable_shared_from_this<Timer> {
  public:
@@ -15,7 +15,7 @@ class Timer : public std::enable_shared_from_this<Timer> {
     virtual ~Observer() = default;
     /**
      * @brief Called when the timer times out.
-     * 
+     *
      */
     virtual void OnTimerTimeout() = 0;
   };
@@ -28,8 +28,8 @@ class Timer : public std::enable_shared_from_this<Timer> {
 
   /**
    * @brief Set timer timeout in milliseconds.
-   * 
-   * @param timeoutMillis 
+   *
+   * @param timeoutMillis
    */
   void AsyncWait(uint64_t timeoutMillis);
 

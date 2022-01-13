@@ -126,7 +126,7 @@ bool RtcpPacket::SerializeCommonHeader(ByteWriter* byte_writer) {
 }
 
 void ReportBlock::SetMediaSsrc(uint32_t ssrc) {
-    source_ssrc_ = ssrc;
+  source_ssrc_ = ssrc;
 }
 
 void ReportBlock::SetFractionLost(uint8_t fraction_lost) {
@@ -520,13 +520,13 @@ bool XrPacket::Parse(ByteReader* byte_reader) {
   if (!byte_reader->ReadUInt32(&sender_ssrc_))
     return false;
   int payload_len = header_.length * 4;
-  payload_len -= 4;// sender ssrc.
+  payload_len -= 4;  // sender ssrc.
   while (payload_len >= kXrBaseLength) {
     uint8_t block_type = 0;
     uint16_t block_length = 0;
     if (!byte_reader->ReadUInt8(&block_type))
       return false;
-    if (!byte_reader->Consume(1)) // reserved.
+    if (!byte_reader->Consume(1))  // reserved.
       return false;
     if (!byte_reader->ReadUInt16(&block_length))
       return false;
@@ -538,14 +538,14 @@ bool XrPacket::Parse(ByteReader* byte_reader) {
         rrtr_block_context_ = rrtr;
         break;
       }
-    case kBlockTypeDlrr: {
+      case kBlockTypeDlrr: {
         DlrrBlockContext dlrr;
         if (!dlrr.Parse(byte_reader, block_length))
           return false;
         dlrr_block_context_ = dlrr;
         break;
       }
-    default: {
+      default: {
         spdlog::warn("Unknown blocl type.");
         if (byte_reader->Consume(block_length * 4))
           return false;
@@ -617,11 +617,9 @@ bool RtcpCompound::Parse(uint8_t* data, int size) {
     if (header->packet_type == kRtcpTypeRtpfb) {
       if (header->count_or_format == kNack) {
         packet = new NackPacket;
-      } 
-      else if (header->count_or_format == kTwcc) {
+      } else if (header->count_or_format == kTwcc) {
         packet = new TransportFeedback();
-      }
-      else {
+      } else {
         packet = new RtcpPacket;
       }
     } else if (header->packet_type == kRtcpTypeRr) {

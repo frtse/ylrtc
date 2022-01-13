@@ -1,7 +1,7 @@
 #include "yl_error.h"
 
 const char* YlErrorToString(YlError error) {
-  switch(error) {
+  switch (error) {
     case kOk:
       return "Ok.";
     case kRoomIdAlreadyExists:

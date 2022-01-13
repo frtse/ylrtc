@@ -4,9 +4,9 @@
 #include <string>
 #include <unordered_set>
 
+#include "manage_api.h"
 #include "notification.h"
 #include "signaling_handler.h"
-#include "manage_api.h"
 #include "utils.h"
 
 void HandleError(beast::error_code ec, char const* what);
@@ -76,7 +76,9 @@ class WebsocketSession : public WebsocketSessionBase {
   void DoWrite() {
     auto& buffer = write_buffers_.front();
     Derived().Ws().text(true);
-    Derived().Ws().async_write(buffer.data(), beast::bind_front_handler(&WebsocketSession::OnWrite, std::dynamic_pointer_cast<WebsocketSession<DerivedClass>>(shared_from_this())));
+    Derived().Ws().async_write(
+        buffer.data(),
+        beast::bind_front_handler(&WebsocketSession::OnWrite, std::dynamic_pointer_cast<WebsocketSession<DerivedClass>>(shared_from_this())));
   }
 
   void Close() override {
@@ -96,9 +98,10 @@ class WebsocketSession : public WebsocketSessionBase {
   template <class Body, class Allocator>
   void DoAccept(http::request<Body, http::basic_fields<Allocator>> req) {
     Derived().Ws().set_option(websocket::stream_base::timeout::suggested(beast::role_type::server));
-    Derived().Ws().set_option(
-        websocket::stream_base::decorator([](websocket::response_type& res) { res.set(http::field::server, std::string(BOOST_BEAST_VERSION_STRING) + " advanced-server-flex"); }));
-    Derived().Ws().async_accept(req, beast::bind_front_handler(&WebsocketSession::OnAccept, std::dynamic_pointer_cast<WebsocketSession<DerivedClass>>(shared_from_this())));
+    Derived().Ws().set_option(websocket::stream_base::decorator(
+        [](websocket::response_type& res) { res.set(http::field::server, std::string(BOOST_BEAST_VERSION_STRING) + " advanced-server-flex"); }));
+    Derived().Ws().async_accept(
+        req, beast::bind_front_handler(&WebsocketSession::OnAccept, std::dynamic_pointer_cast<WebsocketSession<DerivedClass>>(shared_from_this())));
   }
 
   void OnAccept(beast::error_code ec) {
@@ -108,7 +111,8 @@ class WebsocketSession : public WebsocketSessionBase {
   }
 
   void DoRead() {
-    Derived().Ws().async_read(read_buffer_, beast::bind_front_handler(&WebsocketSession::OnRead, std::dynamic_pointer_cast<WebsocketSession<DerivedClass>>(shared_from_this())));
+    Derived().Ws().async_read(read_buffer_, beast::bind_front_handler(&WebsocketSession::OnRead,
+                                                                      std::dynamic_pointer_cast<WebsocketSession<DerivedClass>>(shared_from_this())));
   }
 
   void OnRead(beast::error_code ec, std::size_t bytes_transferred) {
@@ -193,7 +197,8 @@ class HttpSession {
         WorkImpl(HttpSession& self, http::message<isRequest, Body, Fields>&& msg) : self_(self), msg_(std::move(msg)) {}
 
         void operator()() {
-          http::async_write(self_.Derived().Stream(), msg_, beast::bind_front_handler(&HttpSession::OnWrite, self_.Derived().shared_from_this(), msg_.need_eof()));
+          http::async_write(self_.Derived().Stream(), msg_,
+                            beast::bind_front_handler(&HttpSession::OnWrite, self_.Derived().shared_from_this(), msg_.need_eof()));
         }
       };
 
@@ -218,7 +223,8 @@ class HttpSession {
 
  public:
   // Construct the session
-  HttpSession(beast::flat_buffer buffer, std::shared_ptr<WebsocketSessionSet> websocket_sessions) : websocket_sessions_(websocket_sessions), queue_(*this), buffer_(std::move(buffer)) {}
+  HttpSession(beast::flat_buffer buffer, std::shared_ptr<WebsocketSessionSet> websocket_sessions)
+      : websocket_sessions_(websocket_sessions), queue_(*this), buffer_(std::move(buffer)) {}
 
   void DoRead() {
     // Construct a new parser for each message

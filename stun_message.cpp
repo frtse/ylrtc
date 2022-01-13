@@ -3,8 +3,8 @@
 #include "byte_buffer.h"
 #include "crc32.h"
 #include "hmac_sha1.h"
-#include "utils.h"
 #include "spdlog/spdlog.h"
+#include "utils.h"
 
 StunMessage::StunMessage(std::string local_ufrag, std::string local_password, std::string remote_ufrag)
     : mapped_endpoint_{nullptr}, has_use_candidate_{false}, local_ufrag_{local_ufrag}, local_password_{local_password}, remote_ufrag_{remote_ufrag} {}

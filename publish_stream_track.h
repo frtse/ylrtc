@@ -3,23 +3,21 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 #include "boost/asio.hpp"
 #include "nack_requester.h"
+#include "random.h"
+#include "receive_side_twcc.h"
+#include "receive_statistician.h"
+#include "rtcp_packet.h"
 #include "rtp_header_extension.h"
 #include "rtp_packet.h"
-#include "rtcp_packet.h"
 #include "threads.h"
-#include "receive_side_twcc.h"
 #include "timer.h"
-#include "receive_statistician.h"
-#include "random.h"
 
-class PublishStreamTrack : public Timer::Observer
-  , public NackRequester::Observer
-  , public std::enable_shared_from_this<PublishStreamTrack> {
+class PublishStreamTrack : public Timer::Observer, public NackRequester::Observer, public std::enable_shared_from_this<PublishStreamTrack> {
  public:
   struct Configuration {
     uint32_t ssrc;

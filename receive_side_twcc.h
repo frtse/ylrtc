@@ -3,16 +3,16 @@
 #include <deque>
 #include <functional>
 #include <memory>
-#include <vector>
 #include <optional>
+#include <vector>
 
 #include "boost/asio.hpp"
-#include "sequence_number_util.h"
 #include "packet_arrival_map.h"
 #include "rtcp_packet.h"
 #include "rtp_packet.h"
-#include "transport_feedback.h"
+#include "sequence_number_util.h"
 #include "timer.h"
+#include "transport_feedback.h"
 
 // Class used when send-side BWE is enabled: This proxy is instantiated on the
 // receive side. It buffers a number of receive timestamps and then sends
@@ -21,14 +21,12 @@ class ReceiveSideTWCC : public Timer::Observer, public std::enable_shared_from_t
  public:
   // Used for sending transport feedback messages when send side
   // BWE is used.
-  using TransportFeedbackSender = std::function<void(
-      std::vector<std::unique_ptr<RtcpPacket>> packets)>;
+  using TransportFeedbackSender = std::function<void(std::vector<std::unique_ptr<RtcpPacket>> packets)>;
   ReceiveSideTWCC(boost::asio::io_context& io_context, TransportFeedbackSender feedback_sender);
   ~ReceiveSideTWCC();
 
   void Init();
-  void IncomingPacket(int64_t arrival_time_ms,
-                      uint32_t ssrc, uint16_t transport_sequence_number);
+  void IncomingPacket(int64_t arrival_time_ms, uint32_t ssrc, uint16_t transport_sequence_number);
 
   void SetSendPeriodicFeedback(bool send_periodic_feedback);
 
@@ -60,18 +58,17 @@ class ReceiveSideTWCC : public Timer::Observer, public std::enable_shared_from_t
   //
   // `include_timestamps` decide if the returned TransportFeedback should
   // include timestamps.
-  std::unique_ptr<TransportFeedback> MaybeBuildFeedbackPacket(
-      bool include_timestamps,
-      int64_t begin_sequence_number_inclusive,
-      int64_t end_sequence_number_exclusive,
-      bool is_periodic_update);
+  std::unique_ptr<TransportFeedback> MaybeBuildFeedbackPacket(bool include_timestamps,
+                                                              int64_t begin_sequence_number_inclusive,
+                                                              int64_t end_sequence_number_exclusive,
+                                                              bool is_periodic_update);
 
   const TransportFeedbackSender feedback_sender_;
   const TransportWideFeedbackConfig send_config_;
   int64_t last_process_time_ms_;
 
-  uint32_t media_ssrc_ ;
-  uint8_t feedback_packet_count_ ;
+  uint32_t media_ssrc_;
+  uint8_t feedback_packet_count_;
   SeqNumUnwrapper<uint16_t> unwrapper_;
 
   // The next sequence number that should be the start sequence number during

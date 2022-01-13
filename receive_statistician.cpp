@@ -2,20 +2,18 @@
 
 #include <cmath>
 
-#include "utils.h"
 #include "spdlog/spdlog.h"
+#include "utils.h"
 
 constexpr int kDefaultMaxReorderingThreshold = 5;  // In sequence numbers.
 constexpr int64_t kStatisticsTimeoutMs = 8000;
 constexpr int64_t kStatisticsProcessIntervalMs = 1000;
 
 ReceiveStatistician::ReceiveStatistician(uint32_t ssrc, uint32_t clock_rate)
-  : ssrc_{ssrc}
-  , clock_rate_{clock_rate}
-  , incoming_bitrate_(kStatisticsProcessIntervalMs, RateStatistics::kBpsScale)
-  , max_reordering_threshold_{kDefaultMaxReorderingThreshold} {
-
-}
+    : ssrc_{ssrc},
+      clock_rate_{clock_rate},
+      incoming_bitrate_(kStatisticsProcessIntervalMs, RateStatistics::kBpsScale),
+      max_reordering_threshold_{kDefaultMaxReorderingThreshold} {}
 
 void ReceiveStatistician::ReceivePacket(std::shared_ptr<RtpPacket> packet) {
   if (ssrc_ != packet->Ssrc()) {
@@ -26,8 +24,7 @@ void ReceiveStatistician::ReceivePacket(std::shared_ptr<RtpPacket> packet) {
   incoming_bitrate_.Update(packet->Size(), now_ms);
   transmitted_packets_++;
   --cumulative_loss_;
-  int64_t sequence_number =
-      seq_unwrapper_.UnwrapWithoutUpdate(packet->SequenceNumber());
+  int64_t sequence_number = seq_unwrapper_.UnwrapWithoutUpdate(packet->SequenceNumber());
   if (received_seq_first_ == -1) {
     received_seq_first_ = sequence_number;
     last_report_seq_max_ = sequence_number - 1;
@@ -42,8 +39,7 @@ void ReceiveStatistician::ReceivePacket(std::shared_ptr<RtpPacket> packet) {
   seq_unwrapper_.UpdateLast(sequence_number);
   // If new time stamp and more than one in-order packet received, calculate
   // new jitter statistics.
-  if (packet->Timestamp() != last_received_timestamp_ &&
-      (transmitted_packets_ - retransmited_packets_) > 1) {
+  if (packet->Timestamp() != last_received_timestamp_ && (transmitted_packets_ - retransmited_packets_) > 1) {
     UpdateJitter(packet, now_ms);
   }
   last_received_timestamp_ = packet->Timestamp();
@@ -145,8 +141,7 @@ bool ReceiveStatistician::UpdateOutOfOrder(std::shared_ptr<RtpPacket> packet, in
     }
   }
 
-  if (std::abs(sequence_number - received_seq_max_) >
-      max_reordering_threshold_) {
+  if (std::abs(sequence_number - received_seq_max_) > max_reordering_threshold_) {
     // Sequence number gap looks too large, wait until next packet to check
     // for a stream restart.
     received_seq_out_of_order_ = packet->SequenceNumber();
@@ -170,10 +165,8 @@ bool ReceiveStatistician::UpdateOutOfOrder(std::shared_ptr<RtpPacket> packet, in
 
 void ReceiveStatistician::UpdateJitter(std::shared_ptr<RtpPacket> packet, int64_t receive_time_ms) {
   int64_t receive_diff_ms = receive_time_ms - last_receive_time_ms_;
-  uint32_t receive_diff_rtp = static_cast<uint32_t>(
-      (receive_diff_ms * clock_rate_) / 1000);
-  int32_t time_diff_samples =
-      receive_diff_rtp - (packet->Timestamp() - last_received_timestamp_);
+  uint32_t receive_diff_rtp = static_cast<uint32_t>((receive_diff_ms * clock_rate_) / 1000);
+  int32_t time_diff_samples = receive_diff_rtp - (packet->Timestamp() - last_received_timestamp_);
 
   time_diff_samples = std::abs(time_diff_samples);
 

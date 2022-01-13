@@ -26,7 +26,9 @@ class PacketArrivalTimeMap {
 
   // Returns the sequence number of the first entry in the map, i.e. the
   // sequence number that a `begin()` iterator would represent.
-  int64_t begin_sequence_number() const { return begin_sequence_number_; }
+  int64_t begin_sequence_number() const {
+    return begin_sequence_number_;
+  }
 
   // Returns the sequence number of the element just after the map, i.e. the
   // sequence number that an `end()` iterator would represent.

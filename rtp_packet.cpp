@@ -5,9 +5,7 @@
 #include "spdlog/spdlog.h"
 #include "utils.h"
 
-RtpPacket::RtpPacket() {
-
-}
+RtpPacket::RtpPacket() {}
 
 RtpPacket::RtpPacket(const RtpPacket& other) {
   this->marker_ = other.marker_;
@@ -25,13 +23,12 @@ RtpPacket::RtpPacket(const RtpPacket& other) {
   memcpy(data_.get(), other.Data(), other.Size());
 }
 
-RtpPacket::~RtpPacket() {
-}
+RtpPacket::~RtpPacket() {}
 
 void RtpPacket::SetMarker(bool marker_bit) {
   marker_ = marker_bit;
   if (marker_) {
-    data_[1] = *(data_.get()+ 1) | 0x80;
+    data_[1] = *(data_.get() + 1) | 0x80;
   } else {
     data_[1] = *(data_.get() + 1) & 0x7F;
   }
@@ -238,12 +235,10 @@ void RtpPacket::UpdateExtensionCapability(RtpHeaderExtensionCapability new_capab
         uint16_t header_offset = entry.offset - kOneByteExtensionHeaderLength;
         data_[header_offset] &= 0xf;
         data_[header_offset] |= *expect_id << 4;
-      }
-      else if (entry.header_length == kTwoByteExtensionHeaderLength) {
+      } else if (entry.header_length == kTwoByteExtensionHeaderLength) {
         uint16_t header_offset = entry.offset - kTwoByteExtensionHeaderLength;
         data_[header_offset] = *expect_id;
-      }
-      else {
+      } else {
         assert(false);
       }
       entry.id = *expect_id;

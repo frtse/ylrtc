@@ -8,12 +8,11 @@
 #include "spdlog/spdlog.h"
 #include "utils.h"
 
-PublishStreamTrack::PublishStreamTrack(const Configuration& configuration
-  , boost::asio::io_context& io_context, Observer* observer)
-  : configuration_{configuration}
-  , receive_statistician_{configuration_.ssrc, configuration_.clock_rate}
-  , io_context_{io_context}
-  , observer_{observer} {
+PublishStreamTrack::PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer)
+    : configuration_{configuration},
+      receive_statistician_{configuration_.ssrc, configuration_.clock_rate},
+      io_context_{io_context},
+      observer_{observer} {
   if (configuration_.nack_enabled) {
     nack_request_.reset(new NackRequester(io_context, this));
     nack_request_->Init();
@@ -32,7 +31,7 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
     rtp_packet->RtxRepaire(LoadUInt16BE(rtp_packet->Payload()), configuration_.payload_type, configuration_.ssrc);
     is_rtx = true;
   }
-  receive_statistician_.ReceivePacket(rtp_packet); // TODO: Separate RTX.
+  receive_statistician_.ReceivePacket(rtp_packet);  // TODO: Separate RTX.
   if (!configuration_.audio && !rtp_packet->ParsePayload(configuration_.codec))
     return;
   if (configuration_.nack_enabled) {
@@ -125,14 +124,12 @@ void PublishStreamTrack::SendRequestkeyFrame() {
     pli.SetSenderSsrc(configuration_.ssrc);
     pli.SetMediaSsrc(configuration_.ssrc);
     pli.Serialize(&byte_write);
-  }
-  else if (configuration_.rtcpfb_fir) {
+  } else if (configuration_.rtcpfb_fir) {
     RtcpFirPacket fir;
     fir.SetSenderSsrc(configuration_.ssrc);
     fir.AddFciEntry(configuration_.ssrc, fir_seq_num_++);
     fir.Serialize(&byte_write);
-  }
-  else {
+  } else {
     return;
   }
   if (observer_)

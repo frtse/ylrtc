@@ -10,11 +10,9 @@
 
 // The maximum allowed value for a timestamp in milliseconds. This is lower
 // than the numerical limit since we often convert to microseconds.
-static constexpr int64_t kMaxTimeMs =
-    std::numeric_limits<int64_t>::max() / 1000;
+static constexpr int64_t kMaxTimeMs = std::numeric_limits<int64_t>::max() / 1000;
 
-ReceiveSideTWCC::ReceiveSideTWCC(boost::asio::io_context& io_context,
-    TransportFeedbackSender feedback_sender)
+ReceiveSideTWCC::ReceiveSideTWCC(boost::asio::io_context& io_context, TransportFeedbackSender feedback_sender)
     : feedback_sender_(std::move(feedback_sender)),
       last_process_time_ms_(-1),
       media_ssrc_(0),
@@ -38,20 +36,16 @@ void ReceiveSideTWCC::OnTimerTimeout() {
   timer_->AsyncWait(TimeUntilNextProcess());
 }
 
-void ReceiveSideTWCC::MaybeCullOldPackets(int64_t sequence_number,
-                                               int64_t arrival_time_ms) {
+void ReceiveSideTWCC::MaybeCullOldPackets(int64_t sequence_number, int64_t arrival_time_ms) {
   if (periodic_window_start_seq_.has_value()) {
-    if (*periodic_window_start_seq_ >=
-        packet_arrival_times_.end_sequence_number()) {
+    if (*periodic_window_start_seq_ >= packet_arrival_times_.end_sequence_number()) {
       // Start new feedback packet, cull old packets.
-      packet_arrival_times_.RemoveOldPackets(
-          sequence_number, arrival_time_ms - send_config_.back_window);
+      packet_arrival_times_.RemoveOldPackets(sequence_number, arrival_time_ms - send_config_.back_window);
     }
   }
 }
 
-void ReceiveSideTWCC::IncomingPacket(int64_t arrival_time_ms,
-                                          uint32_t ssrc, uint16_t transport_sequence_number) {
+void ReceiveSideTWCC::IncomingPacket(int64_t arrival_time_ms, uint32_t ssrc, uint16_t transport_sequence_number) {
   if (arrival_time_ms < 0 || arrival_time_ms > kMaxTimeMs) {
     spdlog::warn("Arrival time out of bounds: {}", arrival_time_ms);
     return;
@@ -77,11 +71,8 @@ void ReceiveSideTWCC::IncomingPacket(int64_t arrival_time_ms,
   packet_arrival_times_.AddPacket(seq, arrival_time_ms);
 
   // Limit the range of sequence numbers to send feedback for.
-  if (!periodic_window_start_seq_.has_value() ||
-      periodic_window_start_seq_.value() <
-          packet_arrival_times_.begin_sequence_number()) {
-    periodic_window_start_seq_ =
-        packet_arrival_times_.begin_sequence_number();
+  if (!periodic_window_start_seq_.has_value() || periodic_window_start_seq_.value() < packet_arrival_times_.begin_sequence_number()) {
+    periodic_window_start_seq_ = packet_arrival_times_.begin_sequence_number();
   }
 }
 
@@ -106,8 +97,7 @@ void ReceiveSideTWCC::Process() {
   SendPeriodicFeedbacks();
 }
 
-void ReceiveSideTWCC::SetSendPeriodicFeedback(
-    bool send_periodic_feedback) {
+void ReceiveSideTWCC::SetSendPeriodicFeedback(bool send_periodic_feedback) {
   send_periodic_feedback_ = send_periodic_feedback;
 }
 
@@ -117,12 +107,10 @@ void ReceiveSideTWCC::SendPeriodicFeedbacks() {
   // a reordering happens and we need to retransmit them.
   if (!periodic_window_start_seq_)
     return;
-  int64_t packet_arrival_times_end_seq =
-      packet_arrival_times_.end_sequence_number();
+  int64_t packet_arrival_times_end_seq = packet_arrival_times_.end_sequence_number();
   while (periodic_window_start_seq_ < packet_arrival_times_end_seq) {
     auto feedback_packet = MaybeBuildFeedbackPacket(
-        /*include_timestamps=*/true, periodic_window_start_seq_.value(),
-        packet_arrival_times_end_seq,
+        /*include_timestamps=*/true, periodic_window_start_seq_.value(), packet_arrival_times_end_seq,
         /*is_periodic_update=*/true);
 
     if (feedback_packet == nullptr) {
@@ -139,16 +127,13 @@ void ReceiveSideTWCC::SendPeriodicFeedbacks() {
   }
 }
 
-std::unique_ptr<TransportFeedback>
-ReceiveSideTWCC::MaybeBuildFeedbackPacket(
-    bool include_timestamps,
-    int64_t begin_sequence_number_inclusive,
-    int64_t end_sequence_number_exclusive,
-    bool is_periodic_update) {
+std::unique_ptr<TransportFeedback> ReceiveSideTWCC::MaybeBuildFeedbackPacket(bool include_timestamps,
+                                                                             int64_t begin_sequence_number_inclusive,
+                                                                             int64_t end_sequence_number_exclusive,
+                                                                             bool is_periodic_update) {
   DCHECK(begin_sequence_number_inclusive < end_sequence_number_exclusive);
 
-  int64_t start_seq =
-      packet_arrival_times_.clamp(begin_sequence_number_inclusive);
+  int64_t start_seq = packet_arrival_times_.clamp(begin_sequence_number_inclusive);
 
   int64_t end_seq = packet_arrival_times_.clamp(end_sequence_number_exclusive);
 
@@ -166,22 +151,18 @@ ReceiveSideTWCC::MaybeBuildFeedbackPacket(
     }
 
     if (feedback_packet == nullptr) {
-      feedback_packet =
-          std::make_unique<TransportFeedback>(include_timestamps);
+      feedback_packet = std::make_unique<TransportFeedback>(include_timestamps);
       // TODO(sprang): Measure receive times in microseconds and remove the
       // conversions below.
       feedback_packet->SetMediaSsrc(media_ssrc_);
       // Base sequence number is the expected first sequence number. This is
       // known, but we might not have actually received it, so the base time
       // shall be the time of the first received packet in the feedback.
-      feedback_packet->SetBase(
-          static_cast<uint16_t>(begin_sequence_number_inclusive & 0xFFFF),
-          arrival_time_ms * 1000);
+      feedback_packet->SetBase(static_cast<uint16_t>(begin_sequence_number_inclusive & 0xFFFF), arrival_time_ms * 1000);
       feedback_packet->SetFeedbackSequenceNumber(feedback_packet_count_++);
     }
 
-    if (!feedback_packet->AddReceivedPacket(static_cast<uint16_t>(seq & 0xFFFF),
-                                            arrival_time_ms * 1000)) {
+    if (!feedback_packet->AddReceivedPacket(static_cast<uint16_t>(seq & 0xFFFF), arrival_time_ms * 1000)) {
       // Could not add timestamp, feedback packet might be full. Return and
       // try again with a fresh packet.
       break;

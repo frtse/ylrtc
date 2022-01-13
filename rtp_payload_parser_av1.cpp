@@ -12,8 +12,7 @@ std::optional<PayloadInfo> RtpPayloadParserAv1::Parse(uint8_t* data, size_t size
   if (size == 0)
     return std::nullopt;
   uint8_t aggregation_header = data[0];
-  if (RtpStartsNewCodedVideoSequence(aggregation_header) &&
-      RtpStartsWithFragment(aggregation_header)) {
+  if (RtpStartsNewCodedVideoSequence(aggregation_header) && RtpStartsWithFragment(aggregation_header)) {
     // new coded video sequence can't start from an OBU fragment.
     return std::nullopt;
   }

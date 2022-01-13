@@ -3,26 +3,30 @@
 #include <memory>
 #include <vector>
 
-#include "rtcp_packet.h"
 #include "byte_buffer.h"
+#include "rtcp_packet.h"
 
 class TransportFeedback : public RtcpCommonFeedback {
  public:
   class ReceivedPacket {
    public:
-    ReceivedPacket(uint16_t sequence_number, int16_t delta_ticks)
-        : sequence_number_(sequence_number),
-          delta_ticks_(delta_ticks),
-          received_(true) {}
-    explicit ReceivedPacket(uint16_t sequence_number)
-        : sequence_number_(sequence_number), received_(false) {}
+    ReceivedPacket(uint16_t sequence_number, int16_t delta_ticks) : sequence_number_(sequence_number), delta_ticks_(delta_ticks), received_(true) {}
+    explicit ReceivedPacket(uint16_t sequence_number) : sequence_number_(sequence_number), received_(false) {}
     ReceivedPacket(const ReceivedPacket&) = default;
     ReceivedPacket& operator=(const ReceivedPacket&) = default;
 
-    uint16_t sequence_number() const { return sequence_number_; }
-    int16_t delta_ticks() const { return delta_ticks_; }
-    int32_t delta_us() const { return delta_ticks_ * kDeltaScaleFactor; }
-    bool received() const { return received_; }
+    uint16_t sequence_number() const {
+      return sequence_number_;
+    }
+    int16_t delta_ticks() const {
+      return delta_ticks_;
+    }
+    int32_t delta_us() const {
+      return delta_ticks_ * kDeltaScaleFactor;
+    }
+    bool received() const {
+      return received_;
+    }
 
    private:
     uint16_t sequence_number_;
@@ -40,8 +44,7 @@ class TransportFeedback : public RtcpCommonFeedback {
 
   // If `include_timestamps` is set to false, the created packet will not
   // contain the receive delta block.
-  explicit TransportFeedback(bool include_timestamps,
-                             bool include_lost = false);
+  explicit TransportFeedback(bool include_timestamps, bool include_lost = false);
   TransportFeedback(const TransportFeedback&);
   TransportFeedback(TransportFeedback&&);
 
@@ -58,7 +61,9 @@ class TransportFeedback : public RtcpCommonFeedback {
   uint16_t GetBaseSequence() const;
 
   // Returns number of packets (including missing) this feedback describes.
-  size_t GetPacketStatusCount() const { return num_seq_no_; }
+  size_t GetPacketStatusCount() const {
+    return num_seq_no_;
+  }
 
   // Get the reference time in microseconds, including any precision loss.
   int64_t GetBaseTimeUs() const;
@@ -67,7 +72,9 @@ class TransportFeedback : public RtcpCommonFeedback {
   int64_t GetBaseDeltaUs(int64_t prev_timestamp_us) const;
 
   // Does the feedback packet contain timestamp information?
-  bool IncludeTimestamps() const { return include_timestamps_; }
+  bool IncludeTimestamps() const {
+    return include_timestamps_;
+  }
 
   // Pre and postcondition for all public methods. Should always return true.
   // This function is for tests.

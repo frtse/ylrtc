@@ -2,15 +2,16 @@
 
 #include <exception>
 #include <sstream>
+
 #include "notification.h"
 #include "publish_stream.h"
 #include "room.h"
 #include "room_manager.h"
 #include "sdptransform/json.hpp"
 #include "signaling_server.h"
+#include "signaling_server_base.h"
 #include "spdlog/spdlog.h"
 #include "subscribe_stream.h"
-#include "signaling_server_base.h"
 #include "yl_error.h"
 
 SignalingHandler::SignalingHandler(SessionInfo& session_info) : session_info_{session_info} {}
@@ -37,13 +38,11 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
           response_json["answer"] = subscribe_stream->CreateAnswer();
           response_json["detail"] = "Succeed.";
           subscribe_stream->SetLocalDescription();
-        }
-        else {
+        } else {
           response_json["error"] = true;
           response_json["detail"] = "Subscription failed.";
         }
-      }
-      else {
+      } else {
         response_json["error"] = true;
         response_json["detail"] = "No room found.";
       }
@@ -57,13 +56,11 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
           response_json["answer"] = publish_stream->CreateAnswer();
           response_json["detail"] = "Succeed.";
           publish_stream->SetLocalDescription();
-        }
-        else {
+        } else {
           response_json["error"] = true;
           response_json["detail"] = "Publish failed.";
         }
-      }
-      else {
+      } else {
         response_json["error"] = true;
         response_json["detail"] = "No room found.";
       }
@@ -79,13 +76,11 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
           response_json["detail"] = YlErrorToString(result);
           session_info_.room_id = room_id;
           session_info_.participant_id = participant_id;
-        }
-        else {
+        } else {
           response_json["error"] = true;
           response_json["detail"] = "Failed to join the room.";
         }
-      }
-      else {
+      } else {
         response_json["error"] = true;
         response_json["detail"] = "No room found.";
       }
@@ -104,19 +99,15 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
           SignalingServer::GetInstance().Notify(notification);
           response_json["detail"] = "Succeed.";
           response_json["error"] = false;
-        }
-        else {
+        } else {
           response_json["error"] = true;
         }
-      }
-      else {
+      } else {
         response_json["error"] = true;
       }
-    }
-    else if (action == "keepAlive") {
+    } else if (action == "keepAlive") {
       response_json["error"] = true;
-    }
-    else {
+    } else {
       response_json["detail"] = "Unsupported actions.";
       response_json["error"] = true;
     }

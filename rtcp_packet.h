@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <set>
 #include <vector>
-#include <optional>
 
 #include "byte_buffer.h"
 #include "utils.h"
@@ -110,10 +110,11 @@ struct ReportBlock {
   uint32_t DelayLastSr() const;
   bool Parse(ByteReader* byte_reader);
   bool Serialize(ByteWriter* byte_writer);
+
  private:
-  uint32_t source_ssrc_{0};     // 32 bits
-  uint8_t fraction_lost_{0};    // 8 bits representing a fixed point value 0..1
-  uint32_t cumulative_lost_{0};  // TODO: Signed 24-bit value
+  uint32_t source_ssrc_{0};            // 32 bits
+  uint8_t fraction_lost_{0};           // 8 bits representing a fixed point value 0..1
+  uint32_t cumulative_lost_{0};        // TODO: Signed 24-bit value
   uint32_t extended_high_seq_num_{0};  // 32 bits
   uint32_t jitter_{0};                 // 32 bits
   uint32_t last_sr_{0};                // 32 bits
@@ -154,7 +155,7 @@ class SenderReportPacket : public RtcpPacket {
 
  private:
   static constexpr size_t kSenderBaseLength = 24;
-  uint32_t sender_ssrc_{0}; //TODO: remove.
+  uint32_t sender_ssrc_{0};  // TODO: remove.
   uint32_t ntp_seconds_;
   uint32_t ntp_fractions_;
   uint32_t rtp_timestamp_;
@@ -183,7 +184,7 @@ class ReceiverReportPacket : public RtcpPacket {
 
  protected:
   std::vector<ReportBlock> report_blocks_;
-  uint32_t sender_ssrc_{0}; //TODO: remove.
+  uint32_t sender_ssrc_{0};  // TODO: remove.
 };
 
 // RFC 4585, Section 6.1: Feedback format.
@@ -330,11 +331,15 @@ class RrtrBlockContext {
 
   bool Serialize(ByteWriter* byte_writer) const;
 
-  void SetNtp(NtpTime ntp) { ntp_ = ntp; }
+  void SetNtp(NtpTime ntp) {
+    ntp_ = ntp;
+  }
 
   uint16_t SizeIn32bits() const;
 
-  std::optional<NtpTime> Ntp() const { return ntp_; }
+  std::optional<NtpTime> Ntp() const {
+    return ntp_;
+  }
 
  private:
   static const uint16_t kBlockLength = 8;
@@ -355,8 +360,7 @@ class RrtrBlockContext {
 struct ReceiveTimeInfo {
   // RFC 3611 4.5
   ReceiveTimeInfo() : ssrc(0), last_rr(0), delay_since_last_rr(0) {}
-  ReceiveTimeInfo(uint32_t ssrc, uint32_t last_rr, uint32_t delay)
-      : ssrc(ssrc), last_rr(last_rr), delay_since_last_rr(delay) {}
+  ReceiveTimeInfo(uint32_t ssrc, uint32_t last_rr, uint32_t delay) : ssrc(ssrc), last_rr(last_rr), delay_since_last_rr(delay) {}
   uint32_t ssrc;
   uint32_t last_rr;
   uint32_t delay_since_last_rr;
@@ -374,7 +378,9 @@ class DlrrBlockContext {
     sub_blocks_.push_back(time_info);
   }
 
-  const std::vector<ReceiveTimeInfo>& SubBlocks() const { return sub_blocks_; }
+  const std::vector<ReceiveTimeInfo>& SubBlocks() const {
+    return sub_blocks_;
+  }
 
  private:
   static const size_t kSubBlockLength = 12;
@@ -416,6 +422,7 @@ class XrPacket : public RtcpPacket {
   void SetDlrr(const DlrrBlockContext& dlrr);
   std::optional<RrtrBlockContext> Rrtr() const;
   std::optional<DlrrBlockContext> Dlrr() const;
+
  private:
   static constexpr size_t kXrBaseLength = 4;
   std::optional<RrtrBlockContext> rrtr_block_context_;

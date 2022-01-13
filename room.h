@@ -14,7 +14,7 @@
 
 /**
  * @brief This class represents a conference room.
- * 
+ *
  */
 class Room : public WebrtcStream::Observer, public std::enable_shared_from_this<Room> {
  public:
@@ -23,34 +23,37 @@ class Room : public WebrtcStream::Observer, public std::enable_shared_from_this<
 
   /**
    * @brief Get room ID.
-   * 
-   * @return const std::string& 
+   *
+   * @return const std::string&
    */
   const std::string& Id() const;
 
   /**
    * @brief Join meeting.
-   * 
+   *
    * @param participant_id ID of the participant to join the room.
-   * @return YlError 
+   * @return YlError
    */
   YlError Join(const std::string& participant_id);
 
   /**
    * @brief Leave meeting.
-   * 
+   *
    * @param participant_id ID of the participant who left the meeting.
    */
   void Leave(const std::string& participant_id);
 
   /**
    * @brief Kick out a participant.
-   * 
+   *
    * @param participant_id ID of the participant to kick out.
    */
   void KickoutParticipant(const std::string& participant_id);
   std::shared_ptr<PublishStream> ParticipantPublish(const std::string& participant_id, const std::string& offer);
-  std::shared_ptr<SubscribeStream> ParticipantSubscribe(const std::string& src_participant_id, const std::string& dst_participant_id, const std::string& stream_id, const std::string& sdp);
+  std::shared_ptr<SubscribeStream> ParticipantSubscribe(const std::string& src_participant_id,
+                                                        const std::string& dst_participant_id,
+                                                        const std::string& stream_id,
+                                                        const std::string& sdp);
 
   /**
    * @brief Get the Room Info.
@@ -59,15 +62,15 @@ class Room : public WebrtcStream::Observer, public std::enable_shared_from_this<
 
   /**
    * @brief Get the publishing stream according to the ID.
-   * 
+   *
    * @param id ID of the publishing stream.
-   * @return std::shared_ptr<PublishStream> 
+   * @return std::shared_ptr<PublishStream>
    */
   std::shared_ptr<PublishStream> GetPublishStreamById(const std::string& id);
 
   /**
    * @brief Dissolution meeting.
-   * 
+   *
    */
   void Destroy();
 

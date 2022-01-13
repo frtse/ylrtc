@@ -1,9 +1,9 @@
 #include "rtp_payload_parser.h"
 
+#include "rtp_payload_parser_av1.h"
+#include "rtp_payload_parser_h264.h"
 #include "rtp_payload_parser_vp8.h"
 #include "rtp_payload_parser_vp9.h"
-#include "rtp_payload_parser_h264.h"
-#include "rtp_payload_parser_av1.h"
 
 std::optional<PayloadInfo> RtpPayloadParser::Parse(const std::string_view codec, uint8_t* data, size_t size) {
   if (codec == "vp8")

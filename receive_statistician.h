@@ -1,13 +1,13 @@
 #pragma once
 
 #include <cstdint>
-#include <optional>
 #include <memory>
+#include <optional>
 
-#include "sequence_number_util.h"
 #include "rate_statistics.h"
-#include "rtp_packet.h"
 #include "rtcp_packet.h"
+#include "rtp_packet.h"
+#include "sequence_number_util.h"
 
 class ReceiveStatistician {
  public:

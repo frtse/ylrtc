@@ -3,8 +3,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <string>
 #include <optional>
+#include <string>
 #include <unordered_map>
 
 #include "sdptransform/json.hpp"
@@ -41,6 +41,7 @@ class RtpHeaderExtensionCapability {
   void Register(int id, const std::string& uri);
   std::optional<int> GetTypeId(RTPHeaderExtensionType type);
   std::optional<RTPHeaderExtensionType> GetIdType(int id);
+
  private:
   std::unordered_map<RTPHeaderExtensionType, int> type_id_map_;
 };
@@ -49,6 +50,7 @@ class ServerSupportRtpExtensionIdMap {
  public:
   static uint32_t GetIdByType(RTPHeaderExtensionType type);
   static nlohmann::json CreateSdpRtpExtensions(const std::string& media_type);
+
  private:
   static std::unordered_map<RTPHeaderExtensionType, uint32_t> extension_id_map_;
 };
@@ -76,9 +78,9 @@ class RepairedRtpStreamIdExtension {
 
 class TransportSequenceNumberExtension {
  public:
-   static constexpr RTPHeaderExtensionType kType = kRtpExtensionTransportSequenceNumber;
-   using value_type = uint16_t;
-   static constexpr uint8_t kValueSizeBytes = 2;
-   static std::optional<uint16_t> Parse(uint8_t* data, size_t size);
-   static bool Serialize(uint8_t* data, size_t size, uint16_t transport_sequence_number);
+  static constexpr RTPHeaderExtensionType kType = kRtpExtensionTransportSequenceNumber;
+  using value_type = uint16_t;
+  static constexpr uint8_t kValueSizeBytes = 2;
+  static std::optional<uint16_t> Parse(uint8_t* data, size_t size);
+  static bool Serialize(uint8_t* data, size_t size, uint16_t transport_sequence_number);
 };
