@@ -8,7 +8,7 @@ boost::asio::io_context& Thread::MessageLoop() {
 }
 
 void Thread::AssertInThisThread() {
-  CHECK(thread_id_ != std::this_thread::get_id());
+  CHECK(thread_id_ == std::this_thread::get_id());
 }
 
 MainThread& MainThread::GetInstance() {
