@@ -87,6 +87,8 @@ class Client extends EventDispatcher {
   }
 
   async subscribe(remoteStream) {
+    this.mediaStream_ = null;
+    this.mediaStream_ = new MediaStream();
     const configuration = {bundlePolicy: "max-bundle"};
     let pc = new RTCPeerConnection(configuration);
     if (remoteStream.hasAudio)
@@ -119,8 +121,6 @@ class Client extends EventDispatcher {
   }
 
   _ontrack(e) {
-    this.mediaStream_ = null;
-    this.mediaStream_ = new MediaStream();
     this.mediaStream_.addTrack(e.track);
   }
 };
