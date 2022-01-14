@@ -59,7 +59,7 @@ std::string IceLite::MakeUfrag(const std::string& room_id, const std::string& st
   return room_id + "/" + stream_id;
 }
 
-bool IceLite::ExtractUfragInfor(const std::string& ufrag, std::string& room_id, std::string& stream_id) {
+bool IceLite::ExtractUfragInfo(const std::string& ufrag, std::string& room_id, std::string& stream_id) {
   auto result = StringSplit(ufrag, "/");
   if (result.empty() || result.size() != 2)
     return false;
