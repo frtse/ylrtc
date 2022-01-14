@@ -6,21 +6,9 @@
 #include <memory>
 #include <string>
 
+#include "stun_common.h"
+
 using udp = boost::asio::ip::udp;
-
-// The mask used to determine whether a STUN message is a request/response etc.
-const uint32_t kStunTypeMask = 0x0110;
-
-// STUN Attribute header length.
-const size_t kStunAttributeHeaderSize = 4;
-
-// Following values correspond to RFC5389.
-const size_t kStunHeaderSize = 20;
-const size_t kStunTransactionIdLength = 12;
-const uint32_t kStunMagicCookie = 0x2112A442;
-const uint32_t kLengthOffset = 2;
-const uint32_t kFingerprintAttrLength = 4;
-constexpr size_t kStunMagicCookieLength = sizeof(kStunMagicCookie);
 
 class StunMessage {
  public:

@@ -54,16 +54,3 @@ const std::string& IceLite::LocalPassword() const {
 const udp::endpoint* IceLite::FavoredCandidate() const {
   return &favored_candidate_;
 }
-
-std::string IceLite::MakeUfrag(const std::string& room_id, const std::string& stream_id) {
-  return room_id + "/" + stream_id;
-}
-
-bool IceLite::ExtractUfragInfo(const std::string& ufrag, std::string& room_id, std::string& stream_id) {
-  auto result = StringSplit(ufrag, "/");
-  if (result.empty() || result.size() != 2)
-    return false;
-  room_id = result[0];
-  stream_id = result[1];
-  return true;
-}

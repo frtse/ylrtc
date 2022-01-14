@@ -25,8 +25,6 @@ class IceLite {
   void LocalUfrag(const std::string& ufrag);
   const std::string& LocalPassword() const;
   const udp::endpoint* FavoredCandidate() const;
-  static std::string MakeUfrag(const std::string& room_id, const std::string& stream_id);
-  static bool ExtractUfragInfo(const std::string& ufrag, std::string& room_id, std::string& stream_id);
 
  private:
   constexpr static uint32_t kDefaultUfragLength = 4;

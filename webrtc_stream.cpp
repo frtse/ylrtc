@@ -5,7 +5,7 @@
 #include "rtp_utils.h"
 #include "server_config.h"
 #include "spdlog/spdlog.h"
-#include "stun_message.h"
+#include "stun_common.h"
 #include "utils.h"
 
 WebrtcStream::WebrtcStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<Observer> observer)
@@ -21,7 +21,7 @@ bool WebrtcStream::Start() {
   if (!udp_socket_->Listen(ServerConfig::GetInstance().GetIp()))
     return false;
   ice_lite_.reset(new IceLite(sdp_.GetRemoteIceUfrag(), this));
-  ice_lite_->LocalUfrag(IceLite::MakeUfrag(room_id_, stream_id_));
+  ice_lite_->LocalUfrag(MakeUfrag(room_id_, stream_id_));
   send_srtp_session_.reset(new SrtpSession());
   recv_srtp_session_.reset(new SrtpSession());
   dtls_transport_.reset(new DtlsTransport(work_thread_->MessageLoop(), this));
@@ -57,7 +57,7 @@ void WebrtcStream::Stop() {
 }
 
 void WebrtcStream::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::endpoint* remote_ep) {
-  if (StunMessage::IsStun(data, len)) {
+  if (IsStun(data, len)) {
     if (ice_lite_)
       ice_lite_->ProcessStunMessage(data, len, remote_ep);
   } else if (DtlsContext::IsDtls(data, len)) {
