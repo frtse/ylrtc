@@ -77,6 +77,7 @@ class Room : public WebrtcStream::Observer, public std::enable_shared_from_this<
  private:
   void OnWebrtcStreamConnected(const std::string& stream_id) override;
   void OnWebrtcStreamShutdown(const std::string& stream_id) override;
+  bool StreamIdExist(const std::string& stream_id);
   Room(const Room&) = delete;
   Room& operator=(const Room&) = delete;
   const static uint32_t kParticipantIdLength = 64;

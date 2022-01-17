@@ -49,7 +49,12 @@ void Room::KickoutParticipant(const std::string& participant_id) {
 std::shared_ptr<PublishStream> Room::ParticipantPublish(const std::string& participant_id, const std::string& offer) {
   if (participant_id_set_.find(participant_id) == participant_id_set_.end())
     return nullptr;
-  std::string stream_id = random_.RandomString(64);
+  std::string stream_id;
+  while (true) {
+    stream_id = random_.RandomString(64);
+    if (!StreamIdExist(stream_id))
+      break;
+  }
   auto publish_stream = std::make_shared<PublishStream>(id_, stream_id, shared_from_this());
   if (!publish_stream->SetRemoteDescription(offer))
     return nullptr;
@@ -77,7 +82,12 @@ std::shared_ptr<SubscribeStream> Room::ParticipantSubscribe(const std::string& s
   if (publish_stream_set_iter == publish_stream_set.end())
     return nullptr;
   auto publish_stream = *publish_stream_set_iter;
-  std::string subscribe_stream_id = random_.RandomString(64);
+  std::string subscribe_stream_id;
+  while (true) {
+    subscribe_stream_id = random_.RandomString(64);
+    if (!StreamIdExist(subscribe_stream_id))
+      break;
+  }
   auto subscribe_stream = std::make_shared<SubscribeStream>(id_, subscribe_stream_id, shared_from_this());
   subscribe_stream->SetPublishSdp(publish_stream->GetSdp());
   if (!subscribe_stream->SetRemoteDescription(sdp))
@@ -206,6 +216,26 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
     }
 #endif
   });
+}
+
+bool Room::StreamIdExist(const std::string& stream_id) {
+  for (auto& iter : participant_publishs_map_) {
+    auto& publishs = iter.second;
+    auto result = std::find_if(publishs.begin(), publishs.end(), [&stream_id](auto& publish_stream) {
+      return publish_stream->GetStreamId() == stream_id;
+    });
+    if (result != publishs.end())
+      return true;
+  }
+  for (auto& iter : participant_subscribes_map_) {
+    auto& subscribes = iter.second;
+    auto result = std::find_if(subscribes.begin(), subscribes.end(), [&stream_id](auto& subscribe_stream) {
+      return subscribe_stream->GetStreamId() == stream_id;
+    });
+    if (result != subscribes.end())
+      return true;
+  }
+  return false;
 }
 
 nlohmann::json Room::GetRoomInfo() {
