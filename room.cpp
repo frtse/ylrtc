@@ -248,12 +248,14 @@ nlohmann::json Room::GetRoomInfo() {
   for (auto& i : participant_publishs_map_) {
     std::string participant_id = i.first;
     for (auto j : i.second) {
-      nlohmann::json stream;
-      stream["participantId"] = participant_id;
-      stream["publishStreamId"] = j->GetStreamId();
-      stream["hasVideo"] = j->HasVideo();
-      stream["hasAudio"] = j->HasAudio();
-      streams.push_back(stream);
+      if (j && j->Connected()) {
+        nlohmann::json stream;
+        stream["participantId"] = participant_id;
+        stream["publishStreamId"] = j->GetStreamId();
+        stream["hasVideo"] = j->HasVideo();
+        stream["hasAudio"] = j->HasAudio();
+        streams.push_back(stream);
+      }
     }
   }
   info["streams"] = streams;

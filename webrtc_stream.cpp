@@ -61,6 +61,10 @@ void WebrtcStream::ReceiveDataFromProxy(uint8_t* data, size_t size, udp::endpoin
   OnUdpSocketDataReceive(data, size, ep);
 }
 
+bool WebrtcStream::Connected() const {
+  return connection_established_;
+}
+
 void WebrtcStream::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::endpoint* remote_ep) {
   if (IsStun(data, len)) {
     if (ice_lite_)

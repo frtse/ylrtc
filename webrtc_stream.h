@@ -34,6 +34,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
   bool Start();
   void Stop();
   void ReceiveDataFromProxy(uint8_t* data, size_t size, udp::endpoint* ep);
+  bool Connected() const;
 
  protected:
   void SendRtp(uint8_t* data, size_t size);
@@ -63,7 +64,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
   std::shared_ptr<DtlsTransport> dtls_transport_;
   udp::endpoint selected_endpoint_;
   char protect_buffer_[65536];
-  bool connection_established_;
+  std::atomic<bool> connection_established_;
   bool dtls_ready_{false};
   std::shared_ptr<WorkerThread> work_thread_;
   Sdp sdp_;
