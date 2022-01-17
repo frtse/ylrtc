@@ -33,6 +33,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
 
   bool Start();
   void Stop();
+  void ReceiveDataFromProxy(uint8_t* data, size_t size, udp::endpoint* ep);
 
  protected:
   void SendRtp(uint8_t* data, size_t size);

@@ -16,10 +16,6 @@ WebrtcStream::WebrtcStream(const std::string& room_id, const std::string& stream
       work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {}
 
 bool WebrtcStream::Start() {
-  udp_socket_.reset(new UdpSocket(work_thread_->MessageLoop(), shared_from_this(), 5000));
-  udp_socket_->SetMinMaxPort(ServerConfig::GetInstance().GetWebRtcMinPort(), ServerConfig::GetInstance().GetWebRtcMaxPort());
-  if (!udp_socket_->Listen(ServerConfig::GetInstance().GetIp()))
-    return false;
   ice_lite_.reset(new IceLite(sdp_.GetRemoteIceUfrag(), this));
   ice_lite_->LocalUfrag(MakeUfrag(room_id_, stream_id_));
   send_srtp_session_.reset(new SrtpSession());
@@ -28,7 +24,7 @@ bool WebrtcStream::Start() {
   dtls_transport_->SetRemoteFingerprint(sdp_.GetRemoteFingerprintType(), sdp_.GetRemoteFingerprintHash().c_str());
   if (!dtls_transport_->Init())
     return false;
-  sdp_.SetLocalHostAddress(ServerConfig::GetInstance().GetAnnouncedIp(), udp_socket_->GetListeningPort());
+  sdp_.SetLocalHostAddress(ServerConfig::GetInstance().GetAnnouncedIp(), ServerConfig::GetInstance().GetWebRtcPort());
   sdp_.SetLocalFingerprint("sha-256", DtlsContext::GetInstance().GetCertificateFingerPrint(DtlsContext::Hash::kSha256));
   sdp_.SetLocalIceInfo(ice_lite_->LocalUfrag(), ice_lite_->LocalPassword());
   return true;
@@ -54,6 +50,15 @@ void WebrtcStream::Stop() {
       udp_socket_->Close();
     Shutdown();
   });
+}
+
+void WebrtcStream::ReceiveDataFromProxy(uint8_t* data, size_t size, udp::endpoint* ep) {
+  if (!udp_socket_) {
+    udp_socket_.reset(new UdpSocket(work_thread_->MessageLoop(), shared_from_this(), 5000));
+    if (!udp_socket_->ListenSpecificEndpoint(ServerConfig::GetInstance().GetIp(), ServerConfig::GetInstance().GetWebRtcPort(), ep))
+      return;
+  }
+  OnUdpSocketDataReceive(data, size, ep);
 }
 
 void WebrtcStream::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::endpoint* remote_ep) {

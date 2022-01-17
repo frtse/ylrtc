@@ -8,31 +8,42 @@ UdpSocket::UdpSocket(boost::asio::io_context& io_context, std::weak_ptr<Observer
     : io_context_(io_context),
       closed_(false),
       listener_(listener),
-      max_port_(65535),
-      min_port_(0),
       init_receive_buffer_size_(init_receive_buffer_size) {}
 
 UdpSocket::~UdpSocket() {
   Close();
 }
 
-bool UdpSocket::Listen(std::string_view ip) {
-  for (uint16_t i = min_port_; i <= max_port_; ++i) {
-    try {
-      socket_.reset(new udp::socket(io_context_, udp::endpoint(boost::asio::ip::address::from_string(ip.data()), i)));
-      spdlog::debug("Select port {}.", i);
-      break;
-    } catch (...) {
-      continue;
-    }
-  }
+bool UdpSocket::Listen(std::string_view ip, uint16_t port) {
+  boost::system::error_code ec;
+  socket_.reset(new udp::socket(io_context_));
+  socket_->open(udp::v4(), ec);
+  if (ec)
+    return false;
+  socket_->set_option(udp::socket::reuse_address(true), ec);
+  if (ec)
+    return false;
+  socket_->bind(udp::endpoint(boost::asio::ip::address::from_string(ip.data()), port), ec);
+  if (ec)
+    return false;
+  StartReceive();
+  return true;
+}
 
-  if (socket_)
-    StartReceive();
-
-  if (socket_ == nullptr)
-    spdlog::error("There are no ports available.");
-  return socket_ != nullptr;
+bool UdpSocket::ListenSpecificEndpoint(std::string_view ip, uint16_t port, udp::endpoint* endpoint) {
+  boost::system::error_code ec;
+  socket_.reset(new udp::socket(io_context_));
+  socket_->open(udp::v4(), ec);
+  if (ec)
+    return false;
+  socket_->set_option(udp::socket::reuse_address(true), ec);
+  if (ec)
+    return false;
+  socket_->bind(udp::endpoint(boost::asio::ip::address::from_string(ip.data()), port), ec);
+  if (ec)
+    return false;
+  socket_->async_connect(*endpoint, boost::bind(&UdpSocket::HandleConnected, shared_from_this(), boost::asio::placeholders::error));
+  return true;
 }
 
 void UdpSocket::SendData(const uint8_t* buf, size_t len, udp::endpoint* endpoint) {
@@ -132,7 +143,12 @@ void UdpSocket::HandleReceive(const boost::system::error_code& ec, size_t bytes)
   }
 }
 
-void UdpSocket::SetMinMaxPort(uint16_t min, uint16_t max) {
-  min_port_ = min;
-  max_port_ = max;
+void UdpSocket::HandleConnected(const boost::system::error_code& error) {
+  if (error) {
+    auto sp = listener_.lock();
+    if (sp)
+      sp->OnUdpSocketError();
+  } else {
+    StartReceive();
+  }
 }

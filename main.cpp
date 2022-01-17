@@ -8,6 +8,7 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 #include "threads.h"
+#include "webrtc_stream_proxy.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -34,6 +35,11 @@ int main(int argc, char* argv[]) {
   }
   spdlog::info("Configuration file loaded successfully.");
 
+  if (!WebrtcStreamProxy::GetInstance()->Start()) {
+    spdlog::error("Failed to start webrtc stream proxy.");
+    return EXIT_FAILURE;
+  }
+
   if (!DtlsContext::GetInstance().Initialize()) {
     spdlog::error("Failed to initialize DTLS.");
     return EXIT_FAILURE;
@@ -54,6 +60,7 @@ int main(int argc, char* argv[]) {
   signals.async_wait([&](const boost::system::error_code& error, int signal_number) {
     if (!error && (signal_number == SIGINT || signal_number == SIGTERM)) {
       spdlog::info("Capture signal[{}], Perform a clean shutdown.", signal_number);
+      WebrtcStreamProxy::GetInstance()->Stop();
       SignalingServer::GetInstance().Close();
       RoomManager::GetInstance().Clear();
       WorkerThreadPool::GetInstance().StopAll();

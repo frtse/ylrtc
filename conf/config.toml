@@ -3,8 +3,7 @@
 ip = "172.16.0.4"
 #Fill in the public IP. If there is no public IP, fill in the local IP.
 announcedIp = "106.13.76.148"
-webrtcMinPort = 10000
-webrtcMaxPort = 65535
+webrtcPort = 20000
 #This represents the number of worker threads. If it is 0, it is determined by hardware.
 workerThreadCount = 0
 [signaling_server]
