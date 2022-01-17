@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <cstdint>
 #include <cstddef>
 #include <memory>
 #include <queue>
@@ -10,6 +11,7 @@
 
 class UdpSocket : public std::enable_shared_from_this<UdpSocket> {
  public:
+  static constexpr uint32_t kDefaultInitReceiveBufferSize = 5000;
   class Observer {
    public:
     virtual ~Observer() = default;
@@ -23,7 +25,7 @@ class UdpSocket : public std::enable_shared_from_this<UdpSocket> {
     udp::endpoint endpoint;
   };
 
-  UdpSocket(boost::asio::io_context& io_context, std::weak_ptr<Observer> listener, size_t init_receive_buffer_size);
+  UdpSocket(boost::asio::io_context& io_context, std::weak_ptr<Observer> listener, size_t init_receive_buffer_size = kDefaultInitReceiveBufferSize);
   UdpSocket& operator=(const UdpSocket&) = delete;
   UdpSocket(const UdpSocket&) = delete;
   ~UdpSocket();

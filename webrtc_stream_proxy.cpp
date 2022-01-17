@@ -12,7 +12,7 @@ std::shared_ptr<WebrtcStreamProxy> WebrtcStreamProxy::GetInstance() {
 }
 
 bool WebrtcStreamProxy::Start() {
-  udp_socket_.reset(new UdpSocket(MainThread::GetInstance().MessageLoop(), shared_from_this(), 5000));
+  udp_socket_.reset(new UdpSocket(MainThread::GetInstance().MessageLoop(), shared_from_this()));
   if (!udp_socket_->Listen(ServerConfig::GetInstance().GetIp(), ServerConfig::GetInstance().GetWebRtcPort()))
     return false;
   return true;
