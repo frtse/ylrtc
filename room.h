@@ -66,7 +66,7 @@ class Room : public WebrtcStream::Observer, public std::enable_shared_from_this<
    * @param id ID of the publishing stream.
    * @return std::shared_ptr<PublishStream>
    */
-  std::shared_ptr<PublishStream> GetPublishStreamById(const std::string& id);
+  std::shared_ptr<WebrtcStream> GetStreamById(const std::string& id);
 
   /**
    * @brief Dissolution meeting.

@@ -92,7 +92,7 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
       const std::string& type = request_json.at("type");
       auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
       if (room) {
-        auto publish_stream = room->GetPublishStreamById(publish_stream_id);
+        auto publish_stream = std::dynamic_pointer_cast<PublishStream>(room->GetStreamById(publish_stream_id));
         if (publish_stream) {
           publish_stream->UpdateMuteInfo(type, muted);
           auto notification = Notification::MakePublishMuteOrUnmuteNotification(session_info_.room_id, muted, type, publish_stream_id);

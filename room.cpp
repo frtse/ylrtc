@@ -260,11 +260,18 @@ nlohmann::json Room::GetRoomInfo() {
   return info;
 }
 
-std::shared_ptr<PublishStream> Room::GetPublishStreamById(const std::string& id) {
+std::shared_ptr<WebrtcStream> Room::GetStreamById(const std::string& id) {
   for (auto iter = participant_publishs_map_.begin(); iter != participant_publishs_map_.end(); ++iter) {
     auto& publish_stream_set = iter->second;
-    auto result = std::find_if(publish_stream_set.cbegin(), publish_stream_set.cend(), [&id](auto e) { return e->GetStreamId() == id; });
+    auto result = std::find_if(publish_stream_set.cbegin(), publish_stream_set.cend(), [&id](auto& e) { return e->GetStreamId() == id; });
     if (result != publish_stream_set.cend())
+      return *result;
+  }
+
+  for (auto iter = participant_subscribes_map_.begin(); iter != participant_subscribes_map_.end(); ++iter) {
+    auto& subscribe_stream_set = iter->second;
+    auto result = std::find_if(subscribe_stream_set.cbegin(), subscribe_stream_set.cend(), [&id](auto& e) { return e->GetStreamId() == id; });
+    if (result != subscribe_stream_set.cend())
       return *result;
   }
 
