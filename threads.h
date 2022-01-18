@@ -4,7 +4,7 @@
 #include <future>
 #include <memory>
 #include <thread>
-#include <vector>
+#include <unordered_map>
 
 /**
  * @brief Base class of thread.
@@ -50,6 +50,8 @@ class Thread {
    *
    */
   void AssertInThisThread();
+
+  std::thread::id Id();
 
  protected:
   boost::asio::io_context message_loop_;
@@ -112,5 +114,5 @@ class WorkerThreadPool {
 
  private:
   WorkerThreadPool();
-  std::vector<std::shared_ptr<WorkerThread>> work_threads_;
+  std::unordered_map<std::thread::id, std::shared_ptr<WorkerThread>> work_threads_;
 };

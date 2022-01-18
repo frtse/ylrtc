@@ -11,6 +11,10 @@ void Thread::AssertInThisThread() {
   CHECK(thread_id_ == std::this_thread::get_id());
 }
 
+std::thread::id Thread::Id() {
+  return thread_id_;
+}
+
 MainThread& MainThread::GetInstance() {
   static MainThread* instance = new MainThread;
   return *instance;
@@ -38,7 +42,7 @@ WorkerThreadPool& WorkerThreadPool::GetInstance() {
 }
 
 std::shared_ptr<WorkerThread> WorkerThreadPool::GetWorkerThread() {
-  return *std::min_element(work_threads_.cbegin(), work_threads_.cend(), [](auto p1, auto p2) { return p1.use_count() < p2.use_count(); });
+  return std::min_element(work_threads_.cbegin(), work_threads_.cend(), [](auto p1, auto p2) { return p1.second.use_count() < p2.second.use_count(); })->second;
 }
 
 void WorkerThreadPool::StopAll() {
@@ -52,9 +56,8 @@ WorkerThreadPool::WorkerThreadPool() {
     if (thread_count == 0)
       thread_count = kDefaultThreadCount;
   }
-  work_threads_.reserve(thread_count);
   for (int i = 0; i < thread_count; ++i) {
     auto worker = std::make_shared<WorkerThread>();
-    work_threads_.push_back(worker);
+    work_threads_.insert(std::make_pair(worker->Id(), worker));
   }
 }
