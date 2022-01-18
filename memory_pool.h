@@ -10,7 +10,7 @@ class MemoryPool {
   static constexpr uint32_t kSizeThresholdLow = 750;
   static constexpr uint32_t kSizeThresholdHight = 1500;
 
-  std::shared_ptr<uint8_t> GetMemory(size_t size);
+  std::shared_ptr<uint8_t> AllocMemory(size_t size);
 
  private:
   std::list<std::shared_ptr<uint8_t>> low_size_list_;

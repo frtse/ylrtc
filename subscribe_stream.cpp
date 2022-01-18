@@ -161,7 +161,7 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPac
     return;
   int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(rtp_packet->Size() + kRtxHeaderSize);
   UdpSocket::UdpMessage msg;
-  msg.buffer = memory_pool.GetMemory(protect_rtp_need_len);
+  msg.buffer = memory_pool.AllocMemory(protect_rtp_need_len);
   msg.endpoint = selected_endpoint_;
   memcpy(msg.buffer.get(), rtp_packet->Data(), rtp_packet->HeaderSize());
   memcpy(msg.buffer.get() + rtp_packet->HeaderSize() + kRtxHeaderSize, rtp_packet->Payload(), rtp_packet->PayloadSize());

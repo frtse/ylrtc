@@ -53,7 +53,7 @@ void UdpSocket::SendData(const uint8_t* buf, size_t len, udp::endpoint* endpoint
   if (closed_)
     return;
   UdpMessage data;
-  data.buffer = memory_pool.GetMemory(len);
+  data.buffer = memory_pool.AllocMemory(len);
   memcpy(data.buffer.get(), buf, len);
   data.length = len;
   data.endpoint = *endpoint;

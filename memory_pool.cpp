@@ -2,7 +2,7 @@
 
 thread_local MemoryPool memory_pool;
 
-std::shared_ptr<uint8_t> MemoryPool::GetMemory(size_t size) {
+std::shared_ptr<uint8_t> MemoryPool::AllocMemory(size_t size) {
   if (size <= kSizeThresholdLow) {
     for (auto& m : low_size_list_) {
       if (m.use_count() == 1)
