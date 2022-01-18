@@ -7,6 +7,9 @@
 #include "spdlog/spdlog.h"
 #include "stun_common.h"
 #include "utils.h"
+#include "memory_pool.h"
+
+extern thread_local MemoryPool memory_pool;
 
 WebrtcStream::WebrtcStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<Observer> observer)
     : observer_{observer},
@@ -162,7 +165,7 @@ void WebrtcStream::SendRtp(uint8_t* data, size_t size) {
     return;
   int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(size);
   UdpSocket::UdpMessage msg;
-  msg.buffer = work_thread_->AllocMemory(protect_rtp_need_len);
+  msg.buffer = memory_pool.GetMemory(protect_rtp_need_len);
   msg.endpoint = selected_endpoint_;
   memcpy(msg.buffer.get(), data, size);
   int length = 0;
@@ -183,7 +186,7 @@ void WebrtcStream::SendRtcp(uint8_t* data, size_t size) {
     return;
   int protect_rtcp_need_len = send_srtp_session_->GetProtectRtcpNeedLength(size);
   UdpSocket::UdpMessage msg;
-  msg.buffer = work_thread_->AllocMemory(protect_rtcp_need_len);
+  msg.buffer = memory_pool.GetMemory(protect_rtcp_need_len);
   msg.endpoint = selected_endpoint_;
   memcpy(msg.buffer.get(), data, size);
   int length = 0;

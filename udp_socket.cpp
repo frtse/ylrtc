@@ -3,7 +3,9 @@
 #include "boost/bind/bind.hpp"
 #include "spdlog/spdlog.h"
 #include "utils.h"
-#include "threads.h"
+#include "memory_pool.h"
+
+extern thread_local MemoryPool memory_pool;
 
 UdpSocket::UdpSocket(boost::asio::io_context& io_context, std::weak_ptr<Observer> listener, size_t init_receive_buffer_size)
     : io_context_(io_context),
@@ -51,11 +53,7 @@ void UdpSocket::SendData(const uint8_t* buf, size_t len, udp::endpoint* endpoint
   if (closed_)
     return;
   UdpMessage data;
-  auto thread = WorkerThreadPool::GetInstance().GetThreadById(std::this_thread::get_id());
-  if (thread)
-    data.buffer = thread->AllocMemory(len);
-  else
-    data.buffer.reset(new uint8_t[len], [](uint8_t* p) { delete[] p;});
+  data.buffer = memory_pool.GetMemory(len);
   memcpy(data.buffer.get(), buf, len);
   data.length = len;
   data.endpoint = *endpoint;

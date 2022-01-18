@@ -6,7 +6,9 @@
 #include "rtp_utils.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
-#include "threads.h"
+#include "memory_pool.h"
+
+extern thread_local MemoryPool memory_pool;
 
 bool SubscribeStream::SetRemoteDescription(const std::string& offer) {
   return sdp_.SetSubscribeOffer(offer);
@@ -159,9 +161,7 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPac
     return;
   int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(rtp_packet->Size() + kRtxHeaderSize);
   UdpSocket::UdpMessage msg;
-  auto thread = WorkerThreadPool::GetInstance().GetThreadById(std::this_thread::get_id());
-  CHECK(thread);
-  msg.buffer = thread->AllocMemory(protect_rtp_need_len);
+  msg.buffer = memory_pool.GetMemory(protect_rtp_need_len);
   msg.endpoint = selected_endpoint_;
   memcpy(msg.buffer.get(), rtp_packet->Data(), rtp_packet->HeaderSize());
   memcpy(msg.buffer.get() + rtp_packet->HeaderSize() + kRtxHeaderSize, rtp_packet->Payload(), rtp_packet->PayloadSize());

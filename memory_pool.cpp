@@ -1,5 +1,7 @@
 #include "memory_pool.h"
 
+thread_local MemoryPool memory_pool;
+
 std::shared_ptr<uint8_t> MemoryPool::GetMemory(size_t size) {
   if (size <= kSizeThresholdLow) {
     for (auto& m : low_size_list_) {
