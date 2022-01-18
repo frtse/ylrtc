@@ -51,6 +51,11 @@ class Thread {
    */
   void AssertInThisThread();
 
+  /**
+   * @brief Gets the ID of the internal thread.
+   *
+   * @return thread ID.
+   */
   std::thread::id Id();
 
  protected:
@@ -106,6 +111,11 @@ class WorkerThreadPool {
    */
   std::shared_ptr<WorkerThread> GetWorkerThread();
 
+  /**
+   * @brief Query thread with thread ID.
+   *
+   * @param id thread ID.
+   */
   std::shared_ptr<WorkerThread> GetThreadById(const std::thread::id& id);
 
   /**
