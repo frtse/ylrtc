@@ -8,8 +8,6 @@
 #include <thread>
 #include <unordered_map>
 
-#include "memory_pool.h"
-
 /**
  * @brief Base class of thread.
  *
@@ -62,16 +60,9 @@ class Thread {
    */
   std::thread::id Id();
 
-  /**
-   * @brief Request size bytes of memory.
-   * 
-   */
-  std::shared_ptr<uint8_t> AllocMemory(size_t size);
-
  protected:
   boost::asio::io_context message_loop_;
   std::thread::id thread_id_;
-  MemoryPool memory_pool_;
 };
 
 /**
@@ -121,13 +112,6 @@ class WorkerThreadPool {
    * @return std::shared_ptr<WorkerThread>
    */
   std::shared_ptr<WorkerThread> GetWorkerThread();
-
-  /**
-   * @brief Query thread with thread ID.
-   *
-   * @param id thread ID.
-   */
-  std::shared_ptr<WorkerThread> GetThreadById(const std::thread::id& id);
 
   /**
    * @brief Stop all threads in the thread pool.
