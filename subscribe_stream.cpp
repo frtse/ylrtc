@@ -6,6 +6,7 @@
 #include "rtp_utils.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
+#include "threads.h"
 
 bool SubscribeStream::SetRemoteDescription(const std::string& offer) {
   return sdp_.SetSubscribeOffer(offer);
@@ -158,7 +159,9 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPac
     return;
   int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(rtp_packet->Size() + kRtxHeaderSize);
   UdpSocket::UdpMessage msg;
-  msg.buffer.reset(new uint8_t[protect_rtp_need_len]);
+  auto thread = WorkerThreadPool::GetInstance().GetThreadById(std::this_thread::get_id());
+  CHECK(thread);
+  msg.buffer = thread->AllocMemory(protect_rtp_need_len);
   msg.endpoint = selected_endpoint_;
   memcpy(msg.buffer.get(), rtp_packet->Data(), rtp_packet->HeaderSize());
   memcpy(msg.buffer.get() + rtp_packet->HeaderSize() + kRtxHeaderSize, rtp_packet->Payload(), rtp_packet->PayloadSize());
@@ -174,7 +177,7 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPac
   }
   msg.length = length;
   if (udp_socket_)
-    udp_socket_->SendData(std::move(msg));
+    udp_socket_->SendData(msg);
   else
     spdlog::error("Send data before socket is connected.");
 }

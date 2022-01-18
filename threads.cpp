@@ -15,6 +15,10 @@ std::thread::id Thread::Id() {
   return thread_id_;
 }
 
+std::shared_ptr<uint8_t> Thread::AllocMemory(size_t size) {
+  return memory_pool_.GetMemory(size);
+}
+
 MainThread& MainThread::GetInstance() {
   static MainThread* instance = new MainThread;
   return *instance;

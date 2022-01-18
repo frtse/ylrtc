@@ -162,7 +162,7 @@ void WebrtcStream::SendRtp(uint8_t* data, size_t size) {
     return;
   int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(size);
   UdpSocket::UdpMessage msg;
-  msg.buffer.reset(new uint8_t[protect_rtp_need_len]);
+  msg.buffer = work_thread_->AllocMemory(protect_rtp_need_len);
   msg.endpoint = selected_endpoint_;
   memcpy(msg.buffer.get(), data, size);
   int length = 0;
@@ -172,7 +172,7 @@ void WebrtcStream::SendRtp(uint8_t* data, size_t size) {
   }
   msg.length = length;
   if (udp_socket_)
-    udp_socket_->SendData(std::move(msg));
+    udp_socket_->SendData(msg);
   else
     spdlog::error("Send data before socket is connected.");
 }
@@ -183,7 +183,7 @@ void WebrtcStream::SendRtcp(uint8_t* data, size_t size) {
     return;
   int protect_rtcp_need_len = send_srtp_session_->GetProtectRtcpNeedLength(size);
   UdpSocket::UdpMessage msg;
-  msg.buffer.reset(new uint8_t[protect_rtcp_need_len]);
+  msg.buffer = work_thread_->AllocMemory(protect_rtcp_need_len);
   msg.endpoint = selected_endpoint_;
   memcpy(msg.buffer.get(), data, size);
   int length = 0;
@@ -193,7 +193,7 @@ void WebrtcStream::SendRtcp(uint8_t* data, size_t size) {
   }
   msg.length = length;
   if (udp_socket_)
-    udp_socket_->SendData(std::move(msg));
+    udp_socket_->SendData(msg);
   else
     spdlog::error("Send data before socket is connected.");
 }

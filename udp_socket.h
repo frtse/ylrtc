@@ -20,7 +20,7 @@ class UdpSocket : public std::enable_shared_from_this<UdpSocket> {
   };
 
   struct UdpMessage {
-    std::unique_ptr<uint8_t[]> buffer;
+    std::shared_ptr<uint8_t> buffer;
     size_t length;
     udp::endpoint endpoint;
   };
@@ -33,7 +33,7 @@ class UdpSocket : public std::enable_shared_from_this<UdpSocket> {
   bool Listen(std::string_view ip, uint16_t port);
   bool ListenSpecificEndpoint(std::string_view ip, uint16_t port, udp::endpoint* endpoint);
   void SendData(const uint8_t*, size_t len, udp::endpoint* endpoint);
-  void SendData(UdpMessage&& message);
+  void SendData(const UdpMessage& message);
   unsigned short GetListeningPort();
   void Close();
 

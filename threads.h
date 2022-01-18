@@ -1,10 +1,14 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <cstdint>
+#include <cstddef>
 #include <future>
 #include <memory>
 #include <thread>
 #include <unordered_map>
+
+#include "memory_pool.h"
 
 /**
  * @brief Base class of thread.
@@ -58,9 +62,16 @@ class Thread {
    */
   std::thread::id Id();
 
+  /**
+   * @brief Request size bytes of memory.
+   * 
+   */
+  std::shared_ptr<uint8_t> AllocMemory(size_t size);
+
  protected:
   boost::asio::io_context message_loop_;
   std::thread::id thread_id_;
+  MemoryPool memory_pool_;
 };
 
 /**
