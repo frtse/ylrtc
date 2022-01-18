@@ -106,6 +106,8 @@ class WorkerThreadPool {
    */
   std::shared_ptr<WorkerThread> GetWorkerThread();
 
+  std::shared_ptr<WorkerThread> GetThreadById(const std::thread::id& id);
+
   /**
    * @brief Stop all threads in the thread pool.
    *

@@ -45,6 +45,12 @@ std::shared_ptr<WorkerThread> WorkerThreadPool::GetWorkerThread() {
   return std::min_element(work_threads_.cbegin(), work_threads_.cend(), [](auto p1, auto p2) { return p1.second.use_count() < p2.second.use_count(); })->second;
 }
 
+std::shared_ptr<WorkerThread> WorkerThreadPool::GetThreadById(const std::thread::id& id) {
+  if (work_threads_.find(id) == work_threads_.end())
+    return nullptr;
+  return work_threads_[id];
+}
+
 void WorkerThreadPool::StopAll() {
   work_threads_.clear();
 }
