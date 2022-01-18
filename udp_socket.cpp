@@ -124,7 +124,7 @@ void UdpSocket::StartReceive() {
   if (closed_)
     return;
   if (!receive_data_.buffer)
-    receive_data_.buffer.reset(new uint8_t[init_receive_buffer_size_]);
+    receive_data_.buffer.reset(new uint8_t[init_receive_buffer_size_], [](uint8_t* p) { delete[] p; });
   DCHECK(socket_);
 
   socket_->async_receive_from(
