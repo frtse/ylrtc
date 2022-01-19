@@ -1,24 +1,26 @@
 #include "memory_pool.h"
 
+#include "spdlog/spdlog.h"
+
 thread_local MemoryPool memory_pool;
 
 std::shared_ptr<uint8_t> MemoryPool::AllocMemory(size_t size) {
-  if (size <= kSizeThresholdLow) {
+  if (size <= kSizeThresholdHalfMTU) {
     for (auto& m : low_size_list_) {
       if (m.use_count() == 1)
         return m;
     }
-    std::shared_ptr<uint8_t> new_buffer(new uint8_t[kSizeThresholdLow], [](uint8_t* p) { delete[] p;});
+    std::shared_ptr<uint8_t> new_buffer(new uint8_t[kSizeThresholdHalfMTU], [](uint8_t* p) { delete[] p;});
     low_size_list_.push_back(new_buffer);
     return new_buffer;
   }
-  else if (size <= kSizeThresholdHight) {
-    for (auto& m : hight_size_list_) {
+  else if (size <= kSizeThresholdMTU) {
+    for (auto& m : high_size_list_) {
       if (m.use_count() == 1)
         return m;
     }
-    std::shared_ptr<uint8_t> new_buffer(new uint8_t[kSizeThresholdHight], [](uint8_t* p) { delete[] p;});
-    hight_size_list_.push_back(new_buffer);
+    std::shared_ptr<uint8_t> new_buffer(new uint8_t[kSizeThresholdMTU], [](uint8_t* p) { delete[] p;});
+    high_size_list_.push_back(new_buffer);
     return new_buffer;
   }
   else {

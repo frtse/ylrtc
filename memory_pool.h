@@ -7,12 +7,11 @@
 
 class MemoryPool {
  public:
-  static constexpr uint32_t kSizeThresholdLow = 750;
-  static constexpr uint32_t kSizeThresholdHight = 1500;
-
   std::shared_ptr<uint8_t> AllocMemory(size_t size);
 
  private:
+  static constexpr uint32_t kSizeThresholdHalfMTU = 750;
+  static constexpr uint32_t kSizeThresholdMTU = 1500;
   std::list<std::shared_ptr<uint8_t>> low_size_list_;
-  std::list<std::shared_ptr<uint8_t>> hight_size_list_;
+  std::list<std::shared_ptr<uint8_t>> high_size_list_;
 };
