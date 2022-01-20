@@ -136,14 +136,7 @@
   </div>
   </div>
 </body>
-<!-- <script src="js/adapter.js"></script>
-<script src="js/eventDispatcher.js"></script>
-<script src="js/device.js"></script>
-<script src="js/signaling.js"></script>
-<script src="js/subscribeStream.js"></script>
-<script src="js/publisheStream.js"></script>
-<script src="js/client.js"></script> -->
-<script src="./ylsfu-websdk.js"></script>
+<script src="./js/ylsfu-websdk.js"></script>
 <script>
   var client = null;
   client = new Ylsfu.Client("ffrtc.com", 8000);
@@ -159,7 +152,7 @@
     var textShow = null;
     var enter = null;
 
-    function promptWindow(text, cb){
+    function promptWindow(text, cb) {
       var textContext = text ? text : "";
       var callBack = cb ? cb : function() {};
       if (promptBoxExist == false){
