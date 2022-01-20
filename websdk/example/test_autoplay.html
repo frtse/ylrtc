@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<video id="v" src="long.mp4"></video>
+<script>
+  (function(w){
+    var promptBoxExist = false;
+    var promptBox = null;
+    var textShow = null;
+    var enter = null;
+
+    function promptWindow(text, cb){
+      var textContext = text ? text : "";
+      var callBack = cb ? cb : function() {};
+      if (promptBoxExist == false){
+        promptBox = document.createElement("div");
+        promptBox.style.cssText=`position:fixed;top:0;left:0px;z-index:10000;width:100%;height:100%;background-color:rgba(0,0,0,0.5);transition:all 0.5s;`;
+        promptBox.id="promptBox";
+
+        var enterContent = document.createElement("div");
+        enterContent.style.cssText = `position:absolute;top:50%;left:50%;width:350px;transform:translate(-50%,-50%);overflow:hidden;min-height:140px;background-color:white;border-radius:10px;`;
+
+        textShow = document.createElement("div");
+        textShow.style.cssText = `padding:10px 10px 10px 20px;font-size:16px;min-height:60px;overflow:hidden;word-break:break-all;`;
+
+        var btnGroup = document.createElement("div");
+        btnGroup.style.cssText = `width:100%;height:40px;padding:10px;margin-bottom:10px;display:flex;justify-content:center;align-items:center;box-sizing: border-box;`;
+
+        enter = document.createElement("div");
+        enter.style.cssText = `color:white;padding:8px 16px;background-color:#0094c7;border-radius:20px;font-size:16px;`;
+        enter.innerText = "Ok";
+
+        btnGroup.appendChild(enter);
+        enterContent.appendChild(textShow);
+        enterContent.appendChild(btnGroup);
+        promptBox.appendChild(enterContent);
+        document.body.appendChild(promptBox);
+      } else if (promptBoxExist){
+        promptBox.style.display="block";
+      }
+      textShow.innerText= textContext;
+      promptBoxExist = true;
+
+      enter.onclick = function () {
+        promptBox.style.display = "none";
+        callBack && callBack();
+      }
+    }
+    w.promptWindow = promptWindow;
+  })(window);
+ 
+
+  let v = document.getElementById("v");
+  var promise = v.play();
+  if (promise !== undefined) {
+    promise.then(_ => {
+      // Autoplay started!
+    }).catch(error => {
+      // Autoplay not allowed!
+      // Mute video and try to play again
+      // 播放失败可以直接设置静音在播放，也可以弹出框或者按钮点击之后再播放。
+      // v.muted = true;
+      // v.play();
+      window.promptWindow("Playback failed. Click resume playback.", () => {
+        v.play();
+      });
+    });
+  }
+</script>
+</html>

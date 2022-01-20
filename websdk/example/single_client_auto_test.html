@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>SFU Test</title>
+  <style>
+    video {
+      width: 300px;
+      height: 300px;
+    }
+  </style>
+</head>
+<body>
+  <video id="localPlayer" autoplay muted controls></video>
+</body>
+<script src="js/adapter.js"></script>
+<script src="js/eventDispatcher.js"></script>
+<script src="js/device.js"></script>
+<script src="js/signaling.js"></script>
+<script src="js/subscribeStream.js"></script>
+<script src="js/publisheStream.js"></script>
+<script src="js/client.js"></script>
+<script>
+  function randomString(e) {    
+    e = e || 32;
+    var t = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678",
+    a = t.length,
+    n = "";
+    for (i = 0; i < e; i++)
+      n += t.charAt(Math.floor(Math.random() * a));
+    return n
+  }
+
+  window.onload = async function() {
+    var localPlayer = document.getElementById('localPlayer');
+    var device = await Device.CreateDevice("camera", {audio: true, video: true});
+    localPlayer.srcObject = device.mediaStream();
+
+    var publisheStreamArr = new Array();
+    var subscribeStreamArr = new Array();
+
+    var client = new Client("ffrtc.com", 8000);
+    var times = 0;
+    async function subscribe(remoteStream) {
+      let subscribeStream = await client.subscribe(remoteStream);
+      let video = document.createElement('video');
+      video.srcObject = subscribeStream.mediaStream();
+      video.autoplay = true;
+      video.muted = true;
+      video.controls = true;
+      video.style = "width: 300px; height: 300px;";
+      document.getElementsByTagName("body")[0].append(video);
+      subscribeStreamArr.push(subscribeStream);
+    }
+
+    client.addEventListener("streamAdded", async (remoteStream) => {
+      await subscribe(remoteStream);
+      times++;
+      if (times >= 20)
+        location.reload();
+    });
+
+    client.join("9527", randomString(8)).then(async(roomInfo) => {
+      roomInfo.streams.forEach(function (e) {
+        subscribe(e);
+      });
+      for (let i = 0; i < 20; ++i) {
+        let publisheStream = await client.publish(device);
+        publisheStreamArr.push(publisheStream);
+      }
+    }).catch((e) => {
+      console.log("Join room failed.", e);
+    });
+  }
+</script>
+
+</html>
