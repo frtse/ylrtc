@@ -17,11 +17,11 @@ bool ServerConfig::Load(std::string_view json_file_name) {
     const auto& webrtc = toml::find(config_file, "webrtc");
     ip_ = toml::find<std::string>(webrtc, "ip");
     announced_ip_ = toml::find<std::string>(webrtc, "announcedIp");
-    webrtc_port_ = toml::find<uint16_t>(webrtc, "webrtcPort");
+    webrtc_port_ = toml::find<uint16_t>(webrtc, "port");
     webrtc_worker_thread_count_ = toml::find<uint32_t>(webrtc, "workerThreadCount");
 
     const auto& signaling_server = toml::find(config_file, "signaling_server");
-    signaling_server_port_ = toml::find<uint16_t>(signaling_server, "signalingServerPort");
+    signaling_server_port_ = toml::find<uint16_t>(signaling_server, "port");
     ssl_cert_file_ = toml::find<std::string>(signaling_server, "certFile");
     ssl_key_file_ = toml::find<std::string>(signaling_server, "keyFile");
   } catch (const std::exception& e) {
