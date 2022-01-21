@@ -3,11 +3,9 @@
 #include <exception>
 #include <sstream>
 
-#include "notification.h"
 #include "publish_stream.h"
 #include "room.h"
 #include "room_manager.h"
-#include "sdptransform/json.hpp"
 #include "signaling_server.h"
 #include "signaling_server_base.h"
 #include "spdlog/spdlog.h"
@@ -72,7 +70,8 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
         YlError result = room->Join(participant_id);
         if (result == kOk || result == kParticipantAlreadyJoined) {
           response_json["error"] = false;
-          response_json["roomInfo"] = room->GetRoomInfo();
+          room_info_when_joining_ = room->GetRoomInfo();
+          response_json["roomInfo"] = room_info_when_joining_;
           response_json["detail"] = YlErrorToString(result);
           session_info_.room_id = room_id;
           session_info_.participant_id = participant_id;
@@ -119,4 +118,22 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
     spdlog::error("Handle signaling failed, signaling: {}, exception: {}", signaling, e.what());
   }
   return response_json.dump();
+}
+
+bool SignalingHandler::HijackNotification(const Notification& notification) {
+  const nlohmann::json& context = notification.GetNotifyContext();
+  try {
+    if (context.at("type") != "streamAdded")
+      return false;
+    // Prevents duplicated streams returned by join rooms and added streams.
+    std::string publish_stream_id = context.at("data").at("publishStreamId");
+    auto& streams = room_info_when_joining_.at("streams");
+    for (auto& stream : streams) {
+      if (publish_stream_id == stream.at("publishStreamId"))
+        return true;
+    }
+    return false;
+  } catch(...) {
+    return false;
+  }
 }

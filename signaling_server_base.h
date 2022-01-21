@@ -75,6 +75,8 @@ class WebsocketSession : public WebsocketSessionBase {
   }
 
   void SendNotification(const Notification& notification) override {
+    if (signaling_handler_->HijackNotification(notification))
+      return;
     auto text = notification.GetNotifyContext().dump();
     SendText(text);
   }
