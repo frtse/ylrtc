@@ -5,7 +5,6 @@
 #include "notification.h"
 #include "sdptransform/json.hpp"
 
-class websocket_session_base;
 struct SessionInfo;
 class SignalingHandler {
  public:
