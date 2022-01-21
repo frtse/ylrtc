@@ -10,3 +10,6 @@ workerThreadCount = 0
 port = 8000
 certFile = "ffrtc.com.crt"
 keyFile = "ffrtc.com.key"
+[memory_pool]
+enabled = true
+maxListLength = 200
