@@ -5,6 +5,10 @@
 #include <string>
 #include <string_view>
 
+/**
+ * @brief Server configuration information.
+ * 
+ */
 class ServerConfig {
  public:
   static ServerConfig& GetInstance();

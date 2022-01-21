@@ -2,19 +2,29 @@
 
 #include <string>
 
-#include "notification.h"
 #include "sdptransform/json.hpp"
+#include "notification.h"
 
 struct SessionInfo;
+/**
+ * @brief Handles the signaling of the participants.
+ *
+ */
 class SignalingHandler {
  public:
   SignalingHandler(SessionInfo& session_info);
 
+  /**
+   * @brief Handle signaling.
+   *
+   * @param signaling Participants' requests.
+   * @return std::string The response returned.
+   */
   std::string HandleSignaling(const std::string& signaling);
 
   /**
    * @brief Hijack unwanted notifications.
-   * 
+   *
    * @param notification 
    * @return true Notifications that should be discarded.
    * @return false Notifications that should not be discarded.

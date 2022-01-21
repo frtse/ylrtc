@@ -5,6 +5,7 @@
 
 #include "publish_stream.h"
 #include "subscribe_stream.h"
+#include "signaling_server_base.h"
 #include "room.h"
 #include "room_manager.h"
 #include "signaling_server.h"
