@@ -22,6 +22,7 @@ class WebsocketSessionBase : public std::enable_shared_from_this<WebsocketSessio
   WebsocketSessionBase();
   virtual ~WebsocketSessionBase();
   virtual void SendText(const std::string& text) = 0;
+  virtual void SendNotification(const Notification& notification) = 0;
   const SessionInfo& GetSessionInfo() const;
   virtual void Close() = 0;
 
@@ -71,6 +72,11 @@ class WebsocketSession : public WebsocketSessionBase {
 
     if (write_buffers_.size() == 1)
       DoWrite();
+  }
+
+  void SendNotification(const Notification& notification) override {
+    auto text = notification.GetNotifyContext().dump();
+    SendText(text);
   }
 
   void DoWrite() {

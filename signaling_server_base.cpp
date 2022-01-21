@@ -35,9 +35,9 @@ void WebsocketSessionSet::Notify(const Notification& notification) {
   for (auto session : sessions_) {
     if (session->GetSessionInfo().room_id == notification.GetNotifyRoomId()) {
       if (notification.GetNotifyParticipantId() == Notification::kNotifyAllParticipants)
-        session->SendText(notification.GetNotifyContext().dump());
+        session->SendNotification(notification);
       else if (session->GetSessionInfo().participant_id == notification.GetNotifyParticipantId())
-        session->SendText(notification.GetNotifyContext().dump());
+        session->SendNotification(notification);
       else
         spdlog::error("Unrecognized notification.");
     }
