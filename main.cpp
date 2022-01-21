@@ -45,16 +45,16 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  if (!SignalingServer::GetInstance().LoadCertKeyFile(ServerConfig::GetInstance().GetCertFile(), ServerConfig::GetInstance().GetKeyFile())) {
+  if (!SignalingServer::GetInstance().LoadCertKeyFile(ServerConfig::GetInstance().CertFile(), ServerConfig::GetInstance().KeyFile())) {
     spdlog::error("Load file failed.");
     return EXIT_FAILURE;
   }
 
-  if (!SignalingServer::GetInstance().Start(ServerConfig::GetInstance().GetIp(), ServerConfig::GetInstance().GetSignalingServerPort())) {
+  if (!SignalingServer::GetInstance().Start(ServerConfig::GetInstance().LocalIp(), ServerConfig::GetInstance().SignalingServerPort())) {
     spdlog::error("Signaling server failed to start.");
     return EXIT_FAILURE;
   }
-  spdlog::info("Signaling service listening {} port.", ServerConfig::GetInstance().GetSignalingServerPort());
+  spdlog::info("Signaling service listening {} port.", ServerConfig::GetInstance().SignalingServerPort());
 
   boost::asio::signal_set signals(MainThread::GetInstance().MessageLoop(), SIGINT, SIGTERM);
   signals.async_wait([&](const boost::system::error_code& error, int signal_number) {

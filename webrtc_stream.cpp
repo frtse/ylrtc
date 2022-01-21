@@ -27,7 +27,7 @@ bool WebrtcStream::Start() {
   dtls_transport_->SetRemoteFingerprint(sdp_.GetRemoteFingerprintType(), sdp_.GetRemoteFingerprintHash().c_str());
   if (!dtls_transport_->Init())
     return false;
-  sdp_.SetLocalHostAddress(ServerConfig::GetInstance().GetAnnouncedIp(), ServerConfig::GetInstance().GetWebRtcPort());
+  sdp_.SetLocalHostAddress(ServerConfig::GetInstance().AnnouncedIp(), ServerConfig::GetInstance().WebRtcPort());
   sdp_.SetLocalFingerprint("sha-256", DtlsContext::GetInstance().GetCertificateFingerPrint(DtlsContext::Hash::kSha256));
   sdp_.SetLocalIceInfo(ice_lite_->LocalUfrag(), ice_lite_->LocalPassword());
   return true;
@@ -58,7 +58,7 @@ void WebrtcStream::Stop() {
 void WebrtcStream::ReceiveDataFromProxy(uint8_t* data, size_t size, udp::endpoint* ep) {
   if (!udp_socket_) {
     udp_socket_.reset(new UdpSocket(work_thread_->MessageLoop(), shared_from_this()));
-    if (!udp_socket_->ListenSpecificEndpoint(ServerConfig::GetInstance().GetIp(), ServerConfig::GetInstance().GetWebRtcPort(), ep))
+    if (!udp_socket_->ListenSpecificEndpoint(ServerConfig::GetInstance().LocalIp(), ServerConfig::GetInstance().WebRtcPort(), ep))
       return;
   }
   OnUdpSocketDataReceive(data, size, ep);

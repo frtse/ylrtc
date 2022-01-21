@@ -15,7 +15,7 @@ bool ServerConfig::Load(std::string_view json_file_name) {
     const auto config_file = toml::parse(json_file_name.data());
 
     const auto& webrtc = toml::find(config_file, "webrtc");
-    ip_ = toml::find<std::string>(webrtc, "ip");
+    local_ip_ = toml::find<std::string>(webrtc, "localIp");
     announced_ip_ = toml::find<std::string>(webrtc, "announcedIp");
     webrtc_port_ = toml::find<uint16_t>(webrtc, "port");
     webrtc_worker_thread_count_ = toml::find<uint32_t>(webrtc, "workerThreadCount");
@@ -36,31 +36,31 @@ bool ServerConfig::Load(std::string_view json_file_name) {
   return true;
 }
 
-std::string_view ServerConfig::GetIp() const {
-  return ip_;
+std::string_view ServerConfig::LocalIp() const {
+  return local_ip_;
 }
 
-std::string_view ServerConfig::GetAnnouncedIp() const {
+std::string_view ServerConfig::AnnouncedIp() const {
   return announced_ip_;
 }
 
-uint16_t ServerConfig::GetSignalingServerPort() const {
+uint16_t ServerConfig::SignalingServerPort() const {
   return signaling_server_port_;
 }
 
-uint16_t ServerConfig::GetWebRtcPort() const {
+uint16_t ServerConfig::WebRtcPort() const {
   return webrtc_port_;
 }
 
-uint32_t ServerConfig::GetWebrtcWorkerThreadCount() const {
+uint32_t ServerConfig::WebrtcWorkerThreadCount() const {
   return webrtc_worker_thread_count_;
 }
 
-std::string_view ServerConfig::GetCertFile() const {
+std::string_view ServerConfig::CertFile() const {
   return ssl_cert_file_;
 }
 
-std::string_view ServerConfig::GetKeyFile() const {
+std::string_view ServerConfig::KeyFile() const {
   return ssl_key_file_;
 }
 

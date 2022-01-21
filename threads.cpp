@@ -50,7 +50,7 @@ void WorkerThreadPool::StopAll() {
 }
 
 WorkerThreadPool::WorkerThreadPool() {
-  uint32_t thread_count = ServerConfig::GetInstance().GetWebrtcWorkerThreadCount();
+  uint32_t thread_count = ServerConfig::GetInstance().WebrtcWorkerThreadCount();
   if (thread_count == 0) {
     thread_count = std::thread::hardware_concurrency();
     if (thread_count == 0)

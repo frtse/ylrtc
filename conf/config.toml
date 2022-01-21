@@ -1,6 +1,6 @@
 [webrtc]
 #Local IP.
-ip = "172.16.0.4"
+localIp = "172.16.0.4"
 #Fill in the public IP. If there is no public IP, fill in the local IP.
 announcedIp = "106.13.76.148"
 port = 20000

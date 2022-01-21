@@ -9,19 +9,19 @@ class ServerConfig {
  public:
   static ServerConfig& GetInstance();
   bool Load(std::string_view json_file_name);
-  std::string_view GetIp() const;
-  std::string_view GetAnnouncedIp() const;
-  uint16_t GetSignalingServerPort() const;
-  uint16_t GetWebRtcPort() const;
-  uint32_t GetWebrtcWorkerThreadCount() const;
-  std::string_view GetCertFile() const;
-  std::string_view GetKeyFile() const;
+  std::string_view LocalIp() const;
+  std::string_view AnnouncedIp() const;
+  uint16_t SignalingServerPort() const;
+  uint16_t WebRtcPort() const;
+  uint32_t WebrtcWorkerThreadCount() const;
+  std::string_view CertFile() const;
+  std::string_view KeyFile() const;
   bool MemoryPoolEnabled() const;
   size_t MemoryPoolMaxListLength() const;
 
  private:
   ServerConfig() = default;
-  std::string ip_;
+  std::string local_ip_;
   std::string announced_ip_;
   uint16_t signaling_server_port_;
   uint16_t webrtc_port_;
