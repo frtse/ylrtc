@@ -13,13 +13,7 @@
 <body>
   <video id="localPlayer" autoplay muted controls></video>
 </body>
-<script src="js/adapter.js"></script>
-<script src="js/eventDispatcher.js"></script>
-<script src="js/device.js"></script>
-<script src="js/signaling.js"></script>
-<script src="js/subscribeStream.js"></script>
-<script src="js/publisheStream.js"></script>
-<script src="js/client.js"></script>
+<script src="./js/ylsfu-websdk.js"></script>
 <script>
   function randomString(e) {    
     e = e || 32;
@@ -33,13 +27,13 @@
 
   window.onload = async function() {
     var localPlayer = document.getElementById('localPlayer');
-    var device = await Device.CreateDevice("camera", {audio: true, video: true});
+    var device = await Ylsfu.Device.CreateDevice("camera", {audio: true, video: true});
     localPlayer.srcObject = device.mediaStream();
 
     var publisheStreamArr = new Array();
     var subscribeStreamArr = new Array();
 
-    var client = new Client("ffrtc.com", 8000);
+    var client = new Ylsfu.Client("ffrtc.com", 8000);
     var times = 0;
     async function subscribe(remoteStream) {
       let subscribeStream = await client.subscribe(remoteStream);
