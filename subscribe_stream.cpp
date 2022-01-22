@@ -65,7 +65,7 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
     std::unique_ptr<RtpPacket> clone_packet = std::make_unique<RtpPacket>(*rtp_packet);
     if (ssrc_track_map_.find(clone_packet->Ssrc()) != ssrc_track_map_.end()) {
       clone_packet->UpdateExtensionCapability(ssrc_track_map_.at(clone_packet->Ssrc())->Config().extension_capability);
-      rtp_packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
+      clone_packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
       SendRtp(clone_packet->Data(), clone_packet->Size());
       ssrc_track_map_.at(rtp_packet->Ssrc())->SendRtpPacket(std::move(clone_packet));
     } else {
