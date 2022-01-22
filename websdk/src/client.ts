@@ -49,7 +49,7 @@ export default class Client extends EventDispatcher {
    */
   async publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters) {
     let mediaStream = device.mediaStream();
-    let pc = new RTCPeerConnection({bundlePolicy: "max-bundle"});
+    let pc = new RTCPeerConnection({bundlePolicy: "max-bundle", rtcpMuxPolicy: "require"});
 
     const audioTransceiverInit = {
       direction: 'sendonly',
@@ -107,7 +107,7 @@ export default class Client extends EventDispatcher {
   async subscribe(remoteStream) {
     this.mediaStream_ = null;
     this.mediaStream_ = new MediaStream();
-    let pc = new RTCPeerConnection({bundlePolicy: "max-bundle"});
+    let pc = new RTCPeerConnection({bundlePolicy: "max-bundle", rtcpMuxPolicy: "require"});
     if (remoteStream.hasAudio)
       pc.addTransceiver("audio", { direction: "recvonly" });
     if (remoteStream.hasVideo)

@@ -37,7 +37,6 @@ void SubscribeStreamTrack::ReceiveNack(NackPacket* nack_packet) {
   if (!nack_packet)
     return;
   auto& lost_packets = nack_packet->GetLostPacketSequenceNumbers();
-
   for (auto& seq_num : lost_packets) {
     auto packet = rtp_packet_history_.GetPacketAndSetSendTime(seq_num);
     if (!packet)
