@@ -62,6 +62,8 @@ void SubscribeStream::SetPublishSdp(const Sdp& publish_sdp) {
 void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket> rtp_packet) {
   auto self(shared_from_this());
   work_thread_->PostAsync([rtp_packet, self, this] {
+    if (!connection_established_)
+      return;
     std::unique_ptr<RtpPacket> clone_packet = std::make_unique<RtpPacket>(*rtp_packet);
     if (ssrc_track_map_.find(clone_packet->Ssrc()) != ssrc_track_map_.end()) {
       clone_packet->UpdateExtensionCapability(ssrc_track_map_.at(clone_packet->Ssrc())->Config().extension_capability);
