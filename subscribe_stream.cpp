@@ -67,7 +67,7 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
       clone_packet->UpdateExtensionCapability(ssrc_track_map_.at(clone_packet->Ssrc())->Config().extension_capability);
       clone_packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
       SendRtp(clone_packet->Data(), clone_packet->Size());
-      ssrc_track_map_.at(rtp_packet->Ssrc())->SendRtpPacket(std::move(clone_packet));
+      ssrc_track_map_.at(clone_packet->Ssrc())->SendRtpPacket(std::move(clone_packet));
     } else {
       spdlog::warn("SubscribeStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
       return;
@@ -136,6 +136,9 @@ void SubscribeStream::SetLocalDescription() {
 }
 
 void SubscribeStream::OnSubscribeStreamTrackResendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) {
+  if (!connection_established_)
+    return;
+  rtp_packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
   SendRtp(rtp_packet->Data(), rtp_packet->Size());
 }
 
@@ -159,6 +162,7 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPac
   work_thread_->AssertInThisThread();
   if (!connection_established_)
     return;
+  rtp_packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
   int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(rtp_packet->Size() + kRtxHeaderSize);
   UdpSocket::UdpMessage msg;
   msg.buffer = memory_pool.AllocMemory(protect_rtp_need_len);
