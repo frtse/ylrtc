@@ -31,7 +31,9 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
     rtp_packet->RtxRepaire(LoadUInt16BE(rtp_packet->Payload()), configuration_.payload_type, configuration_.ssrc);
     is_rtx = true;
   }
-  receive_statistician_.ReceivePacket(rtp_packet);  // TODO: Separate RTX.
+  // TODO: Separate RTX.
+  if (!is_rtx)
+    receive_statistician_.ReceivePacket(rtp_packet);
   if (!configuration_.audio && !rtp_packet->ParsePayload(configuration_.codec))
     return;
   if (configuration_.nack_enabled) {
