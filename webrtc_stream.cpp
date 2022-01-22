@@ -58,8 +58,11 @@ void WebrtcStream::Stop() {
 void WebrtcStream::ReceiveDataFromProxy(uint8_t* data, size_t size, udp::endpoint* ep) {
   if (!udp_socket_) {
     udp_socket_.reset(new UdpSocket(work_thread_->MessageLoop(), shared_from_this()));
-    if (!udp_socket_->ListenSpecificEndpoint(ServerConfig::GetInstance().LocalIp(), ServerConfig::GetInstance().WebRtcPort(), ep))
+    if (!udp_socket_->ListenSpecificEndpoint(ServerConfig::GetInstance().LocalIp()
+      , ServerConfig::GetInstance().WebRtcPort(), ep)) {
+      udp_socket_.reset();
       return;
+    }
   }
   OnUdpSocketDataReceive(data, size, ep);
 }

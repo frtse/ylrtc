@@ -41,7 +41,7 @@ void WebrtcStreamProxy::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::e
       }
     }
   } else {
-    spdlog::warn("Unexpected data received");
+    spdlog::trace("Ignore receiving data that is not STUN.");
   }
 }
 
