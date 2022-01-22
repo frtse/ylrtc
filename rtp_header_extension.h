@@ -35,7 +35,6 @@ enum RTPHeaderExtensionType : int {
   kRtpExtensionNumberOfExtensions  // Must be the last entity in the enum.
 };
 
-// TODO: If it can be determined that the server decides to [rtp extension id map], remove this code.
 class RtpHeaderExtensionCapability {
  public:
   void Register(int id, const std::string& uri);
