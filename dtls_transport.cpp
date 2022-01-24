@@ -95,6 +95,8 @@ void DtlsTransport::SetTimeout() {
 }
 
 void DtlsTransport::CheckPending() {
+  if (!inited_)
+    return;
   if (write_bio_ && BIO_ctrl_pending(write_bio_)) {
     int read_sie = BIO_read(write_bio_, read_buffer_, kReadBufferSize);
     if (observer_)
@@ -305,50 +307,7 @@ bool DtlsTransport::SetupSRTP() {
 }
 
 void DtlsTransport::OnSSLInfo(int where, int ret) {
-  int w = where & -SSL_ST_MASK;
-  const char* role;
-
-  if ((w & SSL_ST_CONNECT) != 0)
-    role = "client";
-  else if ((w & SSL_ST_ACCEPT) != 0)
-    role = "server";
-  else
-    role = "undefined";
-
-  if ((where & SSL_CB_LOOP) != 0) {
-    spdlog::debug("[role:{}, action:'{}']", role, SSL_state_string_long(ssl_));
-  } else if ((where & SSL_CB_ALERT) != 0) {
-    const char* alertType;
-
-    switch (*SSL_alert_type_string(ret)) {
-      case 'W':
-        alertType = "warning";
-        break;
-
-      case 'F':
-        alertType = "fatal";
-        break;
-
-      default:
-        alertType = "undefined";
-    }
-
-    if ((where & SSL_CB_READ) != 0) {
-      spdlog::warn("dtls received DTLS {} alert: {}", alertType, SSL_alert_desc_string_long(ret));
-    } else if ((where & SSL_CB_WRITE) != 0) {
-      spdlog::debug("sending DTLS {} alert: {}", alertType, SSL_alert_desc_string_long(ret));
-    } else {
-      spdlog::debug("DTLS {} alert: {}", alertType, SSL_alert_desc_string_long(ret));
-    }
-  } else if ((where & SSL_CB_EXIT) != 0) {
-    if (ret == 0)
-      spdlog::debug("[role:{}, failed:'{}']", role, SSL_state_string_long(ssl_));
-    else if (ret < 0)
-      spdlog::debug("role: {}, waiting:'{}']", role, SSL_state_string_long(ssl_));
-  } else if ((where & SSL_CB_HANDSHAKE_START) != 0) {
-    spdlog::debug("DTLS handshake start");
-  } else if ((where & SSL_CB_HANDSHAKE_DONE) != 0) {
-    spdlog::debug("DTLS handshake done");
+  if ((where & SSL_CB_HANDSHAKE_DONE) != 0) {
     auto sp_worker = work_thread_.lock();
     if (sp_worker) {
       auto self = shared_from_this();
@@ -360,7 +319,6 @@ void DtlsTransport::OnSSLInfo(int where, int ret) {
       });
     }
   }
-
   auto sp_worker = work_thread_.lock();
   if (sp_worker) {
     auto self = shared_from_this();
