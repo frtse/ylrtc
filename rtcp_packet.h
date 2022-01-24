@@ -68,7 +68,7 @@ class RtcpPacket {
   bool ParseCommonHeader(ByteReader* byte_reader);
   bool SerializeCommonHeader(ByteWriter* byte_writer);
   RtcpCommonHeader header_;
-  uint32_t sender_ssrc_ = 0;
+  uint32_t sender_ssrc_{0};
 };
 
 // From RFC 3550, RTP: A Transport Protocol for Real-Time Applications.
@@ -155,7 +155,6 @@ class SenderReportPacket : public RtcpPacket {
 
  private:
   static constexpr size_t kSenderBaseLength = 24;
-  uint32_t sender_ssrc_{0};  // TODO: remove.
   uint32_t ntp_seconds_;
   uint32_t ntp_fractions_;
   uint32_t rtp_timestamp_;
@@ -184,7 +183,6 @@ class ReceiverReportPacket : public RtcpPacket {
 
  protected:
   std::vector<ReportBlock> report_blocks_;
-  uint32_t sender_ssrc_{0};  // TODO: remove.
 };
 
 // RFC 4585, Section 6.1: Feedback format.
