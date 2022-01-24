@@ -14,7 +14,7 @@ std::unordered_map<DtlsTransport::Setup, std::string> DtlsTransport::setup_to_st
                                                                                          {DtlsTransport::Setup::kPassive, "passive"},
                                                                                          {DtlsTransport::Setup::kActPass, "actpass"}};
 
-DtlsTransport::DtlsTransport(boost::asio::io_context& io_context, Observer* listener) : io_context_{io_context}, listener_{listener} {
+DtlsTransport::DtlsTransport(boost::asio::io_context& io_context, Observer* listener) : io_context_{io_context}, observer_{listener} {
   setup_ = Setup::kUnknown;
   ssl_ = nullptr;
   read_bio_ = nullptr;
@@ -81,8 +81,8 @@ void DtlsTransport::OnTimerTimeout() {
 void DtlsTransport::TrySendPendingData() {
   if (BIO_ctrl_pending(write_bio_)) {
     int read_sie = BIO_read(write_bio_, read_buffer_, kReadBufferSize);
-    if (listener_)
-      listener_->OnDtlsTransportSendData(read_buffer_, read_sie);
+    if (observer_)
+      observer_->OnDtlsTransportSendData(read_buffer_, read_sie);
   }
 }
 
@@ -97,8 +97,8 @@ void DtlsTransport::SetTimeout() {
 void DtlsTransport::CheckPending() {
   if (write_bio_ && BIO_ctrl_pending(write_bio_)) {
     int read_sie = BIO_read(write_bio_, read_buffer_, kReadBufferSize);
-    if (listener_)
-      listener_->OnDtlsTransportSendData(read_buffer_, read_sie);
+    if (observer_)
+      observer_->OnDtlsTransportSendData(read_buffer_, read_sie);
   }
 
   SetTimeout();
@@ -126,8 +126,8 @@ void DtlsTransport::ProcessDataFromPeer(const uint8_t* buffer, size_t size) {
   if (SSL_get_shutdown(ssl_) & SSL_RECEIVED_SHUTDOWN) {
     spdlog::warn("Close_notify was received.");
     SSL_clear(ssl_);
-    if (listener_)
-      listener_->OnDtlsTransportShutdown();
+    if (observer_)
+      observer_->OnDtlsTransportShutdown();
   }
 }
 
@@ -286,17 +286,19 @@ bool DtlsTransport::ExtractSrtpParams() {
   memcpy(local_master_key + keysalt.key_length_, local_salt, keysalt.salt_length_);
   memcpy(remote_master_key, remote_key, keysalt.key_length_);
   memcpy(remote_master_key + keysalt.key_length_, remote_salt, keysalt.salt_length_);
-  if (listener_)
-    listener_->OnDtlsTransportSetup(suite, local_master_key, total, remote_master_key, total);
+  if (observer_)
+    observer_->OnDtlsTransportSetup(suite, local_master_key, total, remote_master_key, total);
   return true;
 }
 
-int DtlsTransport::SetupSRTP() {
-  if (!CheckRemoteCertificate())
+bool DtlsTransport::SetupSRTP() {
+  if (!CheckRemoteCertificate()) {
     spdlog::error("Check remote certificate failed.");
+    return false;
+  }
 
   ExtractSrtpParams();
-  return 1;
+  return true;
 }
 
 void DtlsTransport::OnSSLInfo(int where, int ret) {
@@ -345,8 +347,8 @@ void DtlsTransport::OnSSLInfo(int where, int ret) {
   } else if ((where & SSL_CB_HANDSHAKE_DONE) != 0) {
     spdlog::debug("DTLS handshake done");
     if (!SetupSRTP()) {
-      if (listener_)
-        listener_->OnDtlsTransportError();
+      if (observer_)
+        observer_->OnDtlsTransportError();
     }
   }
 

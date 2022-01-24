@@ -46,7 +46,7 @@ class DtlsTransport : public Timer::Observer, public std::enable_shared_from_thi
   void Stop();
 
  public:
-  int SetupSRTP();
+  bool SetupSRTP();
   void OnSSLInfo(int where, int ret);
 
  private:
@@ -66,7 +66,7 @@ class DtlsTransport : public Timer::Observer, public std::enable_shared_from_thi
   DtlsContext::Hash remote_hash_;
   std::atomic<bool> inited_;
   std::shared_ptr<Timer> timer_;
-  Observer* listener_;
+  Observer* observer_;
   static constexpr int kReadBufferSize{65536};
   uint8_t read_buffer_[kReadBufferSize];
   static std::unordered_map<std::string, DtlsTransport::Setup> string_to_setup_;

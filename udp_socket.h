@@ -47,7 +47,7 @@ class UdpSocket : public std::enable_shared_from_this<UdpSocket> {
   std::unique_ptr<udp::socket> socket_;
   udp::endpoint remote_endpoint_;
   bool closed_;
-  std::weak_ptr<Observer> listener_;
+  std::weak_ptr<Observer> observer_;
   UdpMessage receive_data_;
   std::queue<UdpMessage> send_queue_;
   boost::asio::io_context& io_context_;
