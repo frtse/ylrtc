@@ -27,13 +27,13 @@ int main(int argc, char* argv[]) {
   // Create a file rotating logger with 5mb size max and 3 rotated files
   auto max_size = 1048576 * 5;
   auto max_files = 3;
-  auto logger = spdlog::rotating_logger_mt("ylsfu-log"
-    , ServerConfig::GetInstance().LogDirectory().data() + std::string("/ylsfu-log.txt")
+  auto logger = spdlog::rotating_logger_mt("ylsfu"
+    , ServerConfig::GetInstance().LogDirectory().data() + std::string("/ylsfu.txt")
     , max_size, max_files);
   spdlog::set_default_logger(logger);
 #else
   spdlog::set_level(spdlog::level::debug);
-  auto console = spdlog::stdout_color_mt("console");
+  auto console = spdlog::stdout_color_mt("ylsfu");
   spdlog::set_default_logger(console);
 #endif
   rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
