@@ -15,6 +15,7 @@
 #include "dtls_context.h"
 #include "srtp_session.h"
 #include "timer.h"
+#include "threads.h"
 
 class DtlsTransport : public Timer::Observer, public std::enable_shared_from_this<DtlsTransport> {
  public:
@@ -34,7 +35,7 @@ class DtlsTransport : public Timer::Observer, public std::enable_shared_from_thi
     virtual void OnDtlsTransportSendData(const uint8_t* data, size_t len) = 0;
   };
 
-  DtlsTransport(boost::asio::io_context& io_context, Observer* listener);
+  DtlsTransport(std::shared_ptr<WorkerThread> work_thread, Observer* listener);
   ~DtlsTransport();
 
   bool Init();
@@ -57,7 +58,7 @@ class DtlsTransport : public Timer::Observer, public std::enable_shared_from_thi
   bool CheckRemoteCertificate();
   bool ExtractSrtpParams();
 
-  boost::asio::io_context& io_context_;
+  std::weak_ptr<WorkerThread> work_thread_;
   SSL* ssl_;
   BIO* read_bio_;
   BIO* write_bio_;

@@ -14,7 +14,7 @@ std::unordered_map<DtlsTransport::Setup, std::string> DtlsTransport::setup_to_st
                                                                                          {DtlsTransport::Setup::kPassive, "passive"},
                                                                                          {DtlsTransport::Setup::kActPass, "actpass"}};
 
-DtlsTransport::DtlsTransport(boost::asio::io_context& io_context, Observer* listener) : io_context_{io_context}, observer_{listener} {
+DtlsTransport::DtlsTransport(std::shared_ptr<WorkerThread> work_thread, Observer* listener) : work_thread_{work_thread}, observer_{listener} {
   setup_ = Setup::kUnknown;
   ssl_ = nullptr;
   read_bio_ = nullptr;
@@ -160,7 +160,10 @@ bool DtlsTransport::Start(const std::string& setup_in_sdp) {
 
   inited_ = true;
   SSL_do_handshake(ssl_);
-  timer_.reset(new Timer(io_context_, shared_from_this()));
+  auto sp_worker = work_thread_.lock();
+  if (!sp_worker)
+    return false;
+  timer_.reset(new Timer(sp_worker->MessageLoop(), shared_from_this()));
   SetTimeout();
   return true;
 }
@@ -346,11 +349,23 @@ void DtlsTransport::OnSSLInfo(int where, int ret) {
     spdlog::debug("DTLS handshake start");
   } else if ((where & SSL_CB_HANDSHAKE_DONE) != 0) {
     spdlog::debug("DTLS handshake done");
-    if (!SetupSRTP()) {
-      if (observer_)
-        observer_->OnDtlsTransportError();
+    auto sp_worker = work_thread_.lock();
+    if (sp_worker) {
+      auto self = shared_from_this();
+      sp_worker->PostAsync([self, this](){
+        if (!SetupSRTP()) {
+          if (observer_)
+            observer_->OnDtlsTransportError();
+        }
+      });
     }
   }
 
-  CheckPending();
+  auto sp_worker = work_thread_.lock();
+  if (sp_worker) {
+    auto self = shared_from_this();
+    sp_worker->PostAsync([self, this](){
+      CheckPending();
+    });
+  }
 }

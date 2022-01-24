@@ -23,7 +23,7 @@ bool WebrtcStream::Start() {
   ice_lite_->LocalUfrag(MakeUfrag(room_id_, stream_id_));
   send_srtp_session_.reset(new SrtpSession());
   recv_srtp_session_.reset(new SrtpSession());
-  dtls_transport_.reset(new DtlsTransport(work_thread_->MessageLoop(), this));
+  dtls_transport_.reset(new DtlsTransport(work_thread_, this));
   dtls_transport_->SetRemoteFingerprint(sdp_.GetRemoteFingerprintType(), sdp_.GetRemoteFingerprintHash().c_str());
   if (!dtls_transport_->Init())
     return false;
