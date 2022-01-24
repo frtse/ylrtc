@@ -64,7 +64,13 @@ void WebrtcStream::ReceiveDataFromProxy(uint8_t* data, size_t size, udp::endpoin
       return;
     }
   }
-  OnUdpSocketDataReceive(data, size, ep);
+  auto self = shared_from_this();
+  std::shared_ptr<uint8_t> buffer(new uint8_t[size], [](uint8_t* p) { delete[] p;});
+  memcpy(buffer.get(), data, size);
+  udp::endpoint ep_copy = *ep;
+  work_thread_->PostAsync([buffer, size, self, this, ep_copy]() {
+    OnUdpSocketDataReceive(buffer.get(), size, (udp::endpoint*)&ep_copy);
+  });
 }
 
 bool WebrtcStream::Connected() const {
