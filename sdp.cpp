@@ -77,7 +77,7 @@ std::string Sdp::CreatePublishAnswer() {
   candidate["foundation"] = "4";
   candidate["component"] = 1;
   candidate["transport"] = "udp";
-  candidate["priority"] = 2130706431;  // ?
+  candidate["priority"] = kMaxIceCandidatePriority;
   candidate["ip"] = local_host_ip_;
   candidate["port"] = local_host_port_;
   candidate["type"] = "host";
@@ -229,7 +229,7 @@ std::string Sdp::CreateSubscribeAnswer() {
     candidate["foundation"] = "4";
     candidate["component"] = 1;
     candidate["transport"] = "udp";
-    candidate["priority"] = 2130706431;  // ?
+    candidate["priority"] = kMaxIceCandidatePriority;
     candidate["ip"] = local_host_ip_;
     candidate["port"] = local_host_port_;
     candidate["type"] = "host";

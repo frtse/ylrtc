@@ -38,6 +38,7 @@ class Sdp {
   const nlohmann::json GetMediaSections() const;
 
  private:
+  static constexpr uint32_t kMaxIceCandidatePriority = 2147483647;
   nlohmann::json publish_offer_sdp_;
   nlohmann::json publish_anwser_sdp_;
   nlohmann::json subscribe_offer_sdp_;
