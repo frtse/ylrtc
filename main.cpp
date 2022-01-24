@@ -6,6 +6,7 @@
 #include "server_config.h"
 #include "signaling_server.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/spdlog.h"
 #include "threads.h"
 #include "webrtc_stream_proxy.h"
@@ -15,26 +16,31 @@ int main(int argc, char* argv[]) {
     spdlog::error("Parameter error. Usage: WebrtcSFU [Configuration file path].");
     return EXIT_FAILURE;
   }
-#ifdef NDEBUG
-  spdlog::set_level(spdlog::level::info);
-#else
-  spdlog::set_level(spdlog::level::debug);
-#endif
-  auto console = spdlog::stdout_color_mt("console");
-  spdlog::set_default_logger(console);
-
-  rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
-  setrlimit(RLIMIT_CORE, &l);
-
-  // Test room with id 9527.
-  RoomManager::GetInstance().CreateRoom("9527");
 
   if (!ServerConfig::GetInstance().Load(argv[1])) {
     spdlog::error("Failed to load configuration file.");
     return EXIT_FAILURE;
   }
   spdlog::info("Configuration file loaded successfully.");
+#ifdef NDEBUG
+  spdlog::set_level(spdlog::level::info);
+  // Create a file rotating logger with 5mb size max and 3 rotated files
+  auto max_size = 1048576 * 5;
+  auto max_files = 3;
+  auto logger = spdlog::rotating_logger_mt("ylsfu-log"
+    , ServerConfig::GetInstance().LogDirectory().data() + std::string("/ylsfu-log.txt")
+    , max_size, max_files);
+  spdlog::set_default_logger(logger);
+#else
+  spdlog::set_level(spdlog::level::debug);
+  auto console = spdlog::stdout_color_mt("console");
+  spdlog::set_default_logger(console);
+#endif
+  rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
+  setrlimit(RLIMIT_CORE, &l);
 
+  // Test room with id 9527.
+  RoomManager::GetInstance().CreateRoom("9527");
   if (!WebrtcStreamProxy::GetInstance()->Start()) {
     spdlog::error("Failed to start webrtc stream proxy.");
     return EXIT_FAILURE;

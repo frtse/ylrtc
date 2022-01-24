@@ -22,6 +22,7 @@ class ServerConfig {
   std::string_view KeyFile() const;
   bool MemoryPoolEnabled() const;
   size_t MemoryPoolMaxListLength() const;
+  std::string_view LogDirectory() const;
 
  private:
   ServerConfig() = default;
@@ -34,4 +35,5 @@ class ServerConfig {
   std::string ssl_key_file_;
   bool memory_pool_enabled_;
   size_t memory_pool_max_list_length_;
+  std::string log_directory_;
 };

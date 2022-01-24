@@ -28,6 +28,9 @@ bool ServerConfig::Load(std::string_view json_file_name) {
     const auto& memory_pool = toml::find(config_file, "memory_pool");
     memory_pool_enabled_ = toml::find<bool>(memory_pool, "enabled");
     memory_pool_max_list_length_ = toml::find<size_t>(memory_pool, "maxListLength");
+
+    const auto& log = toml::find(config_file, "log");
+    log_directory_ = toml::find<std::string>(log, "logDirectory");
   } catch (const std::exception& e) {
     spdlog::error("Parse config file failed. error: {}", e.what());
     return false;
@@ -70,4 +73,8 @@ bool ServerConfig::MemoryPoolEnabled() const {
 
 size_t ServerConfig::MemoryPoolMaxListLength() const {
   return memory_pool_max_list_length_;
+}
+
+std::string_view ServerConfig::LogDirectory() const {
+  return log_directory_;
 }
