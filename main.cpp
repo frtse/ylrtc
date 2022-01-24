@@ -1,13 +1,14 @@
 #include <sys/resource.h>
 
 #include "boost/asio.hpp"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/sinks/rotating_file_sink.h"
+#include "spdlog/spdlog.h"
+
 #include "dtls_context.h"
 #include "room_manager.h"
 #include "server_config.h"
 #include "signaling_server.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/sinks/rotating_file_sink.h"
-#include "spdlog/spdlog.h"
 #include "threads.h"
 #include "webrtc_stream_proxy.h"
 
@@ -24,7 +25,7 @@ int main(int argc, char* argv[]) {
   spdlog::info("Configuration file loaded successfully.");
 #ifdef NDEBUG
   spdlog::set_level(spdlog::level::info);
-  // Create a file rotating logger with 5mb size max and 3 rotated files
+  // Create a file rotating logger with 5mb size max and 3 rotated files.
   auto max_size = 1048576 * 5;
   auto max_files = 3;
   auto logger = spdlog::rotating_logger_mt("ylsfu"
