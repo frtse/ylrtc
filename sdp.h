@@ -36,7 +36,6 @@ class Sdp {
   const std::unordered_map<std::string, nlohmann::json>& GetMediaSectionSsrcGroupsMap() const;
   const std::unordered_map<std::string, nlohmann::json>& GetMediaSectionRtpmapsMap() const;
   const nlohmann::json GetMediaSections() const;
-  RtpHeaderExtensionCapability GetRtpHeaderExtensionCapability();
 
  private:
   nlohmann::json publish_offer_sdp_;

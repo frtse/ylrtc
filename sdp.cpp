@@ -393,14 +393,3 @@ const nlohmann::json Sdp::GetMediaSections() const {
   }
   return media_sections;
 }
-
-/*
-RtpHeaderExtensionCapability Sdp::GetRtpHeaderExtensionCapability() {
-  RtpHeaderExtensionCapability extension_capability;
-  const auto& ext = media_section.at("ext");
-  for (const auto& extension: ext) {
-    if (extension.find("id") != extension.end() && extension.find("uri") != extension.end())
-      extension_capability.Register(extension.at("id"), extension.at("uri"););
-  }
-}
-*/
