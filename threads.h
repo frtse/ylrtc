@@ -1,8 +1,8 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <future>
 #include <memory>
 #include <thread>

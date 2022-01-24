@@ -1,17 +1,14 @@
 #include "udp_socket.h"
 
 #include "boost/bind/bind.hpp"
+#include "memory_pool.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
-#include "memory_pool.h"
 
 extern thread_local MemoryPool memory_pool;
 
 UdpSocket::UdpSocket(boost::asio::io_context& io_context, std::weak_ptr<Observer> listener, size_t init_receive_buffer_size)
-    : io_context_(io_context),
-      closed_(false),
-      observer_(listener),
-      init_receive_buffer_size_(init_receive_buffer_size) {}
+    : io_context_(io_context), closed_(false), observer_(listener), init_receive_buffer_size_(init_receive_buffer_size) {}
 
 UdpSocket::~UdpSocket() {
   Close();

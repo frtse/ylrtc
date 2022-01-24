@@ -221,17 +221,15 @@ void Room::OnWebrtcStreamShutdown(const std::string& stream_id) {
 bool Room::StreamIdExist(const std::string& stream_id) {
   for (auto& iter : participant_publishs_map_) {
     auto& publishs = iter.second;
-    auto result = std::find_if(publishs.begin(), publishs.end(), [&stream_id](auto& publish_stream) {
-      return publish_stream->GetStreamId() == stream_id;
-    });
+    auto result =
+        std::find_if(publishs.begin(), publishs.end(), [&stream_id](auto& publish_stream) { return publish_stream->GetStreamId() == stream_id; });
     if (result != publishs.end())
       return true;
   }
   for (auto& iter : participant_subscribes_map_) {
     auto& subscribes = iter.second;
-    auto result = std::find_if(subscribes.begin(), subscribes.end(), [&stream_id](auto& subscribe_stream) {
-      return subscribe_stream->GetStreamId() == stream_id;
-    });
+    auto result = std::find_if(subscribes.begin(), subscribes.end(),
+                               [&stream_id](auto& subscribe_stream) { return subscribe_stream->GetStreamId() == stream_id; });
     if (result != subscribes.end())
       return true;
   }

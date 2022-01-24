@@ -1,8 +1,8 @@
 #include "stun_common.h"
 
 #include "byte_buffer.h"
-#include "utils.h"
 #include "stun_message.h"
+#include "utils.h"
 
 bool IsStun(uint8_t* data, size_t size) {
   return (size >= 20) && (data[0] < 3) && (LoadUInt32BE(data + 4) == kStunMagicCookie);

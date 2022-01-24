@@ -42,7 +42,9 @@ WorkerThreadPool& WorkerThreadPool::GetInstance() {
 }
 
 std::shared_ptr<WorkerThread> WorkerThreadPool::GetWorkerThread() {
-  return std::min_element(work_threads_.cbegin(), work_threads_.cend(), [](auto p1, auto p2) { return p1.second.use_count() < p2.second.use_count(); })->second;
+  return std::min_element(work_threads_.cbegin(), work_threads_.cend(),
+                          [](auto p1, auto p2) { return p1.second.use_count() < p2.second.use_count(); })
+      ->second;
 }
 
 void WorkerThreadPool::StopAll() {

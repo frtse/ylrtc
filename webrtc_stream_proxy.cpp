@@ -1,10 +1,10 @@
 #include "webrtc_stream_proxy.h"
 
-#include "threads.h"
-#include "server_config.h"
-#include "stun_common.h"
 #include "room_manager.h"
+#include "server_config.h"
 #include "spdlog/spdlog.h"
+#include "stun_common.h"
+#include "threads.h"
 
 std::shared_ptr<WebrtcStreamProxy> WebrtcStreamProxy::GetInstance() {
   static std::shared_ptr<WebrtcStreamProxy> instance(new WebrtcStreamProxy);
@@ -45,6 +45,4 @@ void WebrtcStreamProxy::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::e
   }
 }
 
-void WebrtcStreamProxy::OnUdpSocketError() {
-
-}
+void WebrtcStreamProxy::OnUdpSocketError() {}

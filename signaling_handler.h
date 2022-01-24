@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "sdptransform/json.hpp"
 #include "notification.h"
+#include "sdptransform/json.hpp"
 
 struct SessionInfo;
 /**
@@ -25,7 +25,7 @@ class SignalingHandler {
   /**
    * @brief Hijack unwanted notifications.
    *
-   * @param notification 
+   * @param notification
    * @return true Notifications that should be discarded.
    * @return false Notifications that should not be discarded.
    */

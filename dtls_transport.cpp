@@ -311,7 +311,7 @@ void DtlsTransport::OnSSLInfo(int where, int ret) {
     auto sp_worker = work_thread_.lock();
     if (sp_worker) {
       auto self = shared_from_this();
-      sp_worker->PostAsync([self, this](){
+      sp_worker->PostAsync([self, this]() {
         if (!SetupSRTP()) {
           if (observer_)
             observer_->OnDtlsTransportError();
@@ -322,8 +322,6 @@ void DtlsTransport::OnSSLInfo(int where, int ret) {
   auto sp_worker = work_thread_.lock();
   if (sp_worker) {
     auto self = shared_from_this();
-    sp_worker->PostAsync([self, this](){
-      CheckPending();
-    });
+    sp_worker->PostAsync([self, this]() { CheckPending(); });
   }
 }

@@ -14,8 +14,8 @@
 
 #include "dtls_context.h"
 #include "srtp_session.h"
-#include "timer.h"
 #include "threads.h"
+#include "timer.h"
 
 class DtlsTransport : public Timer::Observer, public std::enable_shared_from_this<DtlsTransport> {
  public:

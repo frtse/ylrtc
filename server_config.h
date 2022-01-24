@@ -1,13 +1,13 @@
 #pragma once
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <string_view>
 
 /**
  * @brief Server configuration information.
- * 
+ *
  */
 class ServerConfig {
  public:
