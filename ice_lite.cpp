@@ -21,15 +21,12 @@ void IceLite::ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remot
 
   valid_candidates_.insert(*remote_ep);
   if (msg.HasUseCandidate()) {
-    auto result = valid_candidates_.find(*remote_ep);
-    if (result != valid_candidates_.end()) {
-      old_favored_candidate_ = favored_candidate_;
-      favored_candidate_ = *remote_ep;
-      if (old_favored_candidate_ != favored_candidate_) {
-        spdlog::debug("Ice connect completed. remote: [ip: {}, port {}]", remote_ep->address().to_string(), remote_ep->port());
-        if (observer_)
-          observer_->OnIceConnectionCompleted();
-      }
+    old_favored_candidate_ = favored_candidate_;
+    favored_candidate_ = *remote_ep;
+    if (old_favored_candidate_ != favored_candidate_) {
+      spdlog::debug("Ice connect completed. remote: [ip: {}, port {}]", remote_ep->address().to_string(), remote_ep->port());
+      if (observer_)
+        observer_->OnIceConnectionCompleted();
     }
   }
 
