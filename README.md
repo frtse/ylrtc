@@ -1,4 +1,4 @@
-# WebrtcSFU
+# ylsfu
 Webrtc SFU.
 
 ## Platform
@@ -14,5 +14,5 @@ cmake ..
 make
 
 ## Run
-+ Fill in the configuration file named config.toml correctly.
-+ ./WebrtcSFU
++ Fill in the configuration file correctly.
++ ./ylsfu ../conf/config.toml
