@@ -90,6 +90,8 @@ void PublishStream::UpdateMuteInfo(const std::string& type, bool muted) {
     has_audio_ = !muted;
   else if (type == "video")
     has_video_ = !muted;
+  else
+    NOTREACHED();
 }
 
 bool PublishStream::HasVideo() const {

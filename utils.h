@@ -74,3 +74,5 @@ std::string StringToLower(const std::string& str);
 #else
 #define DCHECK(expression) CHECK(expression)
 #endif
+
+#define NOTREACHED() CHECK(false)

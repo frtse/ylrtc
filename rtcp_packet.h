@@ -8,8 +8,8 @@
 #include "byte_buffer.h"
 #include "utils.h"
 
-constexpr int32_t kDefaultVideoReportInterval = 1000;  // millis.
-constexpr int32_t kDefaultAudioReportInterval = 5000;  // millis.
+constexpr int32_t kDefaultVideoReportIntervalMillis = 1000;
+constexpr int32_t kDefaultAudioReportIntervalMillis = 5000;
 
 enum { kRtcpExpectedVersion = 2, kRtcpMinHeaderLength = 4 };
 

@@ -17,7 +17,7 @@ PublishStreamTrack::PublishStreamTrack(const Configuration& configuration, boost
     nack_request_.reset(new NackRequester(io_context, this));
     nack_request_->Init();
   }
-  report_interval_ = configuration_.audio ? kDefaultAudioReportInterval : kDefaultVideoReportInterval;
+  report_interval_ = configuration_.audio ? kDefaultAudioReportIntervalMillis : kDefaultVideoReportIntervalMillis;
 }
 
 void PublishStreamTrack::Init() {

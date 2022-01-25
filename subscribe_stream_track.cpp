@@ -5,7 +5,7 @@
 
 SubscribeStreamTrack::SubscribeStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer)
     : configuration_{configuration}, io_context_{io_context}, observer_{observer}, rate_statistics_{1000, RateStatistics::kBpsScale} {
-  report_interval_ = configuration_.audio ? kDefaultAudioReportInterval : kDefaultVideoReportInterval;
+  report_interval_ = configuration_.audio ? kDefaultAudioReportIntervalMillis : kDefaultVideoReportIntervalMillis;
 }
 
 void SubscribeStreamTrack::Init() {
