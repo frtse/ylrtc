@@ -621,3 +621,7 @@ bool TransportFeedback::Serialize(ByteWriter* byte_writer) {
   }
   return true;
 }
+
+size_t TransportFeedback::Size() const {
+  return (size_bytes_ + 3) & (~static_cast<size_t>(3));
+}

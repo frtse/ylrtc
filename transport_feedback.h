@@ -82,6 +82,7 @@ class TransportFeedback : public RtcpCommonFeedback {
 
   bool Parse(ByteReader* byte_reader) override;
   bool Serialize(ByteWriter* byte_writer) override;
+  size_t Size() const override;
 
  private:
   // Size in bytes of a delta time in rtcp packet.

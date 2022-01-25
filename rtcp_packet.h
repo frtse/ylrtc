@@ -62,6 +62,7 @@ class RtcpPacket {
   void SetSenderSsrc(uint32_t ssrc);
   uint32_t SenderSsrc() const;
   static bool IsRtcp(uint8_t* data, size_t size);
+  virtual size_t Size() const;
 
  protected:
   static constexpr size_t kHeaderLength = 4;
@@ -141,17 +142,13 @@ struct ReportBlock {
 // 24 +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 class SenderReportPacket : public RtcpPacket {
  public:
-  bool Serialize(ByteWriter* byte_writer);
-
+  bool Serialize(ByteWriter* byte_writer) override;
   void SetNtpSeconds(uint32_t ntp_seconds);
-
   void SetNtpFractions(uint32_t ntp_fractions);
-
   void SetRtpTimestamp(uint32_t rtp_timestamp);
-
   void SetSendPacketCount(uint32_t send_packet_count);
-
   void SendOctets(uint32_t send_octets);
+  size_t Size() const override;
 
  private:
   static constexpr size_t kSenderBaseLength = 24;
@@ -176,12 +173,14 @@ class SenderReportPacket : public RtcpPacket {
 class ReceiverReportPacket : public RtcpPacket {
  public:
   static constexpr size_t kMaxNumberOfReportBlocks = 0x1f;
-  bool Parse(ByteReader* byte_reader);
-  bool Serialize(ByteWriter* byte_writer);
+  bool Parse(ByteReader* byte_reader) override;
+  bool Serialize(ByteWriter* byte_writer) override;
   std::vector<ReportBlock> GetReportBlocks() const;
   bool SetReportBlocks(const std::vector<ReportBlock>&& blocks);
+  size_t Size() const override;
 
  protected:
+  static const size_t kRrBaseLength = 4;
   std::vector<ReportBlock> report_blocks_;
 };
 
@@ -233,6 +232,7 @@ class RtcpCommonFeedback : public RtcpPacket {
 class RtcpPliPacket : public RtcpCommonFeedback {
  public:
   bool Serialize(ByteWriter* byte_writer) override;
+  size_t Size() const override;
 };
 
 // RFC 4585: Feedback format.
@@ -271,8 +271,10 @@ class RtcpFirPacket : public RtcpCommonFeedback {
 
   bool Serialize(ByteWriter* byte_writer) override;
   void AddFciEntry(uint32_t ssrc, uint8_t seq_num);
+  size_t Size() const override;
 
  private:
+  static constexpr size_t kFciLength = 8;
   std::vector<FciEntry> FCI_;
 };
 
@@ -306,6 +308,7 @@ class NackPacket : public RtcpCommonFeedback {
   bool Serialize(ByteWriter* byte_writer) override;
   const std::vector<uint16_t>& GetLostPacketSequenceNumbers() const;
   void SetLostPacketSequenceNumbers(std::vector<uint16_t> nack_list);
+  size_t Size() const override;
 
  private:
   struct PackedNack {
@@ -420,6 +423,7 @@ class XrPacket : public RtcpPacket {
   void SetDlrr(const DlrrBlockContext& dlrr);
   std::optional<RrtrBlockContext> Rrtr() const;
   std::optional<DlrrBlockContext> Dlrr() const;
+  size_t Size() const override;
 
  private:
   static constexpr size_t kXrBaseLength = 4;

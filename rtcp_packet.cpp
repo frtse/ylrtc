@@ -109,6 +109,10 @@ bool RtcpPacket::IsRtcp(uint8_t* data, size_t size) {
   }
 }
 
+size_t RtcpPacket::Size() const {
+  return 0;
+}
+
 bool RtcpPacket::ParseCommonHeader(ByteReader* byte_reader) {
   DCHECK(byte_reader);
   if (!byte_reader->ReadBytes((char*)&header_, sizeof(RtcpCommonHeader)))
@@ -263,6 +267,10 @@ void SenderReportPacket::SendOctets(uint32_t send_octets) {
   send_octets_ = send_octets;
 }
 
+size_t SenderReportPacket::Size() const {
+  return kHeaderLength + kSenderBaseLength;
+}
+
 bool ReceiverReportPacket::Parse(ByteReader* byte_reader) {
   DCHECK(byte_reader);
   if (!ParseCommonHeader(byte_reader))
@@ -309,6 +317,10 @@ bool ReceiverReportPacket::SetReportBlocks(const std::vector<ReportBlock>&& bloc
   return true;
 }
 
+size_t ReceiverReportPacket::Size() const {
+  return kHeaderLength + kRrBaseLength + report_blocks_.size() * ReportBlock::kLength;
+}
+
 bool RtcpCommonFeedback::ParseCommonFeedback(ByteReader* byte_reader) {
   DCHECK(byte_reader);
   if (!byte_reader->ReadUInt32(&sender_ssrc_))
@@ -350,6 +362,10 @@ bool RtcpPliPacket::Serialize(ByteWriter* byte_writer) {
   return true;
 }
 
+size_t RtcpPliPacket::Size() const {
+  return kHeaderLength + kCommonFeedbackLength;
+}
+
 bool RtcpFirPacket::Serialize(ByteWriter* byte_writer) {
   DCHECK(byte_writer);
   header_.count_or_format = FeedbackPsMessageType::kFir;
@@ -375,12 +391,21 @@ void RtcpFirPacket::AddFciEntry(uint32_t ssrc, uint8_t seq_num) {
   FCI_.emplace_back(ssrc, seq_num);
 }
 
+size_t RtcpFirPacket::Size() const {
+  return kHeaderLength + kCommonFeedbackLength + kFciLength * FCI_.size();
+}
+
 const std::vector<uint16_t>& NackPacket::GetLostPacketSequenceNumbers() const {
   return packet_lost_sequence_numbers_;
 }
 
 void NackPacket::SetLostPacketSequenceNumbers(std::vector<uint16_t> nack_list) {
   packet_lost_sequence_numbers_ = std::move(nack_list);
+}
+
+size_t NackPacket::Size() const {
+  return kHeaderLength + kCommonFeedbackLength +
+         packet_lost_sequence_numbers_.size() * kNackItemLength;
 }
 
 bool NackPacket::Serialize(ByteWriter* byte_writer) {
@@ -606,6 +631,10 @@ std::optional<RrtrBlockContext> XrPacket::Rrtr() const {
 
 std::optional<DlrrBlockContext> XrPacket::Dlrr() const {
   return dlrr_block_context_;
+}
+
+size_t XrPacket::Size() const {
+  return 0; // TODO
 }
 
 bool RtcpCompound::Parse(uint8_t* data, int size) {
