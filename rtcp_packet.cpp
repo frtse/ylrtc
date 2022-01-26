@@ -634,7 +634,12 @@ std::optional<DlrrBlockContext> XrPacket::Dlrr() const {
 }
 
 size_t XrPacket::Size() const {
-  return 0; // TODO
+  size_t dlrr_length = 0, rrtc_length = 0;
+  if (dlrr_block_context_)
+    dlrr_length = dlrr_block_context_->Size() + kDlrrBlockHeaderLength;
+  if (rrtr_block_context_)
+    rrtc_length = rrtr_block_context_->Size() + kRrtrBlockHeaderLength;
+  return kHeaderLength + kXrBaseLength + dlrr_length + rrtc_length;
 }
 
 bool RtcpCompound::Parse(uint8_t* data, int size) {

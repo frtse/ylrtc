@@ -342,6 +342,10 @@ class RrtrBlockContext {
     return ntp_;
   }
 
+  size_t Size() const {
+    return kBlockLength;
+  }
+
  private:
   static const uint16_t kBlockLength = 8;
   std::optional<NtpTime> ntp_;
@@ -383,6 +387,10 @@ class DlrrBlockContext {
     return sub_blocks_;
   }
 
+  size_t Size() const {
+    return kSubBlockLength * sub_blocks_.size();
+  }
+
  private:
   static const size_t kSubBlockLength = 12;
   std::vector<ReceiveTimeInfo> sub_blocks_;
@@ -416,6 +424,8 @@ class XrPacket : public RtcpPacket {
   static constexpr uint8_t kBlockTypeRrtr = 4;
   static constexpr uint8_t kBlockTypeDlrr = 5;
   static constexpr uint16_t kBlockHeaderIn32Bits = 1;
+  static constexpr size_t kDlrrBlockHeaderLength = 4;
+  static constexpr size_t kRrtrBlockHeaderLength = 4;
 
   bool Parse(ByteReader* byte_reader) override;
   bool Serialize(ByteWriter* byte_writer) override;
