@@ -8,6 +8,7 @@
 #include "spdlog/spdlog.h"
 #include "stun_common.h"
 #include "utils.h"
+#include "byte_buffer.h"
 
 extern thread_local MemoryPool memory_pool;
 
@@ -186,25 +187,29 @@ void WebrtcStream::SendRtp(uint8_t* data, size_t size) {
     spdlog::error("Send data before socket is connected.");
 }
 
-void WebrtcStream::SendRtcp(uint8_t* data, size_t size) {
+void WebrtcStream::SendRtcp(RtcpPacket& rtcp_packet) {
   work_thread_->AssertInThisThread();
   if (!connection_established_)
     return;
-  int protect_rtcp_need_len = send_srtp_session_->GetProtectRtcpNeedLength(size);
+  int protect_rtcp_need_len = send_srtp_session_->GetProtectRtcpNeedLength(rtcp_packet.Size());
   UdpSocket::UdpMessage msg;
   msg.buffer = memory_pool.AllocMemory(protect_rtcp_need_len);
   msg.endpoint = selected_endpoint_;
-  memcpy(msg.buffer.get(), data, size);
+  ByteWriter byte_write(msg.buffer.get(), rtcp_packet.Size());
+  if (!rtcp_packet.Serialize(&byte_write)) {
+    spdlog::warn("Failed to serialize rtcp packet.");
+    return;
+  }
   int length = 0;
-  if (!send_srtp_session_->ProtectRtcp(msg.buffer.get(), size, protect_rtcp_need_len, &length)) {
-    spdlog::error("Failed to encrypt RTCP packat.");
+  if (!send_srtp_session_->ProtectRtcp(msg.buffer.get(), rtcp_packet.Size(), protect_rtcp_need_len, &length)) {
+    spdlog::warn("Failed to encrypt RTCP packat.");
     return;
   }
   msg.length = length;
   if (udp_socket_)
     udp_socket_->SendData(msg);
   else
-    spdlog::error("Send data before socket is connected.");
+    spdlog::warn("Send data before socket is connected.");
 }
 
 const Sdp& WebrtcStream::GetSdp() const {

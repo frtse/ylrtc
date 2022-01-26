@@ -37,7 +37,7 @@ class PublishStreamTrack : public Timer::Observer, public NackRequester::Observe
 
   class Observer {
    public:
-    virtual void OnPublishStreamTrackSendRtcpPacket(uint8_t* data, size_t size) = 0;
+    virtual void OnPublishStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) = 0;
   };
 
   PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer);

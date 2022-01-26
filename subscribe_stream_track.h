@@ -33,7 +33,7 @@ class SubscribeStreamTrack : public Timer::Observer, public std::enable_shared_f
                                                      uint8_t payload_type,
                                                      uint32_t ssrc,
                                                      uint16_t sequence_number) = 0;
-    virtual void OnSubscribeStreamTrackSendRtcpPacket(uint8_t* data, size_t size) = 0;
+    virtual void OnSubscribeStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) = 0;
   };
 
   SubscribeStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer);

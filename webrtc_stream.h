@@ -11,6 +11,7 @@
 #include "srtp_session.h"
 #include "threads.h"
 #include "udp_socket.h"
+#include "rtcp_packet.h"
 
 class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
                      public UdpSocket::Observer,
@@ -38,7 +39,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
 
  protected:
   void SendRtp(uint8_t* data, size_t size);
-  void SendRtcp(uint8_t* data, size_t size);
+  void SendRtcp(RtcpPacket& rtcp_packet);
   virtual void OnRtpPacketReceive(uint8_t* data, size_t length) = 0;
   virtual void OnRtcpPacketReceive(uint8_t* data, size_t length) = 0;
 

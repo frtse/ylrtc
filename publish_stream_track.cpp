@@ -56,22 +56,16 @@ void PublishStreamTrack::OnNackRequesterRequestNack(const std::vector<uint16_t>&
   nack.SetSenderSsrc(configuration_.ssrc);
   nack.SetMediaSsrc(configuration_.ssrc);
   nack.SetLostPacketSequenceNumbers(nack_list);
-  uint8_t buffer[1500];
-  ByteWriter byte_write(buffer, 1500);
-  nack.Serialize(&byte_write);
   if (observer_)
-    observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
+    observer_->OnPublishStreamTrackSendRtcpPacket(nack);
 }
 
 void PublishStreamTrack::OnNackRequesterRequestKeyFrame() {
   RtcpFirPacket fir;
   fir.SetSenderSsrc(configuration_.ssrc);
-  fir.AddFciEntry(configuration_.ssrc, 111);
-  uint8_t buffer[1500];
-  ByteWriter byte_write(buffer, 1500);
-  fir.Serialize(&byte_write);
+  fir.AddFciEntry(configuration_.ssrc, 111); // TODO 111?
   if (observer_)
-    observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
+    observer_->OnPublishStreamTrackSendRtcpPacket(fir);
 }
 
 void PublishStreamTrack::OnTimerTimeout() {
@@ -80,22 +74,15 @@ void PublishStreamTrack::OnTimerTimeout() {
   receive_statistician_.MaybeAppendReportBlockAndReset(report_blocks);
   if (!report_blocks.empty()) {
     rr.SetReportBlocks(std::move(report_blocks));
-    uint8_t buffer[1500];
-    ByteWriter byte_write(buffer, 1500);
-    if (rr.Serialize(&byte_write)) {
-      if (observer_)
-        observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
-    }
+    if (observer_)
+      observer_->OnPublishStreamTrackSendRtcpPacket(rr);
     XrPacket xr;
     RrtrBlockContext rrtr_contex;
     rrtr_contex.SetNtp(NtpTime::CreateFromMillis(TimeMillis()));
     xr.SetRrtr(rrtr_contex);
     xr.SetSenderSsrc(configuration_.ssrc);
-    ByteWriter byte_write_xr(buffer, 1500);
-    if (xr.Serialize(&byte_write_xr)) {
-      if (observer_)
-        observer_->OnPublishStreamTrackSendRtcpPacket(byte_write_xr.Data(), byte_write_xr.Used());
-    }
+    if (observer_)
+      observer_->OnPublishStreamTrackSendRtcpPacket(xr);
   }
   // generate next time to send an RTCP report
   int64_t min_interval = report_interval_;
@@ -125,17 +112,17 @@ void PublishStreamTrack::SendRequestkeyFrame() {
     RtcpPliPacket pli;
     pli.SetSenderSsrc(configuration_.ssrc);
     pli.SetMediaSsrc(configuration_.ssrc);
-    pli.Serialize(&byte_write);
+    if (observer_)
+      observer_->OnPublishStreamTrackSendRtcpPacket(pli);
   } else if (configuration_.rtcpfb_fir) {
     RtcpFirPacket fir;
     fir.SetSenderSsrc(configuration_.ssrc);
     fir.AddFciEntry(configuration_.ssrc, fir_seq_num_++);
-    fir.Serialize(&byte_write);
+    if (observer_)
+      observer_->OnPublishStreamTrackSendRtcpPacket(fir);
   } else {
     return;
   }
-  if (observer_)
-    observer_->OnPublishStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
 }
 
 void PublishStreamTrack::ReceiveDlrrSubBlock(const ReceiveTimeInfo& sub_block) {

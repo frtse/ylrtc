@@ -188,6 +188,6 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPac
     spdlog::error("Send data before socket is connected.");
 }
 
-void SubscribeStream::OnSubscribeStreamTrackSendRtcpPacket(uint8_t* data, size_t size) {
-  SendRtcp(data, size);
+void SubscribeStream::OnSubscribeStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) {
+  SendRtcp(rtcp_packet);
 }

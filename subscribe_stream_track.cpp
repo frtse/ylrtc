@@ -79,13 +79,8 @@ std::optional<SenderReportPacket> SubscribeStreamTrack::BuildSr() {
 
 void SubscribeStreamTrack::OnTimerTimeout() {
   auto sr_packet = BuildSr();
-  if (sr_packet) {
-    uint8_t buffer[1500];
-    ByteWriter byte_write(buffer, 1500);
-    if (sr_packet->Serialize(&byte_write)) {
-      observer_->OnSubscribeStreamTrackSendRtcpPacket(byte_write.Data(), byte_write.Used());
-    }
-  }
+  if (sr_packet && observer_)
+    observer_->OnSubscribeStreamTrackSendRtcpPacket(*sr_packet);
 
   // generate next time to send an RTCP report
   int64_t min_interval = report_interval_;

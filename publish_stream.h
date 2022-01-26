@@ -32,7 +32,7 @@ class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer {
  private:
   void OnRtpPacketReceive(uint8_t* data, size_t length) override;
   void OnRtcpPacketReceive(uint8_t* data, size_t length) override;
-  void OnPublishStreamTrackSendRtcpPacket(uint8_t* data, size_t size) override;
+  void OnPublishStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) override;
   std::list<std::shared_ptr<SubscribeStream>> data_observers_;
   std::vector<std::shared_ptr<PublishStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<PublishStreamTrack>> ssrc_track_map_;
