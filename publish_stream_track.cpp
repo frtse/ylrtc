@@ -106,8 +106,6 @@ void PublishStreamTrack::OnTimerTimeout() {
 }
 
 void PublishStreamTrack::SendRequestkeyFrame() {
-  uint8_t buffer[1500];
-  ByteWriter byte_write(buffer, 1500);
   if (configuration_.rtcpfb_pli) {
     RtcpPliPacket pli;
     pli.SetSenderSsrc(configuration_.ssrc);
