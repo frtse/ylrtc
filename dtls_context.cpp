@@ -232,5 +232,7 @@ SSL_CTX* DtlsContext::GetDtlsContext() const {
 }
 
 std::string DtlsContext::GetCertificateFingerPrint(Hash hash) {
-  return localFingerPrints_[hash];
+  if (localFingerPrints_.find(hash) == localFingerPrints_.end())
+    return "";
+  return localFingerPrints_.at(hash);
 }
