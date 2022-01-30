@@ -6,7 +6,7 @@
 
 #include "boost/asio.hpp"
 #include "random.h"
-#include "rate_statistics.h"
+#include "bitrate_estimator.h"
 #include "rtcp_packet.h"
 #include "rtp_packet.h"
 #include "rtp_packet_history.h"
@@ -58,7 +58,7 @@ class SubscribeStreamTrack : public Timer::Observer, public std::enable_shared_f
   uint32_t last_rtp_timestamp_{0};
   int64_t last_send_timestamp_{-1};
   int64_t rtt_millis_{100};
-  RateStatistics rate_statistics_;
+  BitRateEstimator rate_statistics_;
   int64_t report_interval_;
   Random random_;
 };

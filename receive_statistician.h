@@ -4,7 +4,7 @@
 #include <memory>
 #include <optional>
 
-#include "rate_statistics.h"
+#include "bitrate_estimator.h"
 #include "rtcp_packet.h"
 #include "rtp_packet.h"
 #include "sequence_number_util.h"
@@ -24,7 +24,7 @@ class ReceiveStatistician {
 
   const uint32_t ssrc_;
   const uint32_t clock_rate_;
-  RateStatistics incoming_bitrate_;
+  BitRateEstimator incoming_bitrate_;
   // In number of packets or sequence numbers.
   int max_reordering_threshold_;
   bool enable_retransmit_detection_{false};

@@ -12,7 +12,6 @@ constexpr int64_t kStatisticsProcessIntervalMs = 1000;
 ReceiveStatistician::ReceiveStatistician(uint32_t ssrc, uint32_t clock_rate)
     : ssrc_{ssrc},
       clock_rate_{clock_rate},
-      incoming_bitrate_(kStatisticsProcessIntervalMs, RateStatistics::kBpsScale),
       max_reordering_threshold_{kDefaultMaxReorderingThreshold} {}
 
 void ReceiveStatistician::ReceivePacket(std::shared_ptr<RtpPacket> packet) {
