@@ -3,15 +3,17 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <vector>
+#include <unordered_map>
 
 #include "bitrate_estimator.h"
 #include "rtcp_packet.h"
 #include "rtp_packet.h"
 #include "sequence_number_util.h"
 
-class ReceiveStatistician {
+class TrackStatistics {
  public:
-  ReceiveStatistician(uint32_t ssrc, uint32_t clock_rate);
+  TrackStatistics(uint32_t ssrc, uint32_t clock_rate);
   void ReceivePacket(std::shared_ptr<RtpPacket> packet);
   void EnableRetransmitDetection(bool enable);
   void MaybeAppendReportBlockAndReset(std::vector<ReportBlock>& report_blocks);
@@ -27,7 +29,7 @@ class ReceiveStatistician {
   BitRateEstimator incoming_bitrate_;
   // In number of packets or sequence numbers.
   int max_reordering_threshold_;
-  bool enable_retransmit_detection_{false};
+  bool enable_retransmit_detection_{false}; 
 
   // Stats on received RTP packets.
   uint32_t jitter_q4_{0};

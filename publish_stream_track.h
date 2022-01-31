@@ -10,7 +10,7 @@
 #include "nack_requester.h"
 #include "random.h"
 #include "receive_side_twcc.h"
-#include "receive_statistician.h"
+#include "track_statistics.h"
 #include "rtcp_packet.h"
 #include "rtp_header_extension.h"
 #include "rtp_packet.h"
@@ -54,7 +54,8 @@ class PublishStreamTrack : public Timer::Observer, public NackRequester::Observe
   std::shared_ptr<Timer> rtcp_timer_;
   int64_t report_interval_;
   Configuration configuration_;
-  ReceiveStatistician receive_statistician_;
+  TrackStatistics track_statistics_;
+  std::unique_ptr<TrackStatistics> rtx_track_statistics_;
   boost::asio::io_context& io_context_;
   std::shared_ptr<NackRequester> nack_request_;
   uint8_t fir_seq_num_{0};

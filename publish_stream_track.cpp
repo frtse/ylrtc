@@ -10,13 +10,16 @@
 
 PublishStreamTrack::PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer)
     : configuration_{configuration},
-      receive_statistician_{configuration_.ssrc, configuration_.clock_rate},
+      track_statistics_{configuration_.ssrc, configuration_.clock_rate},
       io_context_{io_context},
       observer_{observer} {
   if (configuration_.nack_enabled) {
     nack_request_.reset(new NackRequester(io_context, this));
     nack_request_->Init();
   }
+
+  if (configuration_.rtx_enabled)
+    rtx_track_statistics_.reset(new TrackStatistics(configuration_.rtx_ssrc, configuration_.rtx_payload_type));
   report_interval_ = configuration_.audio ? kDefaultAudioReportIntervalMillis : kDefaultVideoReportIntervalMillis;
 }
 
@@ -28,12 +31,13 @@ void PublishStreamTrack::Init() {
 void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
   bool is_rtx = false;
   if (configuration_.rtx_enabled && configuration_.rtx_ssrc == rtp_packet->Ssrc()) {
+    if (rtx_track_statistics_)
+      rtx_track_statistics_->ReceivePacket(rtp_packet);
     rtp_packet->RtxRepaire(LoadUInt16BE(rtp_packet->Payload()), configuration_.payload_type, configuration_.ssrc);
     is_rtx = true;
   }
-  // TODO: Separate RTX.
   if (!is_rtx)
-    receive_statistician_.ReceivePacket(rtp_packet);
+    track_statistics_.ReceivePacket(rtp_packet);
   if (!configuration_.audio && !rtp_packet->ParsePayload(configuration_.codec))
     return;
   if (configuration_.nack_enabled) {
@@ -71,7 +75,7 @@ void PublishStreamTrack::OnNackRequesterRequestKeyFrame() {
 void PublishStreamTrack::OnTimerTimeout() {
   ReceiverReportPacket rr;
   std::vector<ReportBlock> report_blocks;
-  receive_statistician_.MaybeAppendReportBlockAndReset(report_blocks);
+  track_statistics_.MaybeAppendReportBlockAndReset(report_blocks);
   if (!report_blocks.empty()) {
     rr.SetReportBlocks(std::move(report_blocks));
     if (observer_)
@@ -89,7 +93,7 @@ void PublishStreamTrack::OnTimerTimeout() {
 
   if (!configuration_.audio) {
     // Calculate bandwidth for video; 360 / send bandwidth in kbit/s.
-    auto rate = receive_statistician_.BitrateReceived();
+    auto rate = track_statistics_.BitrateReceived();
     if (rate) {
       int64_t send_bitrate_kbit = rate / 1000;
       if (send_bitrate_kbit != 0) {

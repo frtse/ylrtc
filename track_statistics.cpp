@@ -1,4 +1,4 @@
-#include "receive_statistician.h"
+#include "track_statistics.h"
 
 #include <cmath>
 
@@ -9,12 +9,12 @@ constexpr int kDefaultMaxReorderingThreshold = 5;  // In sequence numbers.
 constexpr int64_t kStatisticsTimeoutMs = 8000;
 constexpr int64_t kStatisticsProcessIntervalMs = 1000;
 
-ReceiveStatistician::ReceiveStatistician(uint32_t ssrc, uint32_t clock_rate)
+TrackStatistics::TrackStatistics(uint32_t ssrc, uint32_t clock_rate)
     : ssrc_{ssrc},
       clock_rate_{clock_rate},
       max_reordering_threshold_{kDefaultMaxReorderingThreshold} {}
 
-void ReceiveStatistician::ReceivePacket(std::shared_ptr<RtpPacket> packet) {
+void TrackStatistics::ReceivePacket(std::shared_ptr<RtpPacket> packet) {
   if (ssrc_ != packet->Ssrc()) {
     spdlog::error("Received SSRC different packet. Processed SSRC = {}, Different SSRC = {}", ssrc_, packet->Ssrc());
     return;
@@ -45,11 +45,11 @@ void ReceiveStatistician::ReceivePacket(std::shared_ptr<RtpPacket> packet) {
   last_receive_time_ms_ = now_ms;
 }
 
-void ReceiveStatistician::EnableRetransmitDetection(bool enable) {
+void TrackStatistics::EnableRetransmitDetection(bool enable) {
   enable_retransmit_detection_ = enable;
 }
 
-void ReceiveStatistician::MaybeAppendReportBlockAndReset(std::vector<ReportBlock>& report_blocks) {
+void TrackStatistics::MaybeAppendReportBlockAndReset(std::vector<ReportBlock>& report_blocks) {
   int64_t now_ms = TimeMillis();
   if (now_ms - last_receive_time_ms_ >= kStatisticsTimeoutMs) {
     // Not active.
@@ -89,11 +89,11 @@ void ReceiveStatistician::MaybeAppendReportBlockAndReset(std::vector<ReportBlock
   last_report_seq_max_ = received_seq_max_;
 }
 
-int64_t ReceiveStatistician::BitrateReceived() const {
+int64_t TrackStatistics::BitrateReceived() const {
   return incoming_bitrate_.Rate(TimeMillis()).value_or(0);
 }
 
-bool ReceiveStatistician::IsRetransmitOfOldPacket(std::shared_ptr<RtpPacket> packet, int64_t now_ms) const {
+bool TrackStatistics::IsRetransmitOfOldPacket(std::shared_ptr<RtpPacket> packet, int64_t now_ms) const {
   uint32_t frequency_khz = clock_rate_ / 1000;
   int64_t time_diff_ms = now_ms - last_receive_time_ms_;
 
@@ -117,7 +117,7 @@ bool ReceiveStatistician::IsRetransmitOfOldPacket(std::shared_ptr<RtpPacket> pac
   return time_diff_ms > rtp_time_stamp_diff_ms + max_delay_ms;
 }
 
-bool ReceiveStatistician::UpdateOutOfOrder(std::shared_ptr<RtpPacket> packet, int64_t sequence_number, int64_t now_ms) {
+bool TrackStatistics::UpdateOutOfOrder(std::shared_ptr<RtpPacket> packet, int64_t sequence_number, int64_t now_ms) {
   // Check if `packet` is second packet of a stream restart.
   if (received_seq_out_of_order_) {
     // Count the previous packet as a received; it was postponed below.
@@ -162,7 +162,7 @@ bool ReceiveStatistician::UpdateOutOfOrder(std::shared_ptr<RtpPacket> packet, in
   return true;
 }
 
-void ReceiveStatistician::UpdateJitter(std::shared_ptr<RtpPacket> packet, int64_t receive_time_ms) {
+void TrackStatistics::UpdateJitter(std::shared_ptr<RtpPacket> packet, int64_t receive_time_ms) {
   int64_t receive_diff_ms = receive_time_ms - last_receive_time_ms_;
   uint32_t receive_diff_rtp = static_cast<uint32_t>((receive_diff_ms * clock_rate_) / 1000);
   int32_t time_diff_samples = receive_diff_rtp - (packet->Timestamp() - last_received_timestamp_);
