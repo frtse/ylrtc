@@ -20,6 +20,8 @@ PublishStreamTrack::PublishStreamTrack(const Configuration& configuration, boost
 
   if (configuration_.rtx_enabled)
     rtx_track_statistics_.reset(new TrackStatistics(configuration_.rtx_ssrc, configuration_.rtx_payload_type));
+  else
+    track_statistics_.EnableRetransmitDetection(true);
   report_interval_ = configuration_.audio ? kDefaultAudioReportIntervalMillis : kDefaultVideoReportIntervalMillis;
 }
 
