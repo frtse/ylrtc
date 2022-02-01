@@ -78,18 +78,21 @@ void PublishStreamTrack::OnTimerTimeout() {
   ReceiverReportPacket rr;
   std::vector<ReportBlock> report_blocks;
   track_statistics_.MaybeAppendReportBlockAndReset(report_blocks);
+  if (rtx_track_statistics_)
+    rtx_track_statistics_->MaybeAppendReportBlockAndReset(report_blocks);
   if (!report_blocks.empty()) {
     rr.SetReportBlocks(std::move(report_blocks));
     if (observer_)
       observer_->OnPublishStreamTrackSendRtcpPacket(rr);
-    XrPacket xr;
-    RrtrBlockContext rrtr_contex;
-    rrtr_contex.SetNtp(NtpTime::CreateFromMillis(TimeMillis()));
-    xr.SetRrtr(rrtr_contex);
-    xr.SetSenderSsrc(configuration_.ssrc);
-    if (observer_)
-      observer_->OnPublishStreamTrackSendRtcpPacket(xr);
   }
+
+  XrPacket xr;
+  RrtrBlockContext rrtr_contex;
+  rrtr_contex.SetNtp(NtpTime::CreateFromMillis(TimeMillis()));
+  xr.SetRrtr(rrtr_contex);
+  xr.SetSenderSsrc(configuration_.ssrc);
+  if (observer_)
+    observer_->OnPublishStreamTrackSendRtcpPacket(xr);
   // generate next time to send an RTCP report
   int64_t min_interval = report_interval_;
 
