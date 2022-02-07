@@ -14,8 +14,8 @@ void IceLite::ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remot
   StunMessage msg(local_ufrag_, local_password_, remote_ufrag_);
   if (!msg.Parse(data, len)) {
     spdlog::error("Stun message parsing error from [ip: {}, port {}]", remote_ep->address().to_string(), remote_ep->port());
-    if (observer_)
-      observer_->OnIceConnectionError();
+    DCHECK(observer_);
+    observer_->OnIceConnectionError();
     return;
   }
 
@@ -24,15 +24,15 @@ void IceLite::ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remot
     selected_candidate_ = *remote_ep;
     if (old_selected_candidate_ != selected_candidate_) {
       spdlog::debug("Ice connect completed. remote: [ip: {}, port {}]", remote_ep->address().to_string(), remote_ep->port());
-      if (observer_)
-        observer_->OnIceConnectionCompleted();
+      DCHECK(observer_);
+      observer_->OnIceConnectionCompleted();
     }
   }
 
   msg.SetXorMappedAddress(remote_ep);
   msg.CreateResponse();
-  if (observer_)
-    observer_->OnStunMessageSend(msg.Data(), msg.Size(), remote_ep);
+  DCHECK(observer_);
+  observer_->OnStunMessageSend(msg.Data(), msg.Size(), remote_ep);
 }
 
 const std::string& IceLite::LocalUfrag() const {
