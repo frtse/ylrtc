@@ -24,7 +24,7 @@ class IceLite {
   const std::string& LocalUfrag() const;
   void LocalUfrag(const std::string& ufrag);
   const std::string& LocalPassword() const;
-  const udp::endpoint* FavoredCandidate() const;
+  const udp::endpoint* SelectedCandidate() const;
 
  private:
   constexpr static uint32_t kDefaultUfragLength = 4;
@@ -34,6 +34,6 @@ class IceLite {
   std::string local_password_;
   std::string remote_ufrag_;
   Observer* observer_;
-  udp::endpoint favored_candidate_;
-  udp::endpoint old_favored_candidate_;
+  udp::endpoint selected_candidate_;
+  udp::endpoint old_selected_candidate_;
 };

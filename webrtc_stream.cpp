@@ -112,7 +112,7 @@ void WebrtcStream::OnStunMessageSend(uint8_t* data, size_t size, udp::endpoint* 
 }
 
 void WebrtcStream::OnIceConnectionCompleted() {
-  selected_endpoint_ = *ice_lite_->FavoredCandidate();
+  selected_endpoint_ = *ice_lite_->SelectedCandidate();
   if (!dtls_transport_)
     return;
   if (!dtls_transport_->Start(sdp_.GetRemoteDtlsSetup()))

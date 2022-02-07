@@ -20,9 +20,9 @@ void IceLite::ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remot
   }
 
   if (msg.HasUseCandidate()) {
-    old_favored_candidate_ = favored_candidate_;
-    favored_candidate_ = *remote_ep;
-    if (old_favored_candidate_ != favored_candidate_) {
+    old_selected_candidate_ = selected_candidate_;
+    selected_candidate_ = *remote_ep;
+    if (old_selected_candidate_ != selected_candidate_) {
       spdlog::debug("Ice connect completed. remote: [ip: {}, port {}]", remote_ep->address().to_string(), remote_ep->port());
       if (observer_)
         observer_->OnIceConnectionCompleted();
@@ -47,6 +47,6 @@ const std::string& IceLite::LocalPassword() const {
   return local_password_;
 }
 
-const udp::endpoint* IceLite::FavoredCandidate() const {
-  return &favored_candidate_;
+const udp::endpoint* IceLite::SelectedCandidate() const {
+  return &selected_candidate_;
 }
