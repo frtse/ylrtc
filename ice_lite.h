@@ -2,7 +2,6 @@
 
 #include <boost/asio.hpp>
 #include <cstddef>
-#include <set>
 #include <string>
 
 #include "random.h"
