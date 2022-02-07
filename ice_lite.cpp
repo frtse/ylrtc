@@ -19,7 +19,6 @@ void IceLite::ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remot
     return;
   }
 
-  valid_candidates_.insert(*remote_ep);
   if (msg.HasUseCandidate()) {
     old_favored_candidate_ = favored_candidate_;
     favored_candidate_ = *remote_ep;

@@ -34,7 +34,6 @@ class IceLite {
   std::string local_password_;
   std::string remote_ufrag_;
   Observer* observer_;
-  std::set<udp::endpoint> valid_candidates_;
   udp::endpoint favored_candidate_;
   udp::endpoint old_favored_candidate_;
 };
