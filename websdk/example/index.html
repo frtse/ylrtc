@@ -120,7 +120,7 @@
       remoteStreamDiv.style = "display: flex; flex-direction: column; border-style: solid; border-color:rgba(60, 108, 219, 0.466);";
       let video = document.createElement('video');
       video.srcObject = this.subscribeStream.mediaStream();
-      video.style = "width: 100%;height: 100%; background-color: rgb(7, 7, 7);";
+      video.style = "height: 80%; background-color: rgb(7, 7, 7);";
       let playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
