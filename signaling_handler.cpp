@@ -21,9 +21,8 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
     const std::string& action = request_json.at("action");
     if (request_json.find("transactionId") != request_json.end())
       response_json["transactionId"] = request_json.at("transactionId");
-
+    YlError result = kOk;
     if (action == "subscribe") {
-      // { action: "subscribe", streamId: streamId, offer: offer.sdp }
       const std::string& stream_id = request_json.at("streamId");
       const std::string& offer_sdp = request_json.at("offer");
       const std::string participant_id = request_json.at("participantId");
@@ -31,36 +30,28 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
       if (room) {
         auto subscribe_stream = room->ParticipantSubscribe(session_info_.participant_id, participant_id, stream_id, offer_sdp);
         if (subscribe_stream) {
-          response_json["error"] = false;
           response_json["streamId"] = subscribe_stream->GetStreamId();
           response_json["answer"] = subscribe_stream->CreateAnswer();
-          response_json["detail"] = "Succeed.";
           subscribe_stream->SetLocalDescription();
         } else {
-          response_json["error"] = true;
-          response_json["detail"] = "Subscription failed.";
+          result = kSubscriptionFailed;
         }
       } else {
-        response_json["error"] = true;
-        response_json["detail"] = "No room found.";
+        result = kNoRoomWithCorrespondingID;
       }
     } else if (action == "publish") {
       auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
       if (room) {
         auto publish_stream = room->ParticipantPublish(session_info_.participant_id, request_json["offer"]);
         if (publish_stream) {
-          response_json["error"] = false;
           response_json["streamId"] = publish_stream->GetStreamId();
           response_json["answer"] = publish_stream->CreateAnswer();
-          response_json["detail"] = "Succeed.";
           publish_stream->SetLocalDescription();
         } else {
-          response_json["error"] = true;
-          response_json["detail"] = "Publish failed.";
+          result = kPublishFailed;
         }
       } else {
-        response_json["error"] = true;
-        response_json["detail"] = "No room found.";
+        result = kNoRoomWithCorrespondingID;
       }
     } else if (action == "join") {
       const std::string& room_id = request_json.at("roomId");
@@ -69,23 +60,18 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
       if (room) {
         YlError result = room->Join(participant_id);
         if (result == kOk || result == kParticipantAlreadyJoined) {
-          response_json["error"] = false;
+          result = kOk;
           room_info_when_joining_ = room->GetRoomInfo();
           response_json["roomInfo"] = room_info_when_joining_;
-          response_json["detail"] = YlErrorToString(result);
           session_info_.room_id = room_id;
           session_info_.participant_id = participant_id;
         } else {
-          response_json["error"] = true;
-          response_json["detail"] = "Failed to join the room.";
+          result = kFailedToJoinRoom;
         }
       } else {
-        response_json["error"] = true;
-        response_json["detail"] = "No room found.";
+        result = kNoRoomWithCorrespondingID;
       }
     } else if (action == "publish_muteOrUnmute") {
-      // { action: "publish_muteOrUnmute", streamId: this.streamId_, muted :
-      // false, type: "audio"}
       const std::string& publish_stream_id = request_json.at("streamId");
       bool muted = request_json["muted"];
       const std::string& type = request_json.at("type");
@@ -96,20 +82,19 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
           publish_stream->UpdateMuteInfo(type, muted);
           auto notification = Notification::MakePublishMuteOrUnmuteNotification(session_info_.room_id, muted, type, publish_stream_id);
           SignalingServer::GetInstance().Notify(notification);
-          response_json["detail"] = "Succeed.";
-          response_json["error"] = false;
         } else {
-          response_json["error"] = true;
+          result = kNoStreamWithCorrespondingIdFound;
         }
       } else {
-        response_json["error"] = true;
+        result = kNoRoomWithCorrespondingID;
       }
     } else if (action == "keepAlive") {
-      response_json["error"] = true;
+      // TODO.
     } else {
-      response_json["detail"] = "Unsupported actions.";
-      response_json["error"] = true;
+      result = kUnsupportedActions;
     }
+    response_json["error"] = (result != kOk);
+    response_json["detail"] = YlErrorToString(result);
   } catch (const std::exception& e) {
     response_json["error"] = true;
     std::stringstream ss;
