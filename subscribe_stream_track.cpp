@@ -22,7 +22,7 @@ void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) 
   media_bytes_sent_ += rtp_packet->Size();
   last_rtp_timestamp_ = rtp_packet->Timestamp();
   last_send_timestamp_ = TimeMillis();
-  rate_statistics_.Update(rtp_packet->Size(), last_send_timestamp_);
+  rate_statistics_.AddData(rtp_packet->Size(), last_send_timestamp_);
   if (!configuration_.nack_enabled)
     return;
   rtp_packet_history_.PutRtpPacket(std::move(rtp_packet));

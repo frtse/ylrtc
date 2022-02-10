@@ -20,7 +20,7 @@ void TrackStatistics::ReceivePacket(std::shared_ptr<RtpPacket> packet) {
     return;
   }
   int64_t now_ms = TimeMillis();
-  incoming_bitrate_.Update(packet->Size(), now_ms);
+  incoming_bitrate_.AddData(packet->Size(), now_ms);
   transmitted_packets_++;
   --cumulative_loss_;
   int64_t sequence_number = seq_unwrapper_.UnwrapWithoutUpdate(packet->SequenceNumber());
