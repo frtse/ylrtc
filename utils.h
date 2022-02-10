@@ -33,8 +33,16 @@ namespace ssl = boost::asio::ssl;
 using tcp = boost::asio::ip::tcp;
 using udp = boost::asio::ip::udp;
 
+/**
+ * @brief Returns the current time in milliseconds
+ * 
+ */
 int64_t TimeMillis();
 
+/**
+ * @brief Converts data into a string of characters represented by hexadecimal words.
+ * 
+ */
 void DumpHex(const uint8_t* data, size_t size);
 
 class NtpTime {

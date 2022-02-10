@@ -4,6 +4,11 @@
 
 #include "udp_socket.h"
 
+/**
+ * @brief Receive all webrtc stream connections on one port and
+ * distribute them to the corresponding webrtc stream.
+ * 
+ */
 class WebrtcStreamProxy : public std::enable_shared_from_this<WebrtcStreamProxy>, public UdpSocket::Observer {
  public:
   static std::shared_ptr<WebrtcStreamProxy> GetInstance();

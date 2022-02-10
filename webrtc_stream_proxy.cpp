@@ -45,4 +45,6 @@ void WebrtcStreamProxy::OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::e
   }
 }
 
-void WebrtcStreamProxy::OnUdpSocketError() {}
+void WebrtcStreamProxy::OnUdpSocketError() {
+  spdlog::error("WebrtcStreamProxy socket error.");
+}
