@@ -5,6 +5,11 @@
 #include <list>
 #include <memory>
 
+/**
+ * @brief The memory pool owned by each thread can be
+ * closed and opened according to the configuration file.
+ * 
+ */
 class MemoryPool {
  public:
   std::shared_ptr<uint8_t> AllocMemory(size_t size);

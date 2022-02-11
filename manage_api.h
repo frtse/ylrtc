@@ -8,6 +8,10 @@
 #include "utils.h"
 #include "yl_error.h"
 
+/**
+ * @brief Management API.
+ * 
+ */
 class ManageApi {
  public:
   template <class Body, class Allocator, class Send>
@@ -45,7 +49,9 @@ class ManageApi {
     std::string res_body;
     try {
       std::string target(req.target().data(), req.target().length());
+      // Conference Room Management API.
       if (target.find("/rooms") != std::string::npos && target.find("/participants") == std::string::npos) {
+        // Create meeting room.
         if (req.method() == http::verb::post) {
           std::string req_body = req.body();
           auto req_json = nlohmann::json::parse(req_body);
@@ -56,13 +62,17 @@ class ManageApi {
           nlohmann::json response;
           response["id"] = room_id;
           res_body = response.dump();
-        } else if (req.method() == http::verb::get) {
+        }
+        // Get all meeting rooms.
+        else if (req.method() == http::verb::get) {
           auto room_id_array = RoomManager::GetInstance().GetAllRoomId();
           nlohmann::json response = nlohmann::json::array();
           for (auto& room_id : room_id_array)
             response.push_back(room_id);
           res_body = response.dump();
-        } else if (req.method() == http::verb::delete_) {
+        }
+        // Delete meeting room.
+        else if (req.method() == http::verb::delete_) {
           auto pos = target.rfind("/");
           if (pos == std::string::npos)
             return send(bad_request("Request parse error"));
@@ -74,7 +84,7 @@ class ManageApi {
           return send(bad_request("Unsupported HTTP-method"));
         }
       } else if (target.find("/participants") != std::string::npos) {
-        // /rooms/{roomId}/participants/{participantId}
+        // Kick out of the meeting.
         if (req.method() == http::verb::delete_) {
           auto result = StringSplit(target, "/");
           if (result.size() == 4) {
