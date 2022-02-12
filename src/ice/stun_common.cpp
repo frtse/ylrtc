@@ -31,7 +31,7 @@ std::optional<std::string> FastGetLocalUfrag(uint8_t* data, size_t size) {
       return std::nullopt;
     if (!reader.ReadUInt16(&attr_length))
       return std::nullopt;
-    if (attr_type == StunMessage::Attribute::kAttrUsername) {
+    if (attr_type == kAttrUsername) {
       std::string user_name((char*)reader.CurrentData(), attr_length);
       auto result = StringSplit(user_name, ":");
       if (result.size() != 2)

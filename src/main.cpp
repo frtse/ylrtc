@@ -71,8 +71,8 @@ int main(int argc, char* argv[]) {
       WorkerThreadPool::GetInstance().StopAll();
     }
   });
-  spdlog::info("Service started successfully");
 
+  spdlog::info("Service started successfully");
   MainThread::GetInstance().MessageLoop().run();
   return EXIT_SUCCESS;
 }

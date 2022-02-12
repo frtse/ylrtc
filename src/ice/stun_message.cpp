@@ -37,36 +37,27 @@ bool StunMessage::Parse(uint8_t* data, size_t size) {
     if (!reader.ReadUInt16(&attr_length))
       return false;
     switch (attr_type) {
-      case Attribute::kAttrUsername: {
+      case kAttrUsername: {
         std::string user_name((char*)reader.CurrentData(), attr_length);
         if (user_name != local_ufrag_ + ":" + remote_ufrag_)
           return false;
         break;
       }
-      case Attribute::kAttrMessageIntegrity: {
+      case kAttrMessageIntegrity: {
         has_message_integrity = true;
         message_integrity_start_address = (reader.CurrentData() - kStunAttributeHeaderSize);
         break;
       }
-      case Attribute::kAttrFingerprint: {
+      case kAttrFingerprint: {
         uint32_t announced = LoadUInt32BE(reader.CurrentData());
-
         uint32_t computed = Crc32::Calculate(data, reader.CurrentData() - data - kStunAttributeHeaderSize) ^ 0x5354554e;
         if (announced != computed)
           return false;
         has_fingerprint = true;
         break;
       }
-      case Attribute::kAttrUseCandidate: {
+      case kAttrUseCandidate: {
         has_use_candidate_ = true;
-        break;
-      }
-      case Attribute::kAttrIceControlled: {
-        spdlog::error("Ice Lite cannot be a controling role.");
-        return false;
-        break;
-      }
-      case Attribute::kAttrICEControlling: {
         break;
       }
       Default:;
@@ -86,22 +77,15 @@ bool StunMessage::Parse(uint8_t* data, size_t size) {
   if (has_message_integrity) {
     if (has_fingerprint)
       StoreUInt16BE(data + kLengthOffset, size - kStunHeaderSize - kFingerprintAttrLength - kStunAttributeHeaderSize);
-
     HmacSha1 hmac_sha1;
     auto result = hmac_sha1.Calculate(local_password_, data, message_integrity_start_address - data);
-
     if (std::memcmp(message_integrity_start_address + kStunAttributeHeaderSize, result, HmacSha1::kSha1ResultLength) != 0)
       return false;
-
     if (has_fingerprint)
       StoreUInt16BE(data + kLengthOffset, size - kStunHeaderSize);
   }
 
   return true;
-}
-
-bool StunMessage::IsStun(uint8_t* data, size_t size) {
-  return (size >= 20) && (data[0] < 3) && (LoadUInt32BE(data + 4) == kStunMagicCookie);
 }
 
 bool StunMessage::HasUseCandidate() const {
@@ -117,7 +101,7 @@ bool StunMessage::CreateResponse() {
   data_.reset(new uint8_t[size_]);
   ByteWriter writer(data_.get(), size_);
 
-  if (!writer.WriteUInt16(Type::kBindingResponse))
+  if (!writer.WriteUInt16(kBindingResponse))
     return false;
   if (!writer.WriteUInt16(size_ - kStunHeaderSize))
     return false;
@@ -129,7 +113,7 @@ bool StunMessage::CreateResponse() {
   if (mapped_endpoint_) {
     if (mapped_endpoint_->protocol() == udp::v4()) {
       boost::asio::ip::address_v4 address = mapped_endpoint_->address().to_v4();
-      if (!writer.WriteUInt16(Attribute::kAttrXorMappedAddress))
+      if (!writer.WriteUInt16(kAttrXorMappedAddress))
         return false;
       if (!writer.WriteUInt16(8))
         return false;
@@ -152,7 +136,7 @@ bool StunMessage::CreateResponse() {
   HmacSha1 hmac_sha1;
   auto result = hmac_sha1.Calculate(local_password_, writer.Data(), writer.Used());
 
-  if (!writer.WriteUInt16(Attribute::kAttrMessageIntegrity))
+  if (!writer.WriteUInt16(kAttrMessageIntegrity))
     return false;
   if (!writer.WriteUInt16(HmacSha1::kSha1ResultLength))
     return false;
@@ -162,7 +146,7 @@ bool StunMessage::CreateResponse() {
   StoreUInt16BE(data_.get() + 2, 12 + 24 + 8);
 
   uint32_t crc32 = Crc32::Calculate(writer.Data(), writer.Used());
-  if (!writer.WriteUInt16(Attribute::kAttrFingerprint))
+  if (!writer.WriteUInt16(kAttrFingerprint))
     return false;
   if (!writer.WriteUInt16(4))
     return false;
