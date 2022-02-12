@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <optional>
 
 #include "dtls_context.h"
 #include "srtp_session.h"
@@ -47,10 +48,12 @@ class DtlsTransport : public Timer::Observer, public std::enable_shared_from_thi
   void Stop();
 
  public:
-  bool SetupSRTP();
   void OnSSLInfo(int where, int ret);
+  static std::optional<std::string> SetupSelector(std::string& in);
 
  private:
+  static std::optional<DtlsTransport::Setup> SetupSelector(Setup in);
+  bool SetupSRTP();
   void OnTimerTimeout() override;
   void CheckPending();
   void SetTimeout();

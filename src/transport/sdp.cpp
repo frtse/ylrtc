@@ -7,6 +7,7 @@
 #include "rtp_utils.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
+#include "dtls_transport.h"
 
 Sdp::Sdp() : local_dtls_setup_{"active"} {}
 
@@ -100,6 +101,9 @@ std::string Sdp::CreatePublishAnswer() {
 
     media_section["fingerprint"]["type"] = local_fingerprint_type_;
     media_section["fingerprint"]["hash"] = local_fingerprint_hash_;
+    auto result_setup = DtlsTransport::SetupSelector(remote_dtls_setup_);
+    DCHECK(result_setup);
+    local_dtls_setup_ = *result_setup;
     media_section["setup"] = local_dtls_setup_;
     if (media_section.find("rids") != media_section.end()) {
       auto& rids = media_section.at("rids");
@@ -250,6 +254,9 @@ std::string Sdp::CreateSubscribeAnswer() {
       fingerprint["type"] = local_fingerprint_type_;
       fingerprint["hash"] = local_fingerprint_hash_;
       media_section["fingerprint"] = fingerprint;
+      auto result_setup = DtlsTransport::SetupSelector(remote_dtls_setup_);
+      DCHECK(result_setup);
+      local_dtls_setup_ = *result_setup;
       media_section["setup"] = local_dtls_setup_;
       if (media_section_ssrcs_map_.find(media_section["type"]) != media_section_ssrcs_map_.end())
         media_section["ssrcs"] = media_section_ssrcs_map_.at(media_section["type"]);

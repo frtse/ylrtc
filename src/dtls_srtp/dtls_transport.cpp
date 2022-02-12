@@ -141,19 +141,10 @@ bool DtlsTransport::Start(const std::string& setup_in_sdp) {
   }
 
   Setup remote_setup = string_to_setup_.at(setup_in_sdp);
-
-  switch (remote_setup) {
-    case kPassive:
-      setup_ = kActive;
-      break;
-    case kActPass:
-      setup_ = kActive;
-      break;
-    case kActive:
-      setup_ = kPassive;
-    default:
-      return false;
-  }
+  auto result_setup = SetupSelector(remote_setup);
+  if (!result_setup)
+    return false;
+  setup_ = *result_setup;
 
   if (!ssl_)
     return false;
@@ -304,6 +295,30 @@ bool DtlsTransport::SetupSRTP() {
 
   ExtractSrtpParams();
   return true;
+}
+
+std::optional<std::string> DtlsTransport::SetupSelector(std::string& in) {
+  if (in == "passive")
+    return "active";
+  else if (in == "actpass")
+    return "active";
+  else if (in == "active")
+    return "passive";
+  else
+    return std::nullopt;
+}
+
+std::optional<DtlsTransport::Setup> DtlsTransport::SetupSelector(Setup in) {
+  switch (in) {
+    case kPassive:
+      return kActive;
+    case kActPass:
+      return kActive;
+    case kActive:
+      return kPassive;
+    default:
+      return std::nullopt;
+  }
 }
 
 void DtlsTransport::OnSSLInfo(int where, int ret) {
