@@ -12,7 +12,7 @@ export default class Device {
    return new Device(mediaStream);
  }
 
- constructor(mediaStream) {
+ constructor(mediaStream: MediaStream) {
    this.mediaStream_ = mediaStream;
  }
 

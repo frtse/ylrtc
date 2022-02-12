@@ -1,91 +1,91 @@
 import EventDispatcher from "./eventDispatcher"
 
 export default class Signaling extends EventDispatcher {
-  private promisePool: any;
-  private wss: any;
-  private keepAliveTimerId: any;
+  private promisePool_: any;
+  private wss_: any;
+  private keepAliveTimerId_: any;
   constructor() {
     super();
-    this.promisePool = {};
-    this.wss = null;
-    this.keepAliveTimerId = undefined;
+    this.promisePool_ = {};
+    this.wss_ = null;
+    this.keepAliveTimerId_ = undefined;
   }
 
-  open(url): Promise<void> {
+  open(url: string): Promise<void> {
     var classThis = this;
     return new Promise((resolve, reject) => {
-      this.wss = new WebSocket(url);
-      this.wss.onopen = (e) => {
+      this.wss_ = new WebSocket(url);
+      this.wss_.onopen = (e) => {
         resolve();
         classThis._keepAlive();
       };
-      this.wss.onerror = (e) => {
+      this.wss_.onerror = (e) => {
         reject(e);
       }
 
-      this.wss.onclose = (e) => {
+      this.wss_.onclose = (e) => {
         let notification = {type: "signalingDisconnected"};
         super.dispatchEvent("onsignaling", JSON.stringify(notification));
       }
 
-      this.wss.onmessage = (e) => {
+      this.wss_.onmessage = (e) => {
         let data = JSON.parse(e.data);
         if (data.transactionId === undefined) {
           super.dispatchEvent("onsignaling", e.data);
         }
         else {
-          if (this.promisePool.hasOwnProperty(data.transactionId)) {
+          if (this.promisePool_.hasOwnProperty(data.transactionId)) {
             const transactionId = data.transactionId;
-            const req = this.promisePool[data.transactionId];
+            const req = this.promisePool_[data.transactionId];
             delete data.transactionId;
             req.resolve(data);
-            delete this.promisePool[transactionId];
+            delete this.promisePool_[transactionId];
           }
         }
       };
     });
   }
 
-  close() {
+  close(): void {
     this._cancelKeepAlive();
-    if (this.wss != null)
-      this.wss.close();
-    this.wss = null;
+    if (this.wss_ != null)
+      this.wss_.close();
+    this.wss_ = null;
   }
 
-  send(msg) {
-    this.wss.send(msg);
+  send(msg): void {
+    this.wss_.send(msg);
   }
 
   sendRequest(msg) {
     var transactionId = '';
     while (true) {
       transactionId = Math.round(Math.random() * 1000000000000000000) + '';
-      if (!this.promisePool.hasOwnProperty(transactionId))
+      if (!this.promisePool_.hasOwnProperty(transactionId))
         break;
     }
     msg.transactionId = transactionId;
     return new Promise((resolve, reject) => {
-      this.promisePool[msg.transactionId] = {
+      this.promisePool_[msg.transactionId] = {
         resolve,
         reject
       };
-      this.wss.send(JSON.stringify(msg));
+      this.wss_.send(JSON.stringify(msg));
     });
   }
 
-  _keepAlive() {
+  _keepAlive(): void {
     var timeout = 1000;
-    if (this.wss.readyState == this.wss.OPEN) {
+    if (this.wss_.readyState == this.wss_.OPEN) {
       var request = { action: "keepAlive" };
-      this.wss.send(JSON.stringify(request));
+      this.wss_.send(JSON.stringify(request));
     }  
-    this.keepAliveTimerId = setTimeout(this._keepAlive.bind(this), timeout);
+    this.keepAliveTimerId_ = setTimeout(this._keepAlive.bind(this), timeout);
   }
 
-  _cancelKeepAlive() {
-    if (this.keepAliveTimerId) {
-      clearTimeout(this.keepAliveTimerId);
+  _cancelKeepAlive(): void {
+    if (this.keepAliveTimerId_) {
+      clearTimeout(this.keepAliveTimerId_);
     }
   }
 }

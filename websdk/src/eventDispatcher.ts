@@ -1,46 +1,41 @@
 export default class EventDispatcher {
-  private events: any;
+  private events_: any;
   constructor() {
-    this.events = {};
+    this.events_ = {};
   }
 
-  addEventListener(event, callback) {
+  addEventListener(event: string, callback) {
     if (typeof callback !== 'function') {
       console.error(`The listener callback must be a function, the given type is ${typeof callback}`);
       return false;
     }
 
-    if (typeof event !== 'string') {
-      console.error(`The event name must be a string, the given type is ${typeof event}`);
-      return false;
-    }
-
-    if (this.events[event] === undefined) {
-      this.events[event] = {
+    if (this.events_[event] === undefined) {
+      this.events_[event] = {
         listeners: []
       }
     }
 
-    this.events[event].listeners.push(callback);
+    this.events_[event].listeners.push(callback);
   }
 
-  removeEventListener(event, callback) {
-    if (this.events[event] === undefined) {
+  removeEventListener(event: string, callback) {
+    if (this.events_[event] === undefined) {
       console.error(`This event: ${event} does not exist`);
       return false;
     }
 
-    this.events[event].listeners = this.events[event].listeners.filter(listener => {
+    this.events_[event].listeners = this.events_[event].listeners.filter(listener => {
       return listener.toString() !== callback.toString();
     });
   }
 
-  dispatchEvent(event, details) {
-    if (this.events[event] === undefined) {
+  dispatchEvent(event: string, details) {
+    if (this.events_[event] === undefined) {
       return false;
     }
 
-    this.events[event].listeners.forEach((listener) => {
+    this.events_[event].listeners.forEach((listener) => {
       listener(details);
     });
   }
