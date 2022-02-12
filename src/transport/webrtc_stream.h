@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <optional>
 
 #include "dtls_transport.h"
 #include "ice_lite.h"
@@ -28,7 +29,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
 
   const std::string& GetStreamId() const;
   virtual bool SetRemoteDescription(const std::string& offser) = 0;
-  virtual std::string CreateAnswer() = 0;
+  virtual std::optional<std::string> CreateAnswer() = 0;
   virtual void SetLocalDescription() = 0;
   const Sdp& GetSdp() const;
 

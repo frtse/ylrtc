@@ -22,9 +22,8 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
     // https://datatracker.ietf.org/doc/html/draft-ietf-mmusic-sdp-bundle-negotiation
     if (publish_offer_sdp.find("groups") != publish_offer_sdp.end()) {
       auto& groups = publish_offer_sdp.at("groups");
-      auto resutl = std::count_if(groups.cbegin(), groups.cend(), [](auto obj) { return obj.at("type") == "BUNDLE"; });
-
-      if (resutl != 1) {
+      auto result = std::count_if(groups.cbegin(), groups.cend(), [](auto obj) { return obj.at("type") == "BUNDLE"; });
+      if (result != 1) {
         spdlog::error("Only support one BUNDLE.");
         return false;
       }
@@ -39,12 +38,10 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
       if (media_section.find("direction") == media_section.end() || media_section.at("direction") != "sendonly")
         return false;
       const std::string& media_type = media_section.at("type");
-      if (media_section.find("ssrcs") != media_section.end()) {
+      if (media_section.find("ssrcs") != media_section.end())
         media_section_ssrcs_map_[media_type] = media_section.at("ssrcs");
-      }
-      if (media_section.find("ssrcGroups") != media_section.end()) {
+      if (media_section.find("ssrcGroups") != media_section.end())
         media_section_ssrc_groups_map_[media_type] = media_section.at("ssrcGroups");
-      }
 
       if (media_section.find("setup") != media_section.end())
         remote_dtls_setup_ = media_section.at("setup");
@@ -69,20 +66,10 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
   }
 }
 
-std::string Sdp::CreatePublishAnswer() {
-  publish_anwser_sdp_ = publish_offer_sdp_;
-
+std::optional<std::string> Sdp::CreatePublishAnswer() {
   std::string video_codec = "VP8";
   std::string audio_codec = "opus";
-  nlohmann::json candidate;
-  candidate["foundation"] = "4";
-  candidate["component"] = 1;
-  candidate["transport"] = "udp";
-  candidate["priority"] = kMaxIceCandidatePriority;
-  candidate["ip"] = local_host_ip_;
-  candidate["port"] = local_host_port_;
-  candidate["type"] = "host";
-
+  publish_anwser_sdp_ = publish_offer_sdp_;
   auto& media = publish_anwser_sdp_.at("media");
 
   for (int i = 0; i < media.size(); ++i) {
@@ -92,7 +79,7 @@ std::string Sdp::CreatePublishAnswer() {
     media_section.erase("iceOptions");
     media_section.erase("candidates");
     media_section["candidates"] = nlohmann::json::array();
-    media_section["candidates"][0] = candidate;
+    media_section["candidates"][0] = local_candidate_;
     media_section["direction"] = "recvonly";
 
     media_section["icePwd"] = local_ice_password_;
@@ -142,7 +129,7 @@ std::string Sdp::CreatePublishAnswer() {
         }
       }
       if (codec_payload == -1)
-        return "";
+        return std::nullopt;
     }
 
     int rtx_payload = -1;
@@ -227,26 +214,17 @@ bool Sdp::SetSubscribeOffer(const std::string& offer) {
   return true;
 }
 
-std::string Sdp::CreateSubscribeAnswer() {
+std::optional<std::string> Sdp::CreateSubscribeAnswer() {
   try {
-    nlohmann::json candidate;
-    candidate["foundation"] = "4";
-    candidate["component"] = 1;
-    candidate["transport"] = "udp";
-    candidate["priority"] = kMaxIceCandidatePriority;
-    candidate["ip"] = local_host_ip_;
-    candidate["port"] = local_host_port_;
-    candidate["type"] = "host";
     subscribe_anwser_sdp_ = publish_anwser_sdp_;
-
     if (subscribe_anwser_sdp_.find("media") == subscribe_anwser_sdp_.end())
-      return "";
+      return std::nullopt;
 
     auto& media = subscribe_anwser_sdp_.at("media");
     for (int i = 0; i < media.size(); ++i) {
       auto& media_section = media[i];
       media_section["candidates"] = nlohmann::json::array();
-      media_section["candidates"][0] = candidate;
+      media_section["candidates"][0] = local_candidate_;
       media_section["direction"] = "sendonly";
       media_section["icePwd"] = local_ice_password_;
       media_section["iceUfrag"] = local_ice_ufrag_;
@@ -283,7 +261,7 @@ std::string Sdp::CreateSubscribeAnswer() {
         const std::string& msid = media_section.at("msid");
         auto pos = msid.find(" ");
         if (pos == std::string::npos)
-          return "";
+          return std::nullopt;
         std::string cname = msid.substr(0, pos);
         nlohmann::json ssrcs = nlohmann::json::array();
         nlohmann::json ssrc;
@@ -310,13 +288,18 @@ std::string Sdp::CreateSubscribeAnswer() {
     return sdptransform::write(subscribe_anwser_sdp_);
   } catch (...) {
     spdlog::error("Create subscribe answer failed.");
-    return "";
+    return std::nullopt;
   }
 }
 
 void Sdp::SetLocalHostAddress(std::string_view ip, uint16_t port) {
-  local_host_ip_ = ip;
-  local_host_port_ = port;
+  local_candidate_["foundation"] = "ylsfu";
+  local_candidate_["component"] = kCandidateComponentRtp;
+  local_candidate_["transport"] = "udp";
+  local_candidate_["priority"] = kMaxIceCandidatePriority;
+  local_candidate_["ip"] = ip;
+  local_candidate_["port"] = port;
+  local_candidate_["type"] = "host";
 }
 
 void Sdp::SetLocalIceInfo(const std::string& ufrag, const std::string& password) {

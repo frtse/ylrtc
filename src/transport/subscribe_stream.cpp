@@ -14,7 +14,7 @@ bool SubscribeStream::SetRemoteDescription(const std::string& offer) {
   return sdp_.SetSubscribeOffer(offer);
 }
 
-std::string SubscribeStream::CreateAnswer() {
+std::optional<std::string> SubscribeStream::CreateAnswer() {
   return sdp_.CreateSubscribeAnswer();
 }
 

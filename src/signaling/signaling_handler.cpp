@@ -31,8 +31,13 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
         auto subscribe_stream = room->ParticipantSubscribe(session_info_.participant_id, participant_id, stream_id, offer_sdp);
         if (subscribe_stream) {
           response_json["streamId"] = subscribe_stream->GetStreamId();
-          response_json["answer"] = subscribe_stream->CreateAnswer();
-          subscribe_stream->SetLocalDescription();
+          auto answer = subscribe_stream->CreateAnswer();
+          if (answer) {
+            response_json["answer"] = *answer;
+            subscribe_stream->SetLocalDescription();
+          } else {
+            result = kSubscriptionFailed;
+          }
         } else {
           result = kSubscriptionFailed;
         }
@@ -45,8 +50,13 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
         auto publish_stream = room->ParticipantPublish(session_info_.participant_id, request_json["offer"]);
         if (publish_stream) {
           response_json["streamId"] = publish_stream->GetStreamId();
-          response_json["answer"] = publish_stream->CreateAnswer();
-          publish_stream->SetLocalDescription();
+          auto answer = publish_stream->CreateAnswer();
+          if (answer) {
+            response_json["answer"] = *answer;
+            publish_stream->SetLocalDescription();
+          } else {
+            result = kPublishFailed;
+          }
         } else {
           result = kPublishFailed;
         }

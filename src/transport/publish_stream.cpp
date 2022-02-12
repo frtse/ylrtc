@@ -25,7 +25,7 @@ bool PublishStream::SetRemoteDescription(const std::string& offer) {
   return sdp_.SetPublishOffer(offer);
 }
 
-std::string PublishStream::CreateAnswer() {
+std::optional<std::string> PublishStream::CreateAnswer() {
   return sdp_.CreatePublishAnswer();
 }
 

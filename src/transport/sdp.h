@@ -16,10 +16,9 @@ class Sdp {
  public:
   Sdp();
   bool SetPublishOffer(const std::string& offer);
-  std::string CreatePublishAnswer();
-
+  std::optional<std::string> CreatePublishAnswer();
   bool SetSubscribeOffer(const std::string& offer);
-  std::string CreateSubscribeAnswer();
+  std::optional<std::string> CreateSubscribeAnswer();
   void SetLocalHostAddress(std::string_view ip, uint16_t port);
   void SetLocalIceInfo(const std::string& ufrag, const std::string& password);
   void SetLocalFingerprint(const std::string& type, const std::string& hash);
@@ -39,6 +38,8 @@ class Sdp {
 
  private:
   static constexpr uint32_t kMaxIceCandidatePriority = 2147483647;
+  static constexpr uint32_t kCandidateComponentRtp = 1;
+  nlohmann::json local_candidate_;
   nlohmann::json publish_offer_sdp_;
   nlohmann::json publish_anwser_sdp_;
   nlohmann::json subscribe_offer_sdp_;
@@ -50,8 +51,6 @@ class Sdp {
   std::string remote_fingerprint_hash_;
 
   std::string local_dtls_setup_;
-  std::string local_host_ip_;
-  uint16_t local_host_port_;
   std::string local_ice_ufrag_;
   std::string local_ice_password_;
   std::string local_fingerprint_type_;

@@ -19,7 +19,7 @@ class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer {
   PublishStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer);
   ~PublishStream();
   bool SetRemoteDescription(const std::string& offer) override;
-  std::string CreateAnswer() override;
+  std::optional<std::string> CreateAnswer() override;
   void SetLocalDescription() override;
 
   void RegisterDataObserver(std::shared_ptr<SubscribeStream> observer);

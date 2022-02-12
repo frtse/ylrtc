@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <optional>
 
 #include "publish_stream.h"
 #include "rtp_packet.h"
@@ -16,7 +17,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   ~SubscribeStream();
   void SetPublishSdp(const Sdp& publish_sdp);
   bool SetRemoteDescription(const std::string& offer) override;
-  std::string CreateAnswer() override;
+  std::optional<std::string> CreateAnswer() override;
   void SetLocalDescription() override;
   void OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket> rtp_packet);
 
