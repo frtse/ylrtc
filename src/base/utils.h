@@ -34,7 +34,7 @@ using tcp = boost::asio::ip::tcp;
 using udp = boost::asio::ip::udp;
 
 /**
- * @brief Returns the current time in milliseconds
+ * @brief Returns the current time in milliseconds.
  * 
  */
 int64_t TimeMillis();

@@ -140,6 +140,29 @@ bool ByteWriter::WriteString(const std::string& val) {
   return WriteBytes(val.data(), val.length());
 }
 
+bool ByteWriter::Consume(int size) {
+  if (Left() < size)
+    return false;
+  len_ += size;
+  return true;
+}
+
+size_t ByteWriter::Left() {
+  return size_ - len_;
+}
+
+size_t ByteWriter::Used() {
+  return len_;
+}
+
+uint8_t* ByteWriter::Data() {
+  return bytes_;
+}
+
+size_t ByteWriter::Size() const {
+  return size_;
+}
+
 ByteReader::ByteReader(const uint8_t* bytes, size_t len) : bytes_{bytes}, end_{len}, start_{0} {}
 
 bool ByteReader::ReadUInt8(uint8_t* val) {
@@ -224,4 +247,24 @@ bool ByteReader::Back(size_t size) {
     return false;
   start_ -= size;
   return true;
+}
+
+const uint8_t* ByteReader::CurrentData() const {
+  return bytes_ + start_;
+}
+
+size_t ByteReader::Left() const {
+  return end_ - start_;
+}
+
+const uint8_t* ByteReader::Data() const {
+  return bytes_;
+}
+
+size_t ByteReader::Size() const {
+  return end_;
+}
+
+size_t ByteReader::Used() {
+  return start_;
 }

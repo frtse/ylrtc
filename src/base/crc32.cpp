@@ -1,9 +1,5 @@
 #include "crc32.h"
 
-// This implementation is based on the sample implementation in RFC 1952.
-
-// CRC32 polynomial, in reversed form.
-// See RFC 1952, or http://en.wikipedia.org/wiki/Cyclic_redundancy_check
 static const uint32_t kCrc32Polynomial = 0xEDB88320;
 
 static uint32_t* LoadCrc32Table() {

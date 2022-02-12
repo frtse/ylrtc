@@ -2,7 +2,6 @@
 
 #include <boost/asio.hpp>
 #include <memory>
-#include <thread>
 
 /**
  * @brief This class wraps the boost::asio timer.
@@ -13,10 +12,7 @@ class Timer : public std::enable_shared_from_this<Timer> {
   class Observer {
    public:
     virtual ~Observer() = default;
-    /**
-     * @brief Called when the timer times out.
-     *
-     */
+    // Called when the timer times out.
     virtual void OnTimerTimeout() = 0;
   };
 

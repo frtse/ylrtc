@@ -20,6 +20,7 @@ const char* YlErrorToString(YlError error) {
       return "No stream with corresponding id found.";
     case kUnsupportedActions:
       return "Unsupported actions.";
+    case kErrorUnknown:
     default:
       return "Unknown error.";
   }

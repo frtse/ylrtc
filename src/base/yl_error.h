@@ -8,6 +8,7 @@ enum YlError : int { kOk = 0,
                      kPublishFailed,
                      kFailedToJoinRoom,
                      kNoStreamWithCorrespondingIdFound,
-                     kUnsupportedActions};
+                     kUnsupportedActions,
+                     kErrorUnknown};
 
 const char* YlErrorToString(YlError error);
