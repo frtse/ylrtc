@@ -89,7 +89,7 @@ std::shared_ptr<SubscribeStream> Room::ParticipantSubscribe(const std::string& s
       break;
   }
   auto subscribe_stream = std::make_shared<SubscribeStream>(id_, subscribe_stream_id, shared_from_this());
-  subscribe_stream->SetPublishSdp(publish_stream->GetSdp());
+  subscribe_stream->SetSdpNegotiator(publish_stream->GetSdpNegotiator());
   if (!subscribe_stream->SetRemoteDescription(sdp))
     return nullptr;
   if (!subscribe_stream->Start())
@@ -110,7 +110,7 @@ void Room::OnWebrtcStreamConnected(const std::string& stream_id) {
           std::find_if(publish_streams.begin(), publish_streams.end(), [stream_id](auto s) { return s->GetStreamId() == stream_id; });
       if (publish_streams_iter != publish_streams.end()) {
         auto notification =
-            Notification::MakeStreamAddedNotification(id_, iter->first, (*publish_streams_iter)->GetStreamId(), (*publish_streams_iter)->GetSdp());
+            Notification::MakeStreamAddedNotification(id_, iter->first, (*publish_streams_iter)->GetStreamId(), (*publish_streams_iter)->GetSdpNegotiator());
         SignalingServer::GetInstance().Notify(notification);
       }
     }

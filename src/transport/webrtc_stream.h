@@ -8,7 +8,7 @@
 
 #include "dtls_transport.h"
 #include "ice_lite.h"
-#include "sdp.h"
+#include "sdp_negotiator.h"
 #include "srtp_session.h"
 #include "threads.h"
 #include "udp_socket.h"
@@ -31,7 +31,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
   virtual bool SetRemoteDescription(const std::string& offser) = 0;
   virtual std::optional<std::string> CreateAnswer() = 0;
   virtual void SetLocalDescription() = 0;
-  const Sdp& GetSdp() const;
+  const SdpNegotiator& GetSdpNegotiator() const;
 
   bool Start();
   void Stop();
@@ -69,7 +69,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
   std::atomic<bool> connection_established_;
   bool dtls_ready_{false};
   std::shared_ptr<WorkerThread> work_thread_;
-  Sdp sdp_;
+  SdpNegotiator sdp_;
   std::string stream_id_;
   std::string room_id_;
   std::atomic<bool> stoped_{false};

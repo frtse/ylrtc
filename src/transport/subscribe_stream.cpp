@@ -55,7 +55,7 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
   }
 }
 
-void SubscribeStream::SetPublishSdp(const Sdp& publish_sdp) {
+void SubscribeStream::SetSdpNegotiator(const SdpNegotiator& publish_sdp) {
   sdp_ = publish_sdp;
 }
 

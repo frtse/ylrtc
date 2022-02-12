@@ -15,7 +15,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
  public:
   SubscribeStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer);
   ~SubscribeStream();
-  void SetPublishSdp(const Sdp& publish_sdp);
+  void SetSdpNegotiator(const SdpNegotiator& publish_sdp);
   bool SetRemoteDescription(const std::string& offer) override;
   std::optional<std::string> CreateAnswer() override;
   void SetLocalDescription() override;

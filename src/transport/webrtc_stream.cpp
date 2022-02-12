@@ -212,6 +212,6 @@ void WebrtcStream::SendRtcp(RtcpPacket& rtcp_packet) {
     spdlog::warn("Send data before socket is connected.");
 }
 
-const Sdp& WebrtcStream::GetSdp() const {
+const SdpNegotiator& WebrtcStream::GetSdpNegotiator() const {
   return sdp_;
 }

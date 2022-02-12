@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "sdp.h"
+#include "sdp_negotiator.h"
 #include "sdptransform/json.hpp"
 
 /**
@@ -21,7 +21,7 @@ class Notification {
   static Notification MakeStreamAddedNotification(const std::string& notify_room_id,
                                                   const std::string& participant_id,
                                                   const std::string& publish_stream_id,
-                                                  const Sdp& sdp);
+                                                  const SdpNegotiator& sdp);
   
   /**
    * @brief Webrtc stream removed notification.

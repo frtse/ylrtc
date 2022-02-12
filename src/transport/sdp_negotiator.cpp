@@ -1,4 +1,4 @@
-#include "sdp.h"
+#include "sdp_negotiator.h"
 
 #include <regex>
 #include <string>
@@ -9,9 +9,9 @@
 #include "utils.h"
 #include "dtls_transport.h"
 
-Sdp::Sdp() : local_dtls_setup_{"active"} {}
+SdpNegotiator::SdpNegotiator() : local_dtls_setup_{"active"} {}
 
-bool Sdp::SetPublishOffer(const std::string& offer) {
+bool SdpNegotiator::SetPublishOffer(const std::string& offer) {
   try {
     auto publish_offer_sdp = sdptransform::parse(offer);
     if (publish_offer_sdp.find("media") == publish_offer_sdp.end() || publish_offer_sdp.at("media").empty()) {
@@ -66,7 +66,7 @@ bool Sdp::SetPublishOffer(const std::string& offer) {
   }
 }
 
-std::optional<std::string> Sdp::CreatePublishAnswer() {
+std::optional<std::string> SdpNegotiator::CreatePublishAnswer() {
   std::string video_codec = "VP8";
   std::string audio_codec = "opus";
   publish_anwser_sdp_ = publish_offer_sdp_;
@@ -187,7 +187,7 @@ std::optional<std::string> Sdp::CreatePublishAnswer() {
   return sdptransform::write(publish_anwser_sdp_);
 }
 
-bool Sdp::SetSubscribeOffer(const std::string& offer) {
+bool SdpNegotiator::SetSubscribeOffer(const std::string& offer) {
   subscribe_offer_sdp_ = sdptransform::parse(offer);
   if (subscribe_offer_sdp_.find("media") == subscribe_offer_sdp_.end() || subscribe_offer_sdp_.at("media").empty()) {
     spdlog::error("No media section.");
@@ -214,7 +214,7 @@ bool Sdp::SetSubscribeOffer(const std::string& offer) {
   return true;
 }
 
-std::optional<std::string> Sdp::CreateSubscribeAnswer() {
+std::optional<std::string> SdpNegotiator::CreateSubscribeAnswer() {
   try {
     subscribe_anwser_sdp_ = publish_anwser_sdp_;
     if (subscribe_anwser_sdp_.find("media") == subscribe_anwser_sdp_.end())
@@ -292,7 +292,7 @@ std::optional<std::string> Sdp::CreateSubscribeAnswer() {
   }
 }
 
-void Sdp::SetLocalHostAddress(std::string_view ip, uint16_t port) {
+void SdpNegotiator::SetLocalHostAddress(std::string_view ip, uint16_t port) {
   local_candidate_["foundation"] = "ylsfu";
   local_candidate_["component"] = kCandidateComponentRtp;
   local_candidate_["transport"] = "udp";
@@ -302,37 +302,37 @@ void Sdp::SetLocalHostAddress(std::string_view ip, uint16_t port) {
   local_candidate_["type"] = "host";
 }
 
-void Sdp::SetLocalIceInfo(const std::string& ufrag, const std::string& password) {
+void SdpNegotiator::SetLocalIceInfo(const std::string& ufrag, const std::string& password) {
   local_ice_ufrag_ = ufrag;
   local_ice_password_ = password;
 }
 
-void Sdp::SetLocalFingerprint(const std::string& type, const std::string& hash) {
+void SdpNegotiator::SetLocalFingerprint(const std::string& type, const std::string& hash) {
   local_fingerprint_type_ = type;
   local_fingerprint_hash_ = hash;
 }
 
-const std::string& Sdp::GetRemoteDtlsSetup() const {
+const std::string& SdpNegotiator::GetRemoteDtlsSetup() const {
   return remote_dtls_setup_;
 }
 
-const std::string& Sdp::GetRemoteIceUfrag() const {
+const std::string& SdpNegotiator::GetRemoteIceUfrag() const {
   return remote_ice_ufrag_;
 }
 
-const std::string& Sdp::GetRemoteIcePasswd() const {
+const std::string& SdpNegotiator::GetRemoteIcePasswd() const {
   return remote_ice_pwd_;
 }
 
-const std::string& Sdp::GetRemoteFingerprintType() const {
+const std::string& SdpNegotiator::GetRemoteFingerprintType() const {
   return remote_fingerprint_type_;
 }
 
-const std::string& Sdp::GetRemoteFingerprintHash() const {
+const std::string& SdpNegotiator::GetRemoteFingerprintHash() const {
   return remote_fingerprint_hash_;
 }
 
-std::optional<uint32_t> Sdp::GetPrimarySsrc(const std::string& type) {
+std::optional<uint32_t> SdpNegotiator::GetPrimarySsrc(const std::string& type) {
   auto result = media_section_ssrcs_map_.find(type);
   if (result == media_section_ssrcs_map_.end())
     return std::nullopt;
@@ -342,27 +342,27 @@ std::optional<uint32_t> Sdp::GetPrimarySsrc(const std::string& type) {
   return (uint32_t)ssrcs[0]["id"];
 }
 
-bool Sdp::HasVideo() const {
+bool SdpNegotiator::HasVideo() const {
   return media_section_rtpmaps_map_.find("video") != media_section_rtpmaps_map_.end();
 }
 
-bool Sdp::HasAudio() const {
+bool SdpNegotiator::HasAudio() const {
   return media_section_rtpmaps_map_.find("audio") != media_section_rtpmaps_map_.end();
 }
 
-const std::unordered_map<std::string, nlohmann::json>& Sdp::GetMediaSectionSsrcsMap() const {
+const std::unordered_map<std::string, nlohmann::json>& SdpNegotiator::GetMediaSectionSsrcsMap() const {
   return media_section_ssrcs_map_;
 }
 
-const std::unordered_map<std::string, nlohmann::json>& Sdp::GetMediaSectionSsrcGroupsMap() const {
+const std::unordered_map<std::string, nlohmann::json>& SdpNegotiator::GetMediaSectionSsrcGroupsMap() const {
   return media_section_ssrc_groups_map_;
 }
 
-const std::unordered_map<std::string, nlohmann::json>& Sdp::GetMediaSectionRtpmapsMap() const {
+const std::unordered_map<std::string, nlohmann::json>& SdpNegotiator::GetMediaSectionRtpmapsMap() const {
   return media_section_rtpmaps_map_;
 }
 
-const nlohmann::json Sdp::GetMediaSections() const {
+const nlohmann::json SdpNegotiator::GetMediaSections() const {
   nlohmann::json media_sections;
   if (subscribe_anwser_sdp_.find("media") != subscribe_anwser_sdp_.end()) {
     media_sections = subscribe_anwser_sdp_.at("media");

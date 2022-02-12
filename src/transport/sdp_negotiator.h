@@ -12,9 +12,13 @@
 #include "sdptransform/json.hpp"
 #include "sdptransform/sdptransform.hpp"
 
-class Sdp {
+/**
+ * @brief Responsible for negotiating SDP.
+ * 
+ */
+class SdpNegotiator {
  public:
-  Sdp();
+  SdpNegotiator();
   bool SetPublishOffer(const std::string& offer);
   std::optional<std::string> CreatePublishAnswer();
   bool SetSubscribeOffer(const std::string& offer);
