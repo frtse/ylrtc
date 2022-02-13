@@ -97,7 +97,8 @@ void StunMessage::SetXorMappedAddress(udp::endpoint* address) {
 }
 
 bool StunMessage::CreateResponse() {
-  size_ = kStunHeaderSize + 12 + 24 + 8;
+  size_ = kStunHeaderSize + kStunAttributeHeaderSize + kXorMappedAddressAttributeLength
+    + kStunAttributeHeaderSize + kMessageIntegrityAttributeLength + kStunAttributeHeaderSize + kFingerprintAttrLength;
   data_.reset(new uint8_t[size_]);
   ByteWriter writer(data_.get(), size_);
 
@@ -115,10 +116,12 @@ bool StunMessage::CreateResponse() {
       boost::asio::ip::address_v4 address = mapped_endpoint_->address().to_v4();
       if (!writer.WriteUInt16(kAttrXorMappedAddress))
         return false;
-      if (!writer.WriteUInt16(8))
+      if (!writer.WriteUInt16(kXorMappedAddressAttributeLength))
         return false;
+      // The first 8 bits are used for alignment purposes and are ignored.
       if (!writer.WriteUInt8(0))
         return false;
+      // IPv4.
       if (!writer.WriteUInt8(0x01))
         return false;
       if (!writer.WriteUInt16(mapped_endpoint_->port() ^ (kStunMagicCookie >> 16)))
@@ -128,11 +131,13 @@ bool StunMessage::CreateResponse() {
     } else if (mapped_endpoint_->protocol() == udp::v6()) {
       // TODO: Support ipv6.
     } else {
-      DCHECK(false && "Protocol not supported");
+      // Protocol not supported.
+      return false;
     }
   }
 
-  StoreUInt16BE(data_.get() + 2, 12 + 24);
+  StoreUInt16BE(data_.get() + 2, kStunAttributeHeaderSize + kXorMappedAddressAttributeLength
+    + kStunAttributeHeaderSize + kMessageIntegrityAttributeLength);
   HmacSha1 hmac_sha1;
   auto result = hmac_sha1.Calculate(local_password_, writer.Data(), writer.Used());
 
@@ -143,12 +148,13 @@ bool StunMessage::CreateResponse() {
   if (!writer.WriteBytes((char*)result, HmacSha1::kSha1ResultLength))
     return false;
 
-  StoreUInt16BE(data_.get() + 2, 12 + 24 + 8);
+  StoreUInt16BE(data_.get() + 2, kStunAttributeHeaderSize + kXorMappedAddressAttributeLength
+    + kStunAttributeHeaderSize + kMessageIntegrityAttributeLength + kStunAttributeHeaderSize + kFingerprintAttrLength);
 
   uint32_t crc32 = Crc32::Calculate(writer.Data(), writer.Used());
   if (!writer.WriteUInt16(kAttrFingerprint))
     return false;
-  if (!writer.WriteUInt16(4))
+  if (!writer.WriteUInt16(kFingerprintAttrLength))
     return false;
   if (!writer.WriteUInt32(crc32 ^ 0x5354554e))
     return false;

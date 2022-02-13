@@ -30,7 +30,8 @@ void IceLite::ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remot
   }
 
   msg.SetXorMappedAddress(remote_ep);
-  msg.CreateResponse();
+  if (!msg.CreateResponse())
+    return;
   DCHECK(observer_);
   observer_->OnStunMessageSend(msg.Data(), msg.Size(), remote_ep);
 }

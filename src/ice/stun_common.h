@@ -18,6 +18,8 @@ static const uint32_t kStunMagicCookie = 0x2112A442;
 static const uint32_t kLengthOffset = 2;
 static const uint32_t kFingerprintAttrLength = 4;
 static constexpr size_t kStunMagicCookieLength = sizeof(kStunMagicCookie);
+static const size_t kXorMappedAddressAttributeLength = 8;
+static const size_t kMessageIntegrityAttributeLength = 20;
 
 /**
  * @brief Test if the data is in stun format.
