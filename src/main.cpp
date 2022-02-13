@@ -68,11 +68,11 @@ int main(int argc, char* argv[]) {
       WebrtcStreamProxy::GetInstance()->Stop();
       SignalingServer::GetInstance().Close();
       RoomManager::GetInstance().Clear();
-      WorkerThreadPool::GetInstance().StopAll();
     }
   });
 
   spdlog::info("Service started successfully");
   MainThread::GetInstance().MessageLoop().run();
+  WorkerThreadPool::GetInstance().StopAll();
   return EXIT_SUCCESS;
 }
