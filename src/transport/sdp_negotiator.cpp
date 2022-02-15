@@ -45,20 +45,29 @@ bool SdpNegotiator::SetPublishOffer(const std::string& offer) {
 
       if (media_section.find("setup") != media_section.end())
         remote_dtls_setup_ = media_section.at("setup");
+      else
+        return false;
       if (media_section.find("iceUfrag") != media_section.end())
         remote_ice_ufrag_ = media_section.at("iceUfrag");
+      else
+        return false;
       if (media_section.find("icePwd") != media_section.end())
         remote_ice_pwd_ = media_section.at("icePwd");
+      else
+        return false;
       if (media_section.find("fingerprint") != media_section.end()) {
         auto& fingerprint = media_section.at("fingerprint");
         remote_fingerprint_type_ = fingerprint.at("type");
         remote_fingerprint_hash_ = fingerprint.at("hash");
       }
+      else if (publish_offer_sdp.find("fingerprint") != publish_offer_sdp.end()) {
+        auto& fingerprint = publish_offer_sdp.at("fingerprint");
+        remote_fingerprint_type_ = fingerprint.at("type");
+        remote_fingerprint_hash_ = fingerprint.at("hash");
+      }
+      else
+        return false;
     }
-
-    if (remote_ice_ufrag_.empty() || remote_ice_pwd_.empty() || remote_fingerprint_type_.empty() || remote_fingerprint_hash_.empty() ||
-        remote_dtls_setup_.empty())
-      return false;
     publish_offer_sdp_ = publish_offer_sdp;
     return true;
   } catch (...) {
@@ -199,17 +208,28 @@ bool SdpNegotiator::SetSubscribeOffer(const std::string& offer) {
     auto& media_section = media[i];
     if (media_section.find("setup") != media_section.end())
       remote_dtls_setup_ = media_section.at("setup");
-
+    else
+      return false;
     if (media_section.find("iceUfrag") != media_section.end())
       remote_ice_ufrag_ = media_section.at("iceUfrag");
+    else
+      return false;
     if (media_section.find("icePwd") != media_section.end())
       remote_ice_pwd_ = media_section.at("icePwd");
-
+    else
+      return false;
     if (media_section.find("fingerprint") != media_section.end()) {
       auto& fingerprint = media_section.at("fingerprint");
       remote_fingerprint_type_ = fingerprint.at("type");
       remote_fingerprint_hash_ = fingerprint.at("hash");
     }
+    else if (subscribe_offer_sdp_.find("fingerprint") != subscribe_offer_sdp_.end()) {
+      auto& fingerprint = subscribe_offer_sdp_.at("fingerprint");
+      remote_fingerprint_type_ = fingerprint.at("type");
+      remote_fingerprint_hash_ = fingerprint.at("hash");
+    }
+    else
+      return false;
   }
   return true;
 }
