@@ -47,7 +47,7 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
     } else if (action == "publish") {
       auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
       if (room) {
-        auto publish_stream = room->ParticipantPublish(session_info_.participant_id, request_json["offer"]);
+        auto publish_stream = room->ParticipantPublish(session_info_.participant_id, request_json.at("offer"));
         if (publish_stream) {
           response_json["streamId"] = publish_stream->GetStreamId();
           auto answer = publish_stream->CreateAnswer();
@@ -83,7 +83,7 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
       }
     } else if (action == "publish_muteOrUnmute") {
       const std::string& publish_stream_id = request_json.at("streamId");
-      bool muted = request_json["muted"];
+      bool muted = request_json.at("muted");
       const std::string& type = request_json.at("type");
       auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
       if (room) {
