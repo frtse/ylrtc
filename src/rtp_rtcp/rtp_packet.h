@@ -86,6 +86,8 @@ class RtpPacket {
     if (!id)
       return;
     auto result = std::find_if(extension_entries_.cbegin(), extension_entries_.cend(), [id, this](auto& extension) { return extension.id == *id; });
+    if (result == extension_entries_.cend())
+      return;
     Extension::Serialize(data_.get() + result->offset, result->length, value);
   }
 
