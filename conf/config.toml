@@ -3,17 +3,23 @@
 localIp = "172.16.0.4"
 #Fill in the public IP. If there is no public IP, fill in the local IP.
 announcedIp = "106.13.76.148"
+#Port on which webrtc listens.
 port = 20000
 #This represents the number of worker threads. If it is 0, it is determined by hardware.
 workerThreadCount = 0
 [signaling_server]
+#The port on which the signaling service listens.
 port = 8000
 certFile = "ffrtc.com.crt"
 keyFile = "ffrtc.com.key"
 [memory_pool]
+#Whether to enable memory pool.
 enabled = true
+#Maximum length of each memory linked list.
 maxListLength = 200
 [log]
+#Where the log files are stored.
 logDirectory = "./logs"
 [system]
+#Whether to run as a daemon.
 runAsdaemon = false
