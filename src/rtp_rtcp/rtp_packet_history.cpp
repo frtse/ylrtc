@@ -26,14 +26,14 @@ void RtpPacketHistory::PutRtpPacket(std::unique_ptr<RtpPacket> packet) {
 
   // Packet to be inserted ahead of first packet, expand front.
   for (; packet_index < 0; ++packet_index) {
-    packet_history_.emplace_front(nullptr, 0, 0);
+    packet_history_.emplace_front(nullptr, 0);
   }
   // Packet to be inserted behind last packet, expand back.
   while (static_cast<int>(packet_history_.size()) <= packet_index) {
-    packet_history_.emplace_back(nullptr, 0, 0);
+    packet_history_.emplace_back(nullptr, 0);
   }
 
-  packet_history_[packet_index] = StoredPacket(std::move(packet), now_ms, packets_inserted_++);
+  packet_history_[packet_index] = StoredPacket(std::move(packet), now_ms);
 }
 
 int RtpPacketHistory::GetPacketIndex(uint16_t sequence_number) const {

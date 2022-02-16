@@ -28,18 +28,14 @@ class RtpPacketHistory {
  private:
   class StoredPacket {
    public:
-    StoredPacket(std::unique_ptr<RtpPacket> packet, int64_t send_time_ms, uint64_t insert_order)
-        : send_time_ms_(send_time_ms), packet_(std::move(packet)), insert_order_(insert_order), times_retransmitted_(0) {}
+    StoredPacket(std::unique_ptr<RtpPacket> packet, int64_t send_time_ms)
+        : send_time_ms_(send_time_ms), packet_(std::move(packet)), times_retransmitted_(0) {}
 
     // The time of last transmission, including retransmissions.
     int64_t send_time_ms_;
 
     // The actual packet.
     std::unique_ptr<RtpPacket> packet_;
-
-    // Unique number per StoredPacket, incremented by one for each added
-    // packet. Used to sort on insert order.
-    uint64_t insert_order_;
 
     // Number of times RE-transmitted, ie excluding the first transmission.
     size_t times_retransmitted_;
@@ -57,7 +53,5 @@ class RtpPacketHistory {
   // instances of StoredPacket with `packet_` set to nullptr. The first and last
   // entry in the queue will however always be populated.
   std::deque<StoredPacket> packet_history_;
-  // Total number of packets with inserted.
-  uint64_t packets_inserted_{0};
   int64_t rtt_ms_{-1};
 };
