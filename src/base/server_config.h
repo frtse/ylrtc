@@ -23,6 +23,7 @@ class ServerConfig {
   bool MemoryPoolEnabled() const;
   size_t MemoryPoolMaxListLength() const;
   std::string_view LogDirectory() const;
+  bool RunAsDaemon() const;
 
  private:
   ServerConfig() = default;
@@ -36,4 +37,5 @@ class ServerConfig {
   bool memory_pool_enabled_;
   size_t memory_pool_max_list_length_;
   std::string log_directory_;
+  bool run_as_daemon_;
 };

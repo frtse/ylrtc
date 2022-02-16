@@ -31,6 +31,9 @@ bool ServerConfig::Load(std::string_view json_file_name) {
 
     const auto& log = toml::find(config_file, "log");
     log_directory_ = toml::find<std::string>(log, "logDirectory");
+
+    const auto& system = toml::find(config_file, "system");
+    run_as_daemon_ = toml::find<bool>(system, "runAsdaemon");
   } catch (const std::exception& e) {
     spdlog::error("Parse config file failed. error: {}", e.what());
     return false;
@@ -77,4 +80,8 @@ size_t ServerConfig::MemoryPoolMaxListLength() const {
 
 std::string_view ServerConfig::LogDirectory() const {
   return log_directory_;
+}
+
+bool ServerConfig::RunAsDaemon() const {
+  return run_as_daemon_;
 }

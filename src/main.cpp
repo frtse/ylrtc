@@ -22,6 +22,22 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
   spdlog::info("Configuration file loaded successfully.");
+
+  if (ServerConfig::GetInstance().RunAsDaemon()) {
+    pid_t pid = fork();
+    if (pid < 0)
+      return EXIT_FAILURE;
+    if (pid > 0)
+      return EXIT_SUCCESS;
+    if (setsid() < 0)
+      return EXIT_SUCCESS;
+    pid = fork();
+    if (pid < 0)
+      return EXIT_SUCCESS;
+    if (pid > 0)
+      return EXIT_SUCCESS;
+    umask(0);
+  }
 #ifdef NDEBUG
   spdlog::set_level(spdlog::level::info);
   // Create a file rotating logger with 5mb size max and 3 rotated files.

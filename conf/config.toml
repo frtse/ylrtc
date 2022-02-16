@@ -15,3 +15,5 @@ enabled = true
 maxListLength = 200
 [log]
 logDirectory = "./logs"
+[system]
+runAsdaemon = false
