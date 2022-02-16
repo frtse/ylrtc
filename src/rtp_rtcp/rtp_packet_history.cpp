@@ -78,7 +78,7 @@ void RtpPacketHistory::CullOldPackets(int64_t now_ms) {
       return;
     }
 
-    if (packet_history_.size() >= kMaxCapacity || stored_packet.send_time_ms_ + (packet_duration_ms * kPacketCullingDelayFactor) <= now_ms) {
+    if (stored_packet.send_time_ms_ + (packet_duration_ms * kPacketCullingDelayFactor) <= now_ms) {
       // Too many packets in history, or this packet has timed out. Remove it
       // and continue.
       RemovePacket(0);
