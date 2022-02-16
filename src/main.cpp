@@ -28,18 +28,23 @@ int main(int argc, char* argv[]) {
 
   if (ServerConfig::GetInstance().RunAsDaemon()) {
     pid_t pid = fork();
-    if (pid < 0)
+    if (pid < 0) {
+      spdlog::error("Fork error.");
       return EXIT_FAILURE;
+    }
     if (pid > 0)
       return EXIT_SUCCESS;
     if (setsid() < 0)
       return EXIT_SUCCESS;
     pid = fork();
-    if (pid < 0)
-      return EXIT_SUCCESS;
+    if (pid < 0) {
+      spdlog::error("Fork error.");
+      return EXIT_FAILURE;
+    }
     if (pid > 0)
       return EXIT_SUCCESS;
     umask(0);
+    spdlog::info("Daemon starts running.");
   }
 #ifdef NDEBUG
   spdlog::set_level(spdlog::level::info);
