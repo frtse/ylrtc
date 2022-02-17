@@ -97,8 +97,6 @@ export default class Client extends EventDispatcher {
     if (res.error)
       throw "Publish failed.";
     var answerSdp = new RTCSessionDescription({sdp: res.answer, type: 'answer'});
-    //answerSdp.sdp = res.answer;
-    //answerSdp.type = 'answer';
     let streamId = res.streamId;
     await pc.setRemoteDescription(answerSdp);
     return new PublisheStream(mediaStream, streamId, pc, this.signaling_);
@@ -122,8 +120,6 @@ export default class Client extends EventDispatcher {
     if (res.error)
       throw "Connect failed.";
     var answerSdp = new RTCSessionDescription({sdp: res.answer, type: 'answer'});
-    //answerSdp.sdp = res.answer;
-    //answerSdp.type = 'answer';
     await pc.setRemoteDescription(answerSdp);
     let subscribeStreamId = res.streamId;
     let publishStreamId = remoteStream.publishStreamId;
