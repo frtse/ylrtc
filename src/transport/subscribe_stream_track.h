@@ -9,7 +9,7 @@
 #include "bitrate_estimator.h"
 #include "rtcp_packet.h"
 #include "rtp_packet.h"
-#include "rtp_packet_history.h"
+#include "send_packet_recorder.h"
 #include "timer.h"
 
 class SubscribeStreamTrack : public Timer::Observer, public std::enable_shared_from_this<SubscribeStreamTrack> {
@@ -52,7 +52,7 @@ class SubscribeStreamTrack : public Timer::Observer, public std::enable_shared_f
   std::shared_ptr<Timer> rtcp_timer_;
   uint16_t rtx_sequence_number_{0};
   Observer* observer_;
-  RtpPacketHistory rtp_packet_history_;
+  SendPacketRecorder send_packet_recorder_;
   uint32_t packets_sent_{0};
   size_t media_bytes_sent_{0};
   uint32_t last_rtp_timestamp_{0};

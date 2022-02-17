@@ -25,7 +25,7 @@ void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) 
   rate_statistics_.AddData(rtp_packet->Size(), last_send_timestamp_);
   if (!configuration_.nack_enabled)
     return;
-  rtp_packet_history_.PutRtpPacket(std::move(rtp_packet));
+  send_packet_recorder_.Record(std::move(rtp_packet));
 }
 
 void SubscribeStreamTrack::ReceiveNack(NackPacket* nack_packet) {
@@ -38,7 +38,7 @@ void SubscribeStreamTrack::ReceiveNack(NackPacket* nack_packet) {
     return;
   auto& lost_packets = nack_packet->GetLostPacketSequenceNumbers();
   for (auto& seq_num : lost_packets) {
-    auto packet = rtp_packet_history_.GetPacketAndSetSendTime(seq_num);
+    auto packet = send_packet_recorder_.Query(seq_num);
     if (!packet)
       continue;
     if (!configuration_.rtx_enabled)
@@ -56,7 +56,7 @@ void SubscribeStreamTrack::ReceiveReceiverReport(const ReportBlock& report_block
   if (report_block.LastSr() != 0) {
     uint32_t rtp_compact_ntp = compact_ntp - report_block.DelayLastSr() - report_block.LastSr();
     rtt_millis_ = NtpTime::CreateFromCompactNtp(rtp_compact_ntp).ToMillis();
-    rtp_packet_history_.SetRtt(rtt_millis_);
+    send_packet_recorder_.SetRtt(rtt_millis_);
   }
 }
 
