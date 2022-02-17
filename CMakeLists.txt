@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project (ylsfu)
+project (ylrtc)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message("Setting build type to 'Debug' as none was specified.")

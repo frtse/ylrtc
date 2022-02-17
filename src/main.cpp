@@ -52,11 +52,11 @@ int main(int argc, char* argv[]) {
   auto max_size = 1048576 * 5;
   auto max_files = 3;
   auto logger =
-      spdlog::rotating_logger_mt("ylsfu", ServerConfig::GetInstance().LogDirectory().data() + std::string("/ylsfu.txt"), max_size, max_files);
+      spdlog::rotating_logger_mt("ylrtc", ServerConfig::GetInstance().LogDirectory().data() + std::string("/ylsfu.txt"), max_size, max_files);
   spdlog::set_default_logger(logger);
 #else
   spdlog::set_level(spdlog::level::debug);
-  auto console = spdlog::stdout_color_mt("ylsfu");
+  auto console = spdlog::stdout_color_mt("ylrtc");
   spdlog::set_default_logger(console);
 #endif
   rlimit l = {RLIM_INFINITY, RLIM_INFINITY};

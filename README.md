@@ -1,4 +1,4 @@
-# ylsfu
+# ylrtc
 Webrtc SFU.
 
 ## Online demo
@@ -11,11 +11,11 @@ Ubuntu 18.04
 ./install.sh
 
 ## Build
-mkdir build  
-cd build  
-cmake ..  
+mkdir build
+cd build
+cmake ..
 make
 
 ## Run
 + Fill in the configuration file correctly.
-+ ./ylsfu ../conf/config.toml
++ ./ylrtc ../conf/config.toml

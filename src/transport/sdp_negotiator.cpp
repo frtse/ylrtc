@@ -313,7 +313,7 @@ std::optional<std::string> SdpNegotiator::CreateSubscribeAnswer() {
 }
 
 void SdpNegotiator::SetLocalHostAddress(std::string_view ip, uint16_t port) {
-  local_candidate_["foundation"] = "ylsfu";
+  local_candidate_["foundation"] = "ylrtc";
   local_candidate_["component"] = kCandidateComponentRtp;
   local_candidate_["transport"] = "udp";
   local_candidate_["priority"] = kMaxIceCandidatePriority;
