@@ -9,7 +9,7 @@ Webrtc SFU.
 + Single-process-multi-threaded architecture, memory pool optimization.
 + Single-port implementation of webrtc connection mapping to thread.
 + ICE-Lite、DTLS、RTP、RTCP.
-+ Receiver processing of Transport-wide Congestion Control.
++ The receiving end processing of Transport-wide Congestion Control.
 
 ## Platform
 Ubuntu 18.04
@@ -18,9 +18,9 @@ Ubuntu 18.04
 ./install.sh
 
 ## Build
-mkdir build
-cd build
-cmake ..
+mkdir build  
+cd build  
+cmake ..  
 make
 
 ## Run
