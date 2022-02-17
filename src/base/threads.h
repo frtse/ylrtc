@@ -3,7 +3,6 @@
 #include <boost/asio.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <future>
 #include <memory>
 #include <thread>
 #include <unordered_map>
@@ -22,22 +21,6 @@ class Thread {
   template <typename F>
   void PostAsync(F&& f) {
     boost::asio::post(message_loop_, [f = std::forward<F>(f)] { f(); });
-  }
-
-  /**
-   * @brief Ask this thread to execute given handler synchronously.
-   *
-   * @param f The handler to be called.
-   */
-  template <typename F>
-  void PostSync(F&& f) {
-    std::promise<void> promise;
-    auto future = promise.get_future();
-    boost::asio::post(message_loop_, [&promise, f = std::forward<F>(f)]() {
-      f();
-      promise.set_value();
-    });
-    future.wait();
   }
 
   /**

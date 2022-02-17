@@ -101,7 +101,7 @@ bool PublishStream::HasAudio() const {
 
 void PublishStream::RegisterDataObserver(std::shared_ptr<SubscribeStream> observer) {
   auto self(shared_from_this());
-  work_thread_->PostSync([self, this, observer]() {
+  work_thread_->PostAsync([self, this, observer]() {
     auto result = std::find(data_observers_.cbegin(), data_observers_.cend(), observer);
     if (result == data_observers_.cend())
       data_observers_.push_back(observer);
@@ -110,7 +110,7 @@ void PublishStream::RegisterDataObserver(std::shared_ptr<SubscribeStream> observ
 
 void PublishStream::UnregisterDataObserver(std::shared_ptr<SubscribeStream> observer) {
   auto self(shared_from_this());
-  work_thread_->PostSync([self, this, observer]() {
+  work_thread_->PostAsync([self, this, observer]() {
     auto result = std::find(data_observers_.cbegin(), data_observers_.cend(), observer);
     if (result != data_observers_.cend())
       data_observers_.erase(result);
