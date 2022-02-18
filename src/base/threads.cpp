@@ -30,10 +30,14 @@ WorkerThread::WorkerThread() : work_guard_(message_loop_.get_executor()) {
   thread_id_ = work_thread_.get_id();
 }
 
-WorkerThread::~WorkerThread() {
+void WorkerThread::Stop() {
+  CHECK(std::this_thread::get_id() != thread_id_);
   work_guard_.reset();
   if (work_thread_.joinable())
     work_thread_.join();
+}
+
+WorkerThread::~WorkerThread() {
 }
 
 WorkerThreadPool& WorkerThreadPool::GetInstance() {
@@ -48,6 +52,8 @@ std::shared_ptr<WorkerThread> WorkerThreadPool::GetWorkerThread() {
 }
 
 void WorkerThreadPool::StopAll() {
+  for (auto& t : work_threads_)
+    t.second->Stop();
   work_threads_.clear();
 }
 

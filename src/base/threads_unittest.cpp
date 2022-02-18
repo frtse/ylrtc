@@ -17,6 +17,6 @@ TEST(TheadsTest, AssertInThisThreadTest) {
   MainThread::GetInstance().AssertInThisThread();
   auto work_thread = WorkerThreadPool::GetInstance().GetWorkerThread();
   EXPECT_TRUE(work_thread);
-  work_thread->PostAsync([work_thread] { work_thread->AssertInThisThread(); });
+  work_thread->PostAsync([work_thread] {work_thread->AssertInThisThread();});
   WorkerThreadPool::GetInstance().StopAll();
 }

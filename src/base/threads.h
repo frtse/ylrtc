@@ -74,6 +74,8 @@ class WorkerThread : public Thread {
   WorkerThread();
   ~WorkerThread();
 
+  void Stop();
+
  private:
   using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
   work_guard_type work_guard_;
