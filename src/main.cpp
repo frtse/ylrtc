@@ -59,6 +59,7 @@ int main(int argc, char* argv[]) {
   auto console = spdlog::stdout_color_mt("ylrtc");
   spdlog::set_default_logger(console);
 #endif
+  // Enable core dump.
   rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
   setrlimit(RLIMIT_CORE, &l);
 
