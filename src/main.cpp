@@ -16,7 +16,7 @@
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
-    spdlog::error("Parameter error. Usage: WebrtcSFU [Configuration file path].");
+    spdlog::error("Parameter error. Usage: ylrtc [Configuration file path].");
     return EXIT_FAILURE;
   }
 
