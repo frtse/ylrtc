@@ -51,44 +51,44 @@ export default class Client extends EventDispatcher {
     let mediaStream = device.mediaStream();
     let pc = new RTCPeerConnection({bundlePolicy: "max-bundle", rtcpMuxPolicy: "require"});
 
-    const audioTransceiverInit = {
-      direction: 'sendonly',
-      sendEncodings: [{rid: 'q', active: true, maxBitrate: 64000}],
-      streams: [mediaStream]
-    };
-
-    if (audioRtpEncodingParameters !== null)
-      audioTransceiverInit.sendEncodings = audioRtpEncodingParameters;
-
-    const videoTransceiverInit = {
-      direction: 'sendonly',
-      sendEncodings: [{rid: 'q', active: true, maxBitrate: 200000}],
-      streams: [mediaStream]
-    };
-
-    if (videoRtpEncodingParameters !== null)
-      videoTransceiverInit.sendEncodings = videoRtpEncodingParameters;
-
     if (mediaStream.getAudioTracks().length >
       0) {
-      pc.addTransceiver(
-        mediaStream.getAudioTracks()[0],
-        {
+      let init = null;
+      if (audioRtpEncodingParameters !== null) {
+        init =  {
           direction: 'sendonly',
-          sendEncodings: [{rid: 'q', active: true, maxBitrate: 64000}],
+          sendEncodings: audioRtpEncodingParameters,
           streams: [mediaStream]
-        });
+        };
+      } else {
+        init =  {
+          direction: 'sendonly',
+          streams: [mediaStream]
+        };
+      }
+      pc.addTransceiver(
+        mediaStream.getAudioTracks()[0], init
+        );
     }
     if (mediaStream.getVideoTracks().length >
       0) {
-      pc.addTransceiver(
-        mediaStream.getVideoTracks()[0],
-        {
+      let init = null;
+      if (videoRtpEncodingParameters !== null) {
+        init =  {
           direction: 'sendonly',
-          sendEncodings: [{rid: 'q', active: true, maxBitrate: 200000}],
+          sendEncodings: videoRtpEncodingParameters,
           streams: [mediaStream]
-        });
-    }
+        };
+      } else {
+        init =  {
+          direction: 'sendonly',
+          streams: [mediaStream]
+        };
+      }
+      let transceiver = pc.addTransceiver(
+        mediaStream.getVideoTracks()[0],
+        init);
+      }
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
