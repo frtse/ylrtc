@@ -40,7 +40,7 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
       if (!rid) {
         rid = rtp_packet->GetExtensionValue<RepairedRtpStreamIdExtension>();
         if (!rid)
-          return;
+          continue;
       }
       auto& config = rid_configuration_map_.at(*rid);
       if (rtp_packet->PayloadType() == config.payload_type) {
@@ -61,12 +61,13 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
       }
     }
   }
-
-  rtp_packet->SetExtensionCapability(ssrc_track_map_[rtp_packet->Ssrc()]->Config().extension_capability);
+  if (ssrc_track_map_.find(rtp_packet->Ssrc()) == ssrc_track_map_.end())
+    return;
+  rtp_packet->SetExtensionCapability(ssrc_track_map_.at(rtp_packet->Ssrc())->Config().extension_capability);
   auto twsn = rtp_packet->GetExtensionValue<TransportSequenceNumberExtension>();
   if (twsn)
     receive_side_twcc_->IncomingPacket(TimeMillis(), rtp_packet->Ssrc(), *twsn);
-  ssrc_track_map_[rtp_packet->Ssrc()]->ReceiveRtpPacket(rtp_packet);
+  ssrc_track_map_.at(rtp_packet->Ssrc())->ReceiveRtpPacket(rtp_packet);
   for (auto& observer : data_observers_)
     observer->OnPublishStreamRtpPacketReceive(rtp_packet);
 }
