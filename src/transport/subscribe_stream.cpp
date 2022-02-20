@@ -68,6 +68,12 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
     if (ssrc_track_map_.find(clone_packet->Ssrc()) != ssrc_track_map_.end()) {
       clone_packet->UpdateExtensionCapability(ssrc_track_map_.at(clone_packet->Ssrc())->Config().extension_capability);
       clone_packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
+      auto rid = clone_packet->GetExtensionValue<RtpStreamIdExtension>();
+      if (!rid) {
+        rid = rtp_packet->GetExtensionValue<RepairedRtpStreamIdExtension>();
+      }
+      if (rid && *rid != "1")
+        return;
       SendRtp(clone_packet->Data(), clone_packet->Size());
       ssrc_track_map_.at(clone_packet->Ssrc())->SendRtpPacket(std::move(clone_packet));
     } else {
