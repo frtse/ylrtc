@@ -70,7 +70,7 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
       clone_packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
       auto rid = clone_packet->GetExtensionValue<RtpStreamIdExtension>();
       if (!rid) {
-        rid = rtp_packet->GetExtensionValue<RepairedRtpStreamIdExtension>();
+        rid = clone_packet->GetExtensionValue<RepairedRtpStreamIdExtension>();
       }
       if (rid && *rid != "1")
         return;
