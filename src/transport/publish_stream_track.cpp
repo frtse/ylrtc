@@ -18,9 +18,10 @@ PublishStreamTrack::PublishStreamTrack(const Configuration& configuration, boost
     nack_request_->Init();
   }
 
-  if (configuration_.rtx_enabled)
-    rtx_track_statistics_.reset(new TrackStatistics(configuration_.rtx_ssrc, configuration_.rtx_payload_type));
-  else
+  if (configuration_.rtx_enabled) {
+    if (configuration_.rtx_ssrc)
+    rtx_track_statistics_.reset(new TrackStatistics(*configuration_.rtx_ssrc, configuration_.rtx_payload_type));
+  } else
     track_statistics_.EnableRetransmitDetection(true);
   report_interval_ = configuration_.audio ? kDefaultAudioReportIntervalMillis : kDefaultVideoReportIntervalMillis;
 }
@@ -39,7 +40,7 @@ void PublishStreamTrack::Deinit() {
 
 void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
   bool is_rtx = false;
-  if (configuration_.rtx_enabled && configuration_.rtx_ssrc == rtp_packet->Ssrc()) {
+  if (configuration_.rtx_enabled && *configuration_.rtx_ssrc == rtp_packet->Ssrc()) {
     if (rtx_track_statistics_)
       rtx_track_statistics_->ReceivePacket(rtp_packet);
     rtp_packet->RtxRepaire(LoadUInt16BE(rtp_packet->Payload()), configuration_.payload_type, configuration_.ssrc);
@@ -62,6 +63,13 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
 
 PublishStreamTrack::Configuration& PublishStreamTrack::Config() {
   return configuration_;
+}
+
+void PublishStreamTrack::SetRtxSSRC(uint32_t ssrc) {
+  if (configuration_.rtx_enabled) {
+    configuration_.rtx_ssrc = ssrc;
+    rtx_track_statistics_.reset(new TrackStatistics(ssrc, configuration_.rtx_payload_type));
+  }
 }
 
 void PublishStreamTrack::OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) {

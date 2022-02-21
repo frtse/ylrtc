@@ -54,8 +54,8 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
         for (auto track : tracks_) {
           auto& track_config = track->Config();
           if (track_config.rid == *rid) {
-            track_config.rtx_ssrc = rtp_packet->Ssrc();
-            ssrc_track_map_.insert(std::make_pair(track_config.rtx_ssrc, track));
+            ssrc_track_map_.insert(std::make_pair(*track_config.rtx_ssrc, track));
+            track->SetRtxSSRC(rtp_packet->Ssrc());
           }
         }
       }
@@ -246,12 +246,12 @@ void PublishStream::SetLocalDescription() {
       tracks_.push_back(track);
       ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
       if (config.rtx_enabled)
-        ssrc_track_map_.insert(std::make_pair(config.rtx_ssrc, track));
+        ssrc_track_map_.insert(std::make_pair(*config.rtx_ssrc, track));
     }
     spdlog::debug(
         "PublishStreamTrack ssrc = {}, payload_type = {}"
         ", rtx_enabled = {}, rtx_ssrc = {}, rtx_payload_type = {}, nack_enabled = {}",
-        config.ssrc, config.payload_type, config.rtx_enabled, config.rtx_ssrc, config.rtx_payload_type, config.nack_enabled);
+        config.ssrc, config.payload_type, config.rtx_enabled, config.rtx_ssrc?*config.rtx_ssrc:-1, config.rtx_payload_type, config.nack_enabled);
   }
 }
 

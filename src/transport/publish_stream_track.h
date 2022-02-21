@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <optional>
 
 #include "boost/asio.hpp"
 #include "nack_requester.h"
@@ -22,7 +23,7 @@ class PublishStreamTrack : public Timer::Observer, public NackRequester::Observe
   struct Configuration {
     uint32_t ssrc;
     uint8_t payload_type;
-    uint32_t rtx_ssrc{0};
+    std::optional<uint32_t> rtx_ssrc;
     uint8_t rtx_payload_type{0};
     bool rtx_enabled{false};
     bool nack_enabled{false};
@@ -45,6 +46,7 @@ class PublishStreamTrack : public Timer::Observer, public NackRequester::Observe
   void Init();
   void Deinit();
   Configuration& Config();
+  void SetRtxSSRC(uint32_t ssrc);
   void SendRequestkeyFrame();
   void ReceiveDlrrSubBlock(const ReceiveTimeInfo& sub_block);
 
