@@ -47,65 +47,6 @@ std::optional<RTPHeaderExtensionType> RtpHeaderExtensionCapability::GetIdType(in
   return result->first;
 }
 
-std::unordered_map<RTPHeaderExtensionType, uint32_t> ServerSupportRtpExtensionIdMap::extension_id_map_ = {{kRtpExtensionMid, 10},
-                                                                                                          {kRtpExtensionRtpStreamId, 11},
-                                                                                                          {kRtpExtensionRepairedRtpStreamId, 12},
-                                                                                                          {kRtpExtensionTransportSequenceNumber, 13},
-                                                                                                          {kRtpExtensionAudioLevel, 14}};
-
-uint32_t ServerSupportRtpExtensionIdMap::GetIdByType(RTPHeaderExtensionType type) {
-  if (extension_id_map_.find(type) == extension_id_map_.end())
-    DCHECK(false);
-  return extension_id_map_.at(type);
-}
-
-nlohmann::json ServerSupportRtpExtensionIdMap::CreateSdpRtpExtensions(const std::string& media_type) {
-  DCHECK(media_type == "video" || media_type == "audio");
-  nlohmann::json extensions = nlohmann::json::array();
-  nlohmann::json extension;
-  extension["value"] = 10;
-  extension["direction"] = "";
-  extension["encrypt-uri"] = "";
-  extension["config"] = "";
-  extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:mid";
-  extensions.push_back(extension);
-  extension.clear();
-  extension["value"] = 11;
-  extension["direction"] = "";
-  extension["encrypt-uri"] = "";
-  extension["config"] = "";
-  extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id";
-  extensions.push_back(extension);
-  extension.clear();
-  extension["value"] = 12;
-  extension["direction"] = "";
-  extension["encrypt-uri"] = "";
-  extension["config"] = "";
-  extension["uri"] = "urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id";
-  extensions.push_back(extension);
-  extension.clear();
-  // TODO
-
-  extension["value"] = 13;
-  extension["direction"] = "";
-  extension["encrypt-uri"] = "";
-  extension["config"] = "";
-  extension["uri"] = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
-  extensions.push_back(extension);
-  extension.clear();
-
-  if (media_type == "audio") {
-    extension["value"] = 14;
-    extension["direction"] = "";
-    extension["encrypt-uri"] = "";
-    extension["config"] = "";
-    extension["uri"] = "urn:ietf:params:rtp-hdrext:ssrc-audio-level";
-    extensions.push_back(extension);
-    extension.clear();
-  }
-  return extensions;
-}
-
 std::optional<std::string> RtpMidExtension::Parse(uint8_t* data, size_t size) {
   std::string mid;
   if (size == 0 || data[0] == 0)  // Valid string extension can't be empty.

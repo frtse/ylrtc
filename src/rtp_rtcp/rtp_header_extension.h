@@ -45,15 +45,6 @@ class RtpHeaderExtensionCapability {
   std::unordered_map<RTPHeaderExtensionType, int> type_id_map_;
 };
 
-class ServerSupportRtpExtensionIdMap {
- public:
-  static uint32_t GetIdByType(RTPHeaderExtensionType type);
-  static nlohmann::json CreateSdpRtpExtensions(const std::string& media_type);
-
- private:
-  static std::unordered_map<RTPHeaderExtensionType, uint32_t> extension_id_map_;
-};
-
 class RtpMidExtension {
  public:
   static constexpr RTPHeaderExtensionType kType = kRtpExtensionMid;
