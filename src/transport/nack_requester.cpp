@@ -27,6 +27,10 @@ void NackRequester::Init() {
   timer_->AsyncWait(kUpdateIntervalMillis);
 }
 
+void NackRequester::Deinit() {
+  timer_->Stop();
+}
+
 void NackRequester::OnTimerTimeout() {
   std::vector<uint16_t> nack_batch = GetNackBatch(kTimeOnly);
   if (!nack_batch.empty()) {

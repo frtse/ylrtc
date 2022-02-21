@@ -25,6 +25,7 @@ class NackRequester : public Timer::Observer, public std::enable_shared_from_thi
 
   NackRequester(boost::asio::io_context& io_context, Observer* observer);
   void Init();
+  void Deinit();
 
   int OnReceivedPacket(uint16_t seq_num, bool is_keyframe);
   int OnReceivedPacket(uint16_t seq_num, bool is_keyframe, bool is_recovered);

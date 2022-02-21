@@ -26,6 +26,7 @@ class ReceiveSideTWCC : public Timer::Observer, public std::enable_shared_from_t
   ~ReceiveSideTWCC();
 
   void Init();
+  void Deinit();
   void IncomingPacket(int64_t arrival_time_ms, uint32_t ssrc, uint16_t transport_sequence_number);
 
   void SetSendPeriodicFeedback(bool send_periodic_feedback);

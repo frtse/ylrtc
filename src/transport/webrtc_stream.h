@@ -24,7 +24,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
     virtual void OnWebrtcStreamConnected(const std::string& stream_id) = 0;
     virtual void OnWebrtcStreamShutdown(const std::string& stream_id) = 0;
   };
-  WebrtcStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<Observer> observer);
+  WebrtcStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<Observer> observer);
   ~WebrtcStream();
 
   const std::string& GetStreamId() const;
@@ -34,7 +34,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
   const SdpNegotiator& GetSdpNegotiator() const;
 
   bool Start();
-  void Stop();
+  virtual void Stop();
   void ReceiveDataFromProxy(uint8_t* data, size_t size, udp::endpoint* ep);
   bool Connected() const;
 
@@ -73,5 +73,5 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
   std::string stream_id_;
   std::string room_id_;
   std::atomic<bool> stoped_{false};
-  std::shared_ptr<Observer> observer_;
+  std::weak_ptr<Observer> observer_;
 };

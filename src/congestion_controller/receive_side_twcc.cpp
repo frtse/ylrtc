@@ -31,6 +31,10 @@ void ReceiveSideTWCC::Init() {
   timer_->AsyncWait(TimeUntilNextProcess());
 }
 
+void ReceiveSideTWCC::Deinit() {
+  timer_->Stop();
+}
+
 void ReceiveSideTWCC::OnTimerTimeout() {
   Process();
   timer_->AsyncWait(TimeUntilNextProcess());

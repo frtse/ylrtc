@@ -16,7 +16,7 @@
 class SubscribeStream;
 class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer {
  public:
-  PublishStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer);
+  PublishStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer);
   ~PublishStream();
   bool SetRemoteDescription(const std::string& offer) override;
   std::optional<std::string> CreateAnswer() override;
@@ -28,6 +28,7 @@ class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer {
   void UpdateMuteInfo(const std::string& type, bool muted);
   bool HasVideo() const;
   bool HasAudio() const;
+  void Stop() override;
 
  private:
   void OnRtpPacketReceive(uint8_t* data, size_t length) override;

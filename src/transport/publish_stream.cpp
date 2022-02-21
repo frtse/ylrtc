@@ -9,7 +9,7 @@
 #include "subscribe_stream.h"
 #include "utils.h"
 
-PublishStream::PublishStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer)
+PublishStream::PublishStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer)
     : WebrtcStream(room_id, stream_id, observer), has_video_{false}, has_audio_{false} {
   receive_side_twcc_.reset(new ReceiveSideTWCC(work_thread_->MessageLoop(), [this](std::vector<std::unique_ptr<RtcpPacket>> packets) {
     for (auto& packet : packets) {
@@ -98,6 +98,16 @@ bool PublishStream::HasVideo() const {
 
 bool PublishStream::HasAudio() const {
   return has_audio_;
+}
+
+void PublishStream::Stop() {
+  WebrtcStream::Stop();
+  auto self(shared_from_this());
+  work_thread_->PostAsync([self, this] {
+    for (auto track : tracks_)
+      track->Deinit();
+      receive_side_twcc_->Deinit();
+  });
 }
 
 void PublishStream::RegisterDataObserver(std::shared_ptr<SubscribeStream> observer) {

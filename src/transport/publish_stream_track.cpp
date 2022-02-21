@@ -30,6 +30,12 @@ void PublishStreamTrack::Init() {
   rtcp_timer_->AsyncWait(report_interval_);
 }
 
+void PublishStreamTrack::Deinit() {
+  rtcp_timer_->Stop();
+  if (nack_request_)
+    nack_request_->Deinit();
+}
+
 void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
   bool is_rtx = false;
   if (configuration_.rtx_enabled && configuration_.rtx_ssrc == rtp_packet->Ssrc()) {

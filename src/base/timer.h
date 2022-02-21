@@ -28,10 +28,12 @@ class Timer : public std::enable_shared_from_this<Timer> {
    * @param timeoutMillis
    */
   void AsyncWait(uint64_t timeoutMillis);
+  void Stop();
 
  private:
   void OnTimeout(const boost::system::error_code& ec);
   boost::asio::io_context& io_context_;
   std::unique_ptr<boost::asio::deadline_timer> timer_;
   std::weak_ptr<Observer> observer_;
+  bool stoped_;
 };

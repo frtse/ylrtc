@@ -18,7 +18,7 @@ std::optional<std::string> SubscribeStream::CreateAnswer() {
   return sdp_.CreateSubscribeAnswer();
 }
 
-SubscribeStream::SubscribeStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer)
+SubscribeStream::SubscribeStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer)
     : WebrtcStream(room_id, stream_id, observer) {}
 
 SubscribeStream::~SubscribeStream() {}
@@ -80,6 +80,15 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
       spdlog::warn("SubscribeStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
       return;
     }
+  });
+}
+
+void SubscribeStream::Stop() {
+  WebrtcStream::Stop();
+  auto self(shared_from_this());
+  work_thread_->PostAsync([self, this] {
+    for (auto track : tracks_)
+      track->Deinit();
   });
 }
 

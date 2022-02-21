@@ -12,7 +12,7 @@
 
 extern thread_local MemoryPool memory_pool;
 
-WebrtcStream::WebrtcStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<Observer> observer)
+WebrtcStream::WebrtcStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<Observer> observer)
     : observer_{observer},
       connection_established_(false),
       stream_id_{stream_id},
@@ -144,8 +144,9 @@ void WebrtcStream::OnDtlsTransportSetup(SrtpSession::CipherSuite suite,
     Shutdown();
     return;
   }
-  if (observer_)
-    observer_->OnWebrtcStreamConnected(stream_id_);
+  auto shared = observer_.lock();
+  if (shared)
+    shared->OnWebrtcStreamConnected(stream_id_);
   connection_established_ = true;
 }
 
@@ -161,8 +162,9 @@ void WebrtcStream::OnDtlsTransportShutdown() {
 void WebrtcStream::Shutdown() {
   if (stoped_)
     return;
-  if (observer_)
-    observer_->OnWebrtcStreamShutdown(stream_id_);
+  auto shared = observer_.lock();
+  if (shared)
+    shared->OnWebrtcStreamShutdown(stream_id_);
   stoped_ = true;
 }
 

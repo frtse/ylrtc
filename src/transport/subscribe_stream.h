@@ -13,13 +13,14 @@
 
 class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observer {
  public:
-  SubscribeStream(const std::string& room_id, const std::string& stream_id, std::shared_ptr<WebrtcStream::Observer> observer);
+  SubscribeStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer);
   ~SubscribeStream();
   void SetSdpNegotiator(const SdpNegotiator& publish_sdp);
   bool SetRemoteDescription(const std::string& offer) override;
   std::optional<std::string> CreateAnswer() override;
   void SetLocalDescription() override;
   void OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket> rtp_packet);
+  void Stop() override;
 
  private:
   void OnRtpPacketReceive(uint8_t* data, size_t length) override;

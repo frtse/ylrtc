@@ -13,6 +13,10 @@ void SubscribeStreamTrack::Init() {
   rtcp_timer_->AsyncWait(report_interval_);
 }
 
+void SubscribeStreamTrack::Deinit() {
+  rtcp_timer_->Stop();
+}
+
 SubscribeStreamTrack::Configuration& SubscribeStreamTrack::Config() {
   return configuration_;
 }
