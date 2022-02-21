@@ -25,6 +25,8 @@ void Timer::OnTimeout(const boost::system::error_code& ec) {
 }
 
 void Timer::Stop() {
+  if (stoped_)
+    return;
   timer_->cancel();
   stoped_ = true;
 }

@@ -46,14 +46,11 @@ const std::string& WebrtcStream::GetStreamId() const {
 }
 
 void WebrtcStream::Stop() {
-  auto self(shared_from_this());
-  work_thread_->PostAsync([self, this] {
-    if (dtls_transport_)
-      dtls_transport_->Stop();
-    if (udp_socket_)
-      udp_socket_->Close();
-    Shutdown();
-  });
+  if (dtls_transport_)
+    dtls_transport_->Stop();
+  if (udp_socket_)
+    udp_socket_->Close();
+  Shutdown();
 }
 
 void WebrtcStream::ReceiveDataFromProxy(uint8_t* data, size_t size, udp::endpoint* ep) {
@@ -162,10 +159,10 @@ void WebrtcStream::OnDtlsTransportShutdown() {
 void WebrtcStream::Shutdown() {
   if (stoped_)
     return;
+  stoped_ = true;
   auto shared = observer_.lock();
   if (shared)
     shared->OnWebrtcStreamShutdown(stream_id_);
-  stoped_ = true;
 }
 
 void WebrtcStream::SendRtp(uint8_t* data, size_t size) {

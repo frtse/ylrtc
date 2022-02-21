@@ -31,7 +31,8 @@ void PublishStreamTrack::Init() {
 }
 
 void PublishStreamTrack::Deinit() {
-  rtcp_timer_->Stop();
+  if (rtcp_timer_)
+    rtcp_timer_->Stop();
   if (nack_request_)
     nack_request_->Deinit();
 }

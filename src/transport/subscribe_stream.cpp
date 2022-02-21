@@ -84,9 +84,11 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
 }
 
 void SubscribeStream::Stop() {
-  WebrtcStream::Stop();
   auto self(shared_from_this());
   work_thread_->PostAsync([self, this] {
+    if (stoped_)
+      return;
+    WebrtcStream::Stop();
     for (auto track : tracks_)
       track->Deinit();
   });
