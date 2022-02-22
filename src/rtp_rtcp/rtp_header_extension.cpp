@@ -49,35 +49,23 @@ std::optional<RTPHeaderExtensionType> RtpHeaderExtensionCapability::GetIdType(in
 
 std::optional<std::string> RtpMidExtension::Parse(uint8_t* data, size_t size) {
   std::string mid;
-  if (size == 0 || data[0] == 0)  // Valid string extension can't be empty.
+  if (size == 0 && !data)
     return std::nullopt;
-  const char* cstr = reinterpret_cast<const char*>(data);
-  // If there is a \0 character in the middle of the `data`, treat it as end
-  // of the string. Well-formed string extensions shouldn't contain it.
-  mid.assign(cstr, strnlen(cstr, size));
-  return mid;
+  return mid.assign((char*)data, size);
 }
 
 std::optional<std::string> RtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
   std::string rtp_stream_id;
-  if (size == 0 || data[0] == 0)  // Valid string extension can't be empty.
+  if (size == 0 && !data)
     return std::nullopt;
-  const char* cstr = reinterpret_cast<const char*>(data);
-  // If there is a \0 character in the middle of the `data`, treat it as end
-  // of the string. Well-formed string extensions shouldn't contain it.
-  rtp_stream_id.assign(cstr, strnlen(cstr, size));
-  return rtp_stream_id;
+  return rtp_stream_id.assign((char*)data, size);
 }
 
 std::optional<std::string> RepairedRtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
   std::string repaired_rtp_stream_id;
-  if (size == 0 || data[0] == 0)  // Valid string extension can't be empty.
-    return nullptr;
-  const char* cstr = reinterpret_cast<const char*>(data);
-  // If there is a \0 character in the middle of the `data`, treat it as end
-  // of the string. Well-formed string extensions shouldn't contain it.
-  repaired_rtp_stream_id.assign(cstr, strnlen(cstr, size));
-  return repaired_rtp_stream_id;
+  if (size == 0 && !data)
+    return std::nullopt;
+  return repaired_rtp_stream_id.assign((char*)data, size);
 }
 
 std::optional<uint16_t> TransportSequenceNumberExtension::Parse(uint8_t* data, size_t size) {
