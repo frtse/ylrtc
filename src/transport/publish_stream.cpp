@@ -11,15 +11,14 @@
 
 PublishStream::PublishStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer)
     : WebrtcStream(room_id, stream_id, observer), has_video_{false}, has_audio_{false} {
-  receive_side_twcc_.reset(new ReceiveSideTWCC(work_thread_->MessageLoop(), [this](std::vector<std::unique_ptr<RtcpPacket>> packets) {
-    for (auto& packet : packets) {
-      SendRtcp(*packet);
-    }
-  }));
-  receive_side_twcc_->Init();
 }
 
 PublishStream::~PublishStream() {}
+
+void PublishStream::Init() {
+  receive_side_twcc_.reset(new ReceiveSideTWCC(work_thread_->MessageLoop(), std::dynamic_pointer_cast<PublishStream>(shared_from_this())));
+  receive_side_twcc_->Init();
+}
 
 bool PublishStream::SetRemoteDescription(const std::string& offer) {
   return sdp_.SetPublishOffer(offer);
@@ -257,4 +256,9 @@ void PublishStream::SetLocalDescription() {
 
 void PublishStream::OnPublishStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) {
   SendRtcp(rtcp_packet);
+}
+
+void PublishStream::OnReceiveSideTwccSendTransportFeedback(std::unique_ptr<RtcpPacket> packet) {
+  if (packet)
+    SendRtcp(*packet);
 }

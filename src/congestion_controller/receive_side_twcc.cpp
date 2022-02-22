@@ -12,19 +12,13 @@
 // than the numerical limit since we often convert to microseconds.
 static constexpr int64_t kMaxTimeMs = std::numeric_limits<int64_t>::max() / 1000;
 
-ReceiveSideTWCC::ReceiveSideTWCC(boost::asio::io_context& io_context, TransportFeedbackSender feedback_sender)
-    : feedback_sender_(std::move(feedback_sender)),
-      last_process_time_ms_(-1),
+ReceiveSideTWCC::ReceiveSideTWCC(boost::asio::io_context& io_context, std::weak_ptr<Observer> observer)
+    : observer_(observer),
+      last_process_time_millis_(-1),
       media_ssrc_(0),
       feedback_packet_count_(0),
-      send_interval_ms_(send_config_.default_interval),
-      send_periodic_feedback_(true),
-      previous_abs_send_time_(0),
       io_context_{io_context} {
-  spdlog::info("Maximum interval between transport feedback RTCP messages (ms): {}", send_config_.max_interval);
 }
-
-ReceiveSideTWCC::~ReceiveSideTWCC() {}
 
 void ReceiveSideTWCC::Init() {
   timer_.reset(new Timer(io_context_, shared_from_this()));
@@ -33,20 +27,6 @@ void ReceiveSideTWCC::Init() {
 
 void ReceiveSideTWCC::Deinit() {
   timer_->Stop();
-}
-
-void ReceiveSideTWCC::OnTimerTimeout() {
-  Process();
-  timer_->AsyncWait(TimeUntilNextProcess());
-}
-
-void ReceiveSideTWCC::MaybeCullOldPackets(int64_t sequence_number, int64_t arrival_time_ms) {
-  if (periodic_window_start_seq_.has_value()) {
-    if (*periodic_window_start_seq_ >= packet_arrival_times_.end_sequence_number()) {
-      // Start new feedback packet, cull old packets.
-      packet_arrival_times_.RemoveOldPackets(sequence_number, arrival_time_ms - send_config_.back_window);
-    }
-  }
 }
 
 void ReceiveSideTWCC::IncomingPacket(int64_t arrival_time_ms, uint32_t ssrc, uint16_t transport_sequence_number) {
@@ -59,12 +39,10 @@ void ReceiveSideTWCC::IncomingPacket(int64_t arrival_time_ms, uint32_t ssrc, uin
 
   seq = unwrapper_.Unwrap(transport_sequence_number);
 
-  if (send_periodic_feedback_) {
-    MaybeCullOldPackets(seq, arrival_time_ms);
+  MaybeCullOldPackets(seq, arrival_time_ms);
 
-    if (!periodic_window_start_seq_ || seq < *periodic_window_start_seq_) {
-      periodic_window_start_seq_ = seq;
-    }
+  if (!periodic_window_start_seq_ || seq < *periodic_window_start_seq_) {
+    periodic_window_start_seq_ = seq;
   }
 
   // We are only interested in the first time a packet is received.
@@ -81,28 +59,31 @@ void ReceiveSideTWCC::IncomingPacket(int64_t arrival_time_ms, uint32_t ssrc, uin
 }
 
 int64_t ReceiveSideTWCC::TimeUntilNextProcess() {
-  if (!send_periodic_feedback_) {
-    // Wait a day until next process.
-    return 24 * 60 * 60 * 1000;
-  } else if (last_process_time_ms_ != -1) {
+  if (last_process_time_millis_ != -1) {
     int64_t now = TimeMillis();
-    if (now - last_process_time_ms_ < send_interval_ms_)
-      return last_process_time_ms_ + send_interval_ms_ - now;
+    if (now - last_process_time_millis_ < kSendIntervalMillis)
+      return last_process_time_millis_ + kSendIntervalMillis - now;
   }
   return 0;
 }
 
 void ReceiveSideTWCC::Process() {
-  if (!send_periodic_feedback_) {
-    return;
-  }
-  last_process_time_ms_ = TimeMillis();
-
+  last_process_time_millis_ = TimeMillis();
   SendPeriodicFeedbacks();
 }
 
-void ReceiveSideTWCC::SetSendPeriodicFeedback(bool send_periodic_feedback) {
-  send_periodic_feedback_ = send_periodic_feedback;
+void ReceiveSideTWCC::OnTimerTimeout() {
+  Process();
+  timer_->AsyncWait(TimeUntilNextProcess());
+}
+
+void ReceiveSideTWCC::MaybeCullOldPackets(int64_t sequence_number, int64_t arrival_time_ms) {
+  if (periodic_window_start_seq_.has_value()) {
+    if (*periodic_window_start_seq_ >= packet_arrival_times_.end_sequence_number()) {
+      // Start new feedback packet, cull old packets.
+      packet_arrival_times_.RemoveOldPackets(sequence_number, arrival_time_ms - kBackWindowMillis);
+    }
+  }
 }
 
 void ReceiveSideTWCC::SendPeriodicFeedbacks() {
@@ -117,17 +98,11 @@ void ReceiveSideTWCC::SendPeriodicFeedbacks() {
         /*include_timestamps=*/true, periodic_window_start_seq_.value(), packet_arrival_times_end_seq,
         /*is_periodic_update=*/true);
 
-    if (feedback_packet == nullptr) {
+    if (!feedback_packet)
       break;
-    }
-
-    std::vector<std::unique_ptr<RtcpPacket>> packets;
-    packets.push_back(std::move(feedback_packet));
-
-    feedback_sender_(std::move(packets));
-    // Note: Don't erase items from packet_arrival_times_ after sending, in
-    // case they need to be re-sent after a reordering. Removal will be
-    // handled by OnPacketArrival once packets are too old.
+    auto shared = observer_.lock();
+    if (shared)
+      shared->OnReceiveSideTwccSendTransportFeedback(std::move(feedback_packet));
   }
 }
 
@@ -156,8 +131,6 @@ std::unique_ptr<TransportFeedback> ReceiveSideTWCC::MaybeBuildFeedbackPacket(boo
 
     if (feedback_packet == nullptr) {
       feedback_packet = std::make_unique<TransportFeedback>(include_timestamps);
-      // TODO(sprang): Measure receive times in microseconds and remove the
-      // conversions below.
       feedback_packet->SetMediaSsrc(media_ssrc_);
       // Base sequence number is the expected first sequence number. This is
       // known, but we might not have actually received it, so the base time
@@ -166,16 +139,13 @@ std::unique_ptr<TransportFeedback> ReceiveSideTWCC::MaybeBuildFeedbackPacket(boo
       feedback_packet->SetFeedbackSequenceNumber(feedback_packet_count_++);
     }
 
-    if (!feedback_packet->AddReceivedPacket(static_cast<uint16_t>(seq & 0xFFFF), arrival_time_ms * 1000)) {
+    if (!feedback_packet->AddReceivedPacket(static_cast<uint16_t>(seq & 0xFFFF), arrival_time_ms * 1000))
       // Could not add timestamp, feedback packet might be full. Return and
       // try again with a fresh packet.
       break;
-    }
-
     next_sequence_number = seq + 1;
   }
-  if (is_periodic_update) {
+  if (is_periodic_update)
     periodic_window_start_seq_ = next_sequence_number;
-  }
   return feedback_packet;
 }

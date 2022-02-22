@@ -14,10 +14,13 @@
 #include "webrtc_stream.h"
 
 class SubscribeStream;
-class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer {
+class PublishStream : public WebrtcStream
+  , public PublishStreamTrack::Observer
+  , public ReceiveSideTWCC::Observer {
  public:
   PublishStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer);
   ~PublishStream();
+  void Init();
   bool SetRemoteDescription(const std::string& offer) override;
   std::optional<std::string> CreateAnswer() override;
   void SetLocalDescription() override;
@@ -34,6 +37,8 @@ class PublishStream : public WebrtcStream, public PublishStreamTrack::Observer {
   void OnRtpPacketReceive(uint8_t* data, size_t length) override;
   void OnRtcpPacketReceive(uint8_t* data, size_t length) override;
   void OnPublishStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) override;
+  void OnReceiveSideTwccSendTransportFeedback(std::unique_ptr<RtcpPacket> packet) override;
+
   std::list<std::shared_ptr<SubscribeStream>> data_observers_;
   std::vector<std::shared_ptr<PublishStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<PublishStreamTrack>> ssrc_track_map_;

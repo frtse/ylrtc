@@ -56,6 +56,7 @@ std::shared_ptr<PublishStream> Room::ParticipantPublish(const std::string& parti
       break;
   }
   auto publish_stream = std::make_shared<PublishStream>(id_, stream_id, shared_from_this());
+  publish_stream->Init();
   if (!publish_stream->SetRemoteDescription(offer))
     return nullptr;
   if (!publish_stream->Start())

@@ -18,7 +18,9 @@
 #include "threads.h"
 #include "timer.h"
 
-class PublishStreamTrack : public Timer::Observer, public NackRequester::Observer, public std::enable_shared_from_this<PublishStreamTrack> {
+class PublishStreamTrack : public Timer::Observer
+  , public NackRequester::Observer
+  , public std::enable_shared_from_this<PublishStreamTrack> {
  public:
   struct Configuration {
     uint32_t ssrc;
