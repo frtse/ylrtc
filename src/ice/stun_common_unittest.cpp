@@ -1,12 +1,11 @@
 #include "stun_common.h"
 
 #include <string>
+#include <cstdint>
 
 #include "gtest/gtest.h"
 
-const char kTestUserName[] = "abcd:efgh";
-
-static const unsigned char kStunMessageWithUsername[] = {
+static uint8_t kStunMessageWithUsername[] = {
   0x00, 0x01, 0x00, 0x0c,
   0x21, 0x12, 0xa4, 0x42,
   0xe3, 0xa9, 0x46, 0xe1,
@@ -19,7 +18,7 @@ static const unsigned char kStunMessageWithUsername[] = {
 };
 
 TEST(STUN_COMMON, IsStun) {
-  EXPECT_TRUE(IsStun((uint8_t*)kStunMessageWithUsername, sizeof(kStunMessageWithUsername) / sizeof(unsigned char)));
+  EXPECT_TRUE(IsStun(kStunMessageWithUsername, sizeof(kStunMessageWithUsername) / sizeof(uint8_t)));
 }
 
 TEST(STUN_COMMON, MakeUfrag) {
@@ -37,7 +36,7 @@ TEST(STUN_COMMON, ExtractUfragInfo) {
 }
 
 TEST(STUN_COMMON, FastGetLocalUfrag) {
-  auto result = FastGetLocalUfrag((uint8_t*)kStunMessageWithUsername, sizeof(kStunMessageWithUsername) / sizeof(unsigned char));
+  auto result = FastGetLocalUfrag(kStunMessageWithUsername, sizeof(kStunMessageWithUsername) / sizeof(uint8_t));
   ASSERT_TRUE(result);
   EXPECT_EQ(*result, "abcd");
 }
