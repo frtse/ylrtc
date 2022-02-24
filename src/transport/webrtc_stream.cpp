@@ -20,8 +20,7 @@ WebrtcStream::WebrtcStream(const std::string& room_id, const std::string& stream
       work_thread_{WorkerThreadPool::GetInstance().GetWorkerThread()} {}
 
 bool WebrtcStream::Start() {
-  ice_lite_.reset(new IceLite(sdp_.GetRemoteIceUfrag(), this));
-  ice_lite_->LocalUfrag(MakeUfrag(room_id_, stream_id_));
+  ice_lite_.reset(new IceLite(room_id_, stream_id_, sdp_.GetRemoteIceUfrag(), this));
   send_srtp_session_.reset(new SrtpSession());
   recv_srtp_session_.reset(new SrtpSession());
   dtls_transport_.reset(new DtlsTransport(work_thread_, this));

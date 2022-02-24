@@ -2,10 +2,11 @@
 
 #include "spdlog/spdlog.h"
 #include "stun_message.h"
+#include "stun_common.h"
 #include "utils.h"
 
-IceLite::IceLite(const std::string& remote_ufrag, Observer* observer)
-    : local_ufrag_{random_.RandomString(kDefaultUfragLength)},
+IceLite::IceLite(const std::string& room_id, const std::string& stream_id, const std::string& remote_ufrag, Observer* observer)
+    : local_ufrag_{MakeUfrag(room_id, stream_id)},
       local_password_{random_.RandomString(kDefaultPasswordLength)},
       remote_ufrag_{remote_ufrag},
       observer_{observer} {}
@@ -38,10 +39,6 @@ void IceLite::ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remot
 
 const std::string& IceLite::LocalUfrag() const {
   return local_ufrag_;
-}
-
-void IceLite::LocalUfrag(const std::string& ufrag) {
-  local_ufrag_ = ufrag;
 }
 
 const std::string& IceLite::LocalPassword() const {

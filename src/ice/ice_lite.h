@@ -24,7 +24,7 @@ class IceLite {
     virtual void OnIceConnectionError() = 0;
   };
 
-  IceLite(const std::string& remote_ufrag, Observer* observer);
+  IceLite(const std::string& room_id, const std::string& stream_id, const std::string& remote_ufrag, Observer* observer);
 
   /**
    * @brief Process the STUN message sent by [remote_ep].
@@ -32,7 +32,6 @@ class IceLite {
    */
   void ProcessStunMessage(uint8_t* data, size_t len, udp::endpoint* remote_ep);
   const std::string& LocalUfrag() const;
-  void LocalUfrag(const std::string& ufrag);
   const std::string& LocalPassword() const;
   const udp::endpoint* SelectedCandidate() const;
 
@@ -40,7 +39,6 @@ class IceLite {
   void LocalPassword(const std::string& pwd);
 
  private:
-  constexpr static uint32_t kDefaultUfragLength = 4;
   constexpr static uint32_t kDefaultPasswordLength = 24;
   Random random_;
   std::string local_ufrag_;
