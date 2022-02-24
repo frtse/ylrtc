@@ -7,14 +7,18 @@
 #include "spdlog/spdlog.h"
 
 int main(int argc, char** argv) {
-  // Load configuration file.
+  // Load configuration file. some tests require configuration file.
   if (!ServerConfig::GetInstance().Load("../conf/config.toml")) {
     spdlog::error("Failed to load configuration file.");
     return EXIT_FAILURE;
   }
+
   // Enable core dump.
   rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
-  setrlimit(RLIMIT_CORE, &l);
+  if (setrlimit(RLIMIT_CORE, &l) != 0) {
+    spdlog::warn("Core dumps may be truncated or non-existant.");
+  }
+
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
