@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "gtest/gtest.h"
+#include "utils.h"
 
 /*  Test STUN message.
     Message Type: 0x0001 (Binding Request)

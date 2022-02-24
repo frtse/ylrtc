@@ -51,3 +51,7 @@ const std::string& IceLite::LocalPassword() const {
 const udp::endpoint* IceLite::SelectedCandidate() const {
   return &selected_candidate_;
 }
+
+void IceLite::LocalPassword(const std::string& pwd) {
+  local_password_ = pwd;
+}

@@ -36,6 +36,9 @@ class IceLite {
   const std::string& LocalPassword() const;
   const udp::endpoint* SelectedCandidate() const;
 
+  // For test.
+  void LocalPassword(const std::string& pwd);
+
  private:
   constexpr static uint32_t kDefaultUfragLength = 4;
   constexpr static uint32_t kDefaultPasswordLength = 24;
