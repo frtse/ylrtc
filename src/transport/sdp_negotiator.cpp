@@ -80,6 +80,8 @@ std::optional<std::string> SdpNegotiator::CreatePublishAnswer() {
   std::string audio_codec = "opus";
   publish_anwser_sdp_ = publish_offer_sdp_;
   auto& media = publish_anwser_sdp_.at("media");
+  publish_anwser_sdp_.erase("iceOptions");
+  publish_anwser_sdp_.erase("fingerprint");
 
   for (int i = 0; i < media.size(); ++i) {
     auto& media_section = media[i];
