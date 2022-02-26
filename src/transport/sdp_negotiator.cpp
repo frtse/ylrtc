@@ -155,6 +155,12 @@ std::optional<std::string> SdpNegotiator::CreatePublishAnswer() {
                                   return item.at("payload") != codec_payload;
                                 }),
                  fmtp.end());
+      if (select_codec == "opus") {
+        for (auto& f : fmtp) {
+          if (f.at("payload") == codec_payload)
+            f.at("config") = std::string(f.at("config")) + std::string(";usedtx=1");
+        }
+      }
     }
 
     if (media_section.find("rtp") != media_section.end()) {
