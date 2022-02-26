@@ -82,6 +82,8 @@ std::optional<std::string> SdpNegotiator::CreatePublishAnswer() {
   auto& media = publish_anwser_sdp_.at("media");
   publish_anwser_sdp_.erase("iceOptions");
   publish_anwser_sdp_.erase("fingerprint");
+  publish_anwser_sdp_.erase("direction");
+  publish_anwser_sdp_.erase("extmapAllowMixed");
 
   for (int i = 0; i < media.size(); ++i) {
     auto& media_section = media[i];
@@ -89,6 +91,8 @@ std::optional<std::string> SdpNegotiator::CreatePublishAnswer() {
     media_section.erase("ssrcGroups");
     media_section.erase("iceOptions");
     media_section.erase("candidates");
+    media_section.erase("extmapAllowMixed");
+
     media_section["candidates"] = nlohmann::json::array();
     media_section["candidates"][0] = local_candidate_;
     media_section["direction"] = "recvonly";
