@@ -23,3 +23,4 @@ logDirectory = "./logs"
 [system]
 #Whether to run as a daemon.
 runAsdaemon = false
+coreDump = true

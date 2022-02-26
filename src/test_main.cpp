@@ -13,10 +13,12 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  // Enable core dump.
-  rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
-  if (setrlimit(RLIMIT_CORE, &l) != 0) {
-    spdlog::warn("Core dumps may be truncated or non-existant.");
+  if (ServerConfig::GetInstance().CoreDump()) {
+    // Enable core dump.
+    rlimit l = {RLIM_INFINITY, RLIM_INFINITY};
+    if (setrlimit(RLIMIT_CORE, &l) != 0) {
+      spdlog::warn("Core dumps may be truncated or non-existant.");
+    }
   }
 
   testing::InitGoogleTest(&argc, argv);

@@ -6,8 +6,9 @@ Webrtc conference service.
 
 ## Features
 + Efficient multi-threaded architecture.
-+ Transport-wide Congestion Control.
 + Single port.
++ Transport-wide Congestion Control.
++ Web client SDK.
 
 ## Install dependencies
 ./install.sh
