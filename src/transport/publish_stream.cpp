@@ -71,17 +71,6 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
     observer->OnPublishStreamRtpPacketReceive(rtp_packet);
 }
 
-void PublishStream::SendRequestkeyFrame() {
-  auto self(shared_from_this());
-  work_thread_->PostAsync([self, this] {
-    for (auto& track : tracks_) {
-      auto& config = track->Config();
-      if (!config.audio)
-        track->SendRequestkeyFrame();
-    }
-  });
-}
-
 void PublishStream::UpdateMuteInfo(const std::string& type, bool muted) {
   if (type == "audio")
     has_audio_ = !muted;
@@ -261,4 +250,17 @@ void PublishStream::OnPublishStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) 
 void PublishStream::OnReceiveSideTwccSendTransportFeedback(std::unique_ptr<RtcpPacket> packet) {
   if (packet)
     SendRtcp(*packet);
+}
+
+void PublishStream::OnSubscribeStreamFrameRequested(const std::string& rid) {
+  auto self(shared_from_this());
+  work_thread_->PostAsync([self, this, rid] {
+    for (auto& track : tracks_) {
+      auto& config = track->Config();
+      if (rid.empty() && !config.audio)
+        track->SendRequestkeyFrame();
+      else if (!config.audio && config.rid == rid)
+        track->SendRequestkeyFrame();
+    }
+  });
 }

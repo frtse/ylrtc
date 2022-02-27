@@ -18,8 +18,8 @@ std::optional<std::string> SubscribeStream::CreateAnswer() {
   return sdp_.CreateSubscribeAnswer();
 }
 
-SubscribeStream::SubscribeStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer)
-    : WebrtcStream(room_id, stream_id, observer) {}
+SubscribeStream::SubscribeStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer, std::weak_ptr<SubscribeStreamObserver> subscribe_stream_observer)
+    : WebrtcStream(room_id, stream_id, observer), subscribe_stream_observer_{subscribe_stream_observer} {}
 
 SubscribeStream::~SubscribeStream() {}
 
@@ -64,6 +64,14 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
   work_thread_->PostAsync([rtp_packet, self, this] {
     if (!connection_established_)
       return;
+    if (!data_received_) {
+      if (!rtp_packet->IsKeyFrame()) {
+        auto shared = subscribe_stream_observer_.lock();
+        if (shared)
+          shared->OnSubscribeStreamFrameRequested();
+      }
+      data_received_ = true;
+    }
     std::unique_ptr<RtpPacket> clone_packet = std::make_unique<RtpPacket>(*rtp_packet);
     if (ssrc_track_map_.find(clone_packet->Ssrc()) != ssrc_track_map_.end()) {
       clone_packet->UpdateExtensionCapability(ssrc_track_map_.at(clone_packet->Ssrc())->Config().extension_capability);

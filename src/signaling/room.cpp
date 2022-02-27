@@ -89,7 +89,7 @@ std::shared_ptr<SubscribeStream> Room::ParticipantSubscribe(const std::string& s
     if (!StreamIdExist(subscribe_stream_id))
       break;
   }
-  auto subscribe_stream = std::make_shared<SubscribeStream>(id_, subscribe_stream_id, shared_from_this());
+  auto subscribe_stream = std::make_shared<SubscribeStream>(id_, subscribe_stream_id, shared_from_this(), publish_stream);
   subscribe_stream->SetSdpNegotiator(publish_stream->GetSdpNegotiator());
   if (!subscribe_stream->SetRemoteDescription(sdp))
     return nullptr;
@@ -114,19 +114,6 @@ void Room::OnWebrtcStreamConnected(const std::string& stream_id) {
             Notification::MakeStreamAddedNotification(id_, iter->first, (*publish_streams_iter)->GetStreamId(), (*publish_streams_iter)->GetSdpNegotiator());
         SignalingServer::GetInstance().Notify(notification);
       }
-    }
-
-    for (auto publish_subscribes_map_iter = publish_subscribes_map_.begin(); publish_subscribes_map_iter != publish_subscribes_map_.end();
-         ++publish_subscribes_map_iter) {
-      auto& subscribe_stream_set = publish_subscribes_map_iter->second;
-      auto publish_stream = publish_subscribes_map_iter->first;
-      for (auto subscribe_stream_set_iter = subscribe_stream_set.begin(); subscribe_stream_set_iter != subscribe_stream_set.end();
-           ++subscribe_stream_set_iter) {
-        if ((*subscribe_stream_set_iter)->GetStreamId() == stream_id)
-          publish_stream->SendRequestkeyFrame();
-      }
-      //if (publish_stream->GetStreamId() == stream_id)
-        //publish_stream->SendRequestkeyFrame();
     }
   });
 }

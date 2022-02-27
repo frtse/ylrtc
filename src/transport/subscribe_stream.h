@@ -6,14 +6,18 @@
 #include <vector>
 #include <optional>
 
-#include "publish_stream.h"
 #include "rtp_packet.h"
 #include "subscribe_stream_track.h"
 #include "webrtc_stream.h"
 
+class SubscribeStreamObserver {
+  public:
+  virtual void OnSubscribeStreamFrameRequested(const std::string& rid = "") = 0;
+};
+
 class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observer {
  public:
-  SubscribeStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer);
+  SubscribeStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer, std::weak_ptr<SubscribeStreamObserver> subscribe_stream_observer);
   ~SubscribeStream();
   void SetSdpNegotiator(const SdpNegotiator& publish_sdp);
   bool SetRemoteDescription(const std::string& offer) override;
@@ -33,5 +37,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   void OnSubscribeStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) override;
   std::vector<std::shared_ptr<SubscribeStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<SubscribeStreamTrack>> ssrc_track_map_;
+  std::weak_ptr<SubscribeStreamObserver> subscribe_stream_observer_;
   uint64_t transport_seq_{0};
+  bool data_received_{false};
 };
