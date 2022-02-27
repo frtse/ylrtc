@@ -79,12 +79,12 @@ std::optional<std::string> SdpNegotiator::CreatePublishAnswer() {
   std::string video_codec = "VP8";
   std::string audio_codec = "opus";
   publish_anwser_sdp_ = publish_offer_sdp_;
-  auto& media = publish_anwser_sdp_.at("media");
   publish_anwser_sdp_.erase("iceOptions");
   publish_anwser_sdp_.erase("fingerprint");
   publish_anwser_sdp_.erase("direction");
   publish_anwser_sdp_.erase("extmapAllowMixed");
 
+  auto& media = publish_anwser_sdp_.at("media");
   for (int i = 0; i < media.size(); ++i) {
     auto& media_section = media[i];
     media_section.erase("ssrcs");

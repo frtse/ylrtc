@@ -125,8 +125,8 @@ void Room::OnWebrtcStreamConnected(const std::string& stream_id) {
         if ((*subscribe_stream_set_iter)->GetStreamId() == stream_id)
           publish_stream->SendRequestkeyFrame();
       }
-      if (publish_stream->GetStreamId() == stream_id)
-        publish_stream->SendRequestkeyFrame();
+      //if (publish_stream->GetStreamId() == stream_id)
+        //publish_stream->SendRequestkeyFrame();
     }
   });
 }
