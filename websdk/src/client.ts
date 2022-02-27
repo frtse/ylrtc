@@ -10,17 +10,19 @@ export default class Client extends EventDispatcher {
   private participantId_: any;
   private joined_: any;
   private mediaStream_: any;
+  private roomId_: string;
   constructor(signallingServerIp, signallingServerPort) {
     super();
     this.signaling_ = new Signaling();
     this.signallingServerIp_ = signallingServerIp;
     this.signallingServerPort_ = signallingServerPort;
-    this.participantId_ = '';
+    this.participantId_ = "";
     this.joined_ = false;
     this.mediaStream_ = null;
+    this.roomId_ = "";
   }
 
-  async join(roomId, participantId) {
+  async join(roomId: string, participantId: string) {
     if (this.joined_)
       throw "Already joined meeting.";
     let signalingUrl = "wss://" + this.signallingServerIp_ + ":" + this.signallingServerPort_;
@@ -38,6 +40,7 @@ export default class Client extends EventDispatcher {
       throw "Join room failed.";
     this.participantId_ = participantId;
     this.joined_ = true;
+    this.roomId_ = roomId;
     return res.roomInfo;
   }
 

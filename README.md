@@ -9,6 +9,7 @@ Webrtc conference service.
 + Single port.
 + Transport-wide Congestion Control.
 + Web client SDK.
++ simulcast
 
 ## Install dependencies
 ./install.sh

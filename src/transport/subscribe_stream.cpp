@@ -80,14 +80,25 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
       if (!rid) {
         rid = clone_packet->GetExtensionValue<RepairedRtpStreamIdExtension>();
       }
-      if (rid && *rid != "1")
+      if (rid && *rid != current_layer_rid_)
         return;
-      SendRtp(clone_packet->Data(), clone_packet->Size());
       ssrc_track_map_.at(clone_packet->Ssrc())->SendRtpPacket(std::move(clone_packet));
     } else {
       spdlog::warn("SubscribeStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
       return;
     }
+  });
+}
+
+void SubscribeStream::SetSimulcastLayer(const std::string& rid) {
+  auto self(shared_from_this());
+  work_thread_->PostAsync([self, this, rid] {
+    if (rid == current_layer_rid_)
+      return;
+    current_layer_rid_ = rid;
+    auto shared = subscribe_stream_observer_.lock();
+    if (shared)
+      shared->OnSubscribeStreamFrameRequested(current_layer_rid_);
   });
 }
 
@@ -215,4 +226,8 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPac
 
 void SubscribeStream::OnSubscribeStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) {
   SendRtcp(rtcp_packet);
+}
+
+void SubscribeStream::OnSubscribeStreamTrackSendRtpPacket(uint8_t* data, size_t size) {
+  SendRtp(data, size);
 }

@@ -22,6 +22,8 @@ SubscribeStreamTrack::Configuration& SubscribeStreamTrack::Config() {
 }
 
 void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) {
+  if (!rtp_packet)
+    return;
   packets_sent_++;
   media_bytes_sent_ += rtp_packet->Size();
   last_rtp_timestamp_ = rtp_packet->Timestamp();
@@ -29,6 +31,9 @@ void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) 
   rate_statistics_.AddData(rtp_packet->Size(), last_send_timestamp_);
   if (!configuration_.nack_enabled)
     return;
+  rtp_packet->SetSequenceNumber(rtp_seq_++);
+  if (observer_)
+    observer_->OnSubscribeStreamTrackSendRtpPacket(rtp_packet->Data(), rtp_packet->Size());
   send_packet_recorder_.Record(std::move(rtp_packet));
 }
 

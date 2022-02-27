@@ -88,4 +88,14 @@ export default class SubscribeStream extends EventDispatcher {
       throw "PeerConnection is null";
     }
   }
+
+  async switchToSimulcastLayer(layer: string) {
+    let layer_num = parseInt(layer);
+    if (layer_num < 1)
+      throw "Invalid layer.";
+    let request = { action: "ChangeSimulcastLayer", subscribeStreamId: this.subscribeStreamId_, simulcastLayer: layer};
+    let res = await this.signaling_.sendRequest(request);
+    if (res.error != undefined && res.error)
+      throw "Set simulcast layer failed.";
+  }
 };

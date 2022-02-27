@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include <memory>
 #include <optional>
 
@@ -34,6 +35,7 @@ class SubscribeStreamTrack : public Timer::Observer, public std::enable_shared_f
                                                      uint32_t ssrc,
                                                      uint16_t sequence_number) = 0;
     virtual void OnSubscribeStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) = 0;
+    virtual void OnSubscribeStreamTrackSendRtpPacket(uint8_t* data, size_t size) = 0;
   };
 
   SubscribeStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer);
@@ -62,4 +64,5 @@ class SubscribeStreamTrack : public Timer::Observer, public std::enable_shared_f
   BitRateEstimator rate_statistics_;
   int64_t report_interval_;
   Random random_;
+  uint16_t rtp_seq_{0};
 };

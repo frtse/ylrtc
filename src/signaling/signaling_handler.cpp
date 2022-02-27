@@ -100,6 +100,20 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
       }
     } else if (action == "keepAlive") {
       // TODO.
+    } else if (action == "ChangeSimulcastLayer") {
+      const std::string& subscribe_stream_id = request_json.at("subscribeStreamId");
+      const std::string& simulcast_layer = request_json.at("simulcastLayer");
+      auto room = RoomManager::GetInstance().GetRoomById(session_info_.room_id);
+      if (room) {
+        auto subscribe_stream = std::dynamic_pointer_cast<SubscribeStream>(room->GetStreamById(subscribe_stream_id));
+        if (subscribe_stream) {
+          subscribe_stream->SetSimulcastLayer(simulcast_layer);
+        } else {
+          result = kNoStreamWithCorrespondingIdFound;
+        }
+      } else {
+        result = kNoRoomWithCorrespondingID;
+      }
     } else {
       result = kUnsupportedActions;
     }
