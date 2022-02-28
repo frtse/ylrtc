@@ -130,6 +130,7 @@ void PublishStreamTrack::OnTimerTimeout() {
 }
 
 void PublishStreamTrack::SendRequestkeyFrame() {
+  spdlog::debug("PublishStreamTrack::SendRequestkeyFrame");
   if (configuration_.rtcpfb_pli) {
     RtcpPliPacket pli;
     pli.SetSenderSsrc(configuration_.ssrc);

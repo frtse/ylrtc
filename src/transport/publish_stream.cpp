@@ -127,9 +127,9 @@ void PublishStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
   auto rtcp_packets = rtcp_compound.GetRtcpPackets();
   for (auto p : rtcp_packets) {
     if (p->Type() == kRtcpTypeRtpfb) {
-      if (p->Format() == 1) {
+      if (p->Format() == FeedbackRtpMessageType::kNack) {
         // nack.
-      } else if (p->Format() == 15) {
+      } else if (p->Format() == FeedbackRtpMessageType::kTwcc) {
         // twcc.
       } else {
         spdlog::debug("fb format = {}", p->Format());

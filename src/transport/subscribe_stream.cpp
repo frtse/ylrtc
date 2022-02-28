@@ -34,10 +34,10 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
   auto rtcp_packets = rtcp_compound.GetRtcpPackets();
   for (auto p : rtcp_packets) {
     if (p->Type() == kRtcpTypeRtpfb) {
-      if (p->Format() == 1) {
+      if (p->Format() == FeedbackRtpMessageType::kNack) {
         NackPacket* nack_packet = dynamic_cast<NackPacket*>(p);
         ssrc_track_map_[nack_packet->MediaSsrc()]->ReceiveNack(nack_packet);
-      } else if (p->Format() == 15) {
+      } else if (p->Format() == FeedbackRtpMessageType::kTwcc) {
         // twcc
       } else {
         spdlog::debug("fb format = {}", p->Format());
@@ -50,6 +50,12 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
         auto stream_iter = ssrc_track_map_.find(block.MediaSsrc());
         if (stream_iter != ssrc_track_map_.end())
           stream_iter->second->ReceiveReceiverReport(block);
+      }
+    } else if (p->Type() == kRtcpTypePsfb) {
+      if (p->Format() == FeedbackPsMessageType::kPli) {
+        spdlog::debug("Subscribe stream receive pli.");
+      } else if (p->Format() == FeedbackPsMessageType::kFir) {
+        spdlog::debug("Subscribe stream receive fir.");
       }
     }
   }
