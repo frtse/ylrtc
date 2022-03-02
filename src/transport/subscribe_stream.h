@@ -7,12 +7,14 @@
 #include <optional>
 
 #include "rtp_packet.h"
+#include "rtcp_packet.h"
 #include "subscribe_stream_track.h"
 #include "webrtc_stream.h"
 
 class SubscribeStreamObserver {
-  public:
+ public:
   virtual void OnSubscribeStreamFrameRequested(const std::string& rid = "") = 0;
+  virtual void OnSubscribeStreamLastSrRequested(const std::string& rid, std::optional<SenderReportPacket>& sr) = 0;
 };
 
 class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observer {

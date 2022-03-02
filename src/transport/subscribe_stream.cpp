@@ -57,6 +57,8 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
       } else if (p->Format() == FeedbackPsMessageType::kFir) {
         spdlog::debug("Subscribe stream receive fir.");
       }
+    } else if (p->Type() == kRtcpTypeSr) {
+      spdlog::warn("Subscribe stream receive SR.");
     }
   }
 }
@@ -88,6 +90,10 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
       }
       if (rid && *rid != current_layer_rid_)
         return;
+      if (rid && clone_packet->IsKeyFrame())
+        spdlog::debug("Receive key frame. rid == {}", (std::string)*rid);
+      if (rid)
+        spdlog::debug("Rtp ts = {}", clone_packet->Timestamp());
       ssrc_track_map_.at(clone_packet->Ssrc())->SendRtpPacket(std::move(clone_packet));
     } else {
       spdlog::warn("SubscribeStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());

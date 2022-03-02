@@ -39,6 +39,7 @@ class PublishStream : public WebrtcStream
   void OnPublishStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) override;
   void OnReceiveSideTwccSendTransportFeedback(std::unique_ptr<RtcpPacket> packet) override;
   void OnSubscribeStreamFrameRequested(const std::string& rid = "") override;
+  void OnSubscribeStreamLastSrRequested(const std::string& rid, std::optional<SenderReportPacket>& sr) override;
 
   std::list<std::shared_ptr<SubscribeStream>> data_observers_;
   std::vector<std::shared_ptr<PublishStreamTrack>> tracks_;

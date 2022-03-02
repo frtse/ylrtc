@@ -130,7 +130,6 @@ void PublishStreamTrack::OnTimerTimeout() {
 }
 
 void PublishStreamTrack::SendRequestkeyFrame() {
-  spdlog::debug("PublishStreamTrack::SendRequestkeyFrame");
   if (configuration_.rtcpfb_pli) {
     RtcpPliPacket pli;
     pli.SetSenderSsrc(configuration_.ssrc);
@@ -160,4 +159,12 @@ void PublishStreamTrack::ReceiveDlrrSubBlock(const ReceiveTimeInfo& sub_block) {
         nack_request_->UpdateRtt(rtt_millis_);
     }
   }
+}
+
+void PublishStreamTrack::ReceiveSenderReport(SenderReportPacket* sr) {
+  last_sr_ = *sr;
+}
+
+std::optional<SenderReportPacket> PublishStreamTrack::LastSr() const {
+  return last_sr_;
 }

@@ -247,6 +247,45 @@ bool SenderReportPacket::Serialize(ByteWriter* byte_writer) {
   return true;
 }
 
+bool SenderReportPacket::Parse(ByteReader* byte_reader) {
+  DCHECK(byte_reader);
+  if (!ParseCommonHeader(byte_reader))
+    return false;
+  if (!byte_reader->ReadUInt32(&sender_ssrc_))
+    return false;
+  if (!byte_reader->ReadUInt32(&ntp_seconds_))
+    return false;
+  if (!byte_reader->ReadUInt32(&ntp_fractions_))
+    return false;
+  if (!byte_reader->ReadUInt32(&rtp_timestamp_))
+    return false;
+  if (!byte_reader->ReadUInt32(&send_packet_count_))
+    return false;
+  if (!byte_reader->ReadUInt32(&send_octets_))
+    return false;
+  return true;
+}
+
+uint32_t SenderReportPacket::NtpSeconds() const {
+  return ntp_seconds_;
+}
+
+uint32_t SenderReportPacket::SNtpFractions() const {
+  return ntp_fractions_;
+}
+
+uint32_t SenderReportPacket::RtpTimestamp() const {
+  return rtp_timestamp_;
+}
+
+uint32_t SenderReportPacket::SendPacketCount() const {
+  return send_packet_count_;
+}
+
+uint32_t SenderReportPacket::SendOctets() const {
+  return send_octets_;
+}
+
 void SenderReportPacket::SetNtpSeconds(uint32_t ntp_seconds) {
   ntp_seconds_ = ntp_seconds;
 }
@@ -660,6 +699,8 @@ bool RtcpCompound::Parse(uint8_t* data, int size) {
       packet = new ReceiverReportPacket;
     } else if (header->packet_type == kRtcpTypeXr) {
       packet = new XrPacket;
+    } else if (header->packet_type == kRtcpTypeSr) {
+      packet = new SenderReportPacket;
     } else {
       packet = new RtcpPacket;
     }

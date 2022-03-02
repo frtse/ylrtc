@@ -143,6 +143,12 @@ struct ReportBlock {
 class SenderReportPacket : public RtcpPacket {
  public:
   bool Serialize(ByteWriter* byte_writer) override;
+  bool Parse(ByteReader* byte_reader) override;
+  uint32_t NtpSeconds() const;
+  uint32_t SNtpFractions() const;
+  uint32_t RtpTimestamp() const;
+  uint32_t SendPacketCount() const;
+  uint32_t SendOctets() const;
   void SetNtpSeconds(uint32_t ntp_seconds);
   void SetNtpFractions(uint32_t ntp_fractions);
   void SetRtpTimestamp(uint32_t rtp_timestamp);

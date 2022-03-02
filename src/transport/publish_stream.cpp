@@ -135,7 +135,7 @@ void PublishStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
         spdlog::debug("fb format = {}", p->Format());
       }
     } else if (p->Type() == kRtcpTypeRr) {
-      // rr
+      spdlog::warn("Publish stream receive RR.");
     } else if (p->Type() == kRtcpTypeXr) {
       XrPacket* xr = dynamic_cast<XrPacket*>(p);
       auto dlrr = xr->Dlrr();
@@ -149,6 +149,10 @@ void PublishStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
         else
           spdlog::error("Unknown XR packet.");
       }
+    } else if (p->Type() == kRtcpTypeSr) {
+      SenderReportPacket* sr = dynamic_cast<SenderReportPacket*>(p);
+      if (ssrc_track_map_.find(sr->SenderSsrc()) != ssrc_track_map_.end())
+        ssrc_track_map_.at(sr->SenderSsrc())->ReceiveSenderReport(sr);
     }
   }
 }
@@ -261,6 +265,17 @@ void PublishStream::OnSubscribeStreamFrameRequested(const std::string& rid) {
         track->SendRequestkeyFrame();
       else if (!config.audio && config.rid == rid)
         track->SendRequestkeyFrame();
+    }
+  });
+}
+
+void PublishStream::OnSubscribeStreamLastSrRequested(const std::string& rid, std::optional<SenderReportPacket>& sr) {
+  auto self(shared_from_this());
+  work_thread_->PostAsync([self, this, rid, &sr] {
+    for (auto& track : tracks_) {
+      auto& config = track->Config();
+      if (!config.audio && config.rid == rid)
+        sr = track->LastSr();
     }
   });
 }

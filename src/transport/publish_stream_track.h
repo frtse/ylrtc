@@ -51,6 +51,8 @@ class PublishStreamTrack : public Timer::Observer
   void SetRtxSSRC(uint32_t ssrc);
   void SendRequestkeyFrame();
   void ReceiveDlrrSubBlock(const ReceiveTimeInfo& sub_block);
+  void ReceiveSenderReport(SenderReportPacket* sr);
+  std::optional<SenderReportPacket> LastSr() const;
 
  private:
   void OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) override;
@@ -67,4 +69,5 @@ class PublishStreamTrack : public Timer::Observer
   Random random_;
   int64_t rtt_millis_{100};
   Observer* observer_;
+  std::optional<SenderReportPacket> last_sr_;
 };
