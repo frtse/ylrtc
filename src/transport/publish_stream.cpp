@@ -271,7 +271,7 @@ void PublishStream::OnSubscribeStreamFrameRequested(const std::string& rid) {
 
 void PublishStream::OnSubscribeStreamLastSrRequested(const std::string& rid, std::optional<SenderReportPacket>& sr) {
   auto self(shared_from_this());
-  work_thread_->PostAsync([self, this, rid, &sr] {
+  work_thread_->PostSync([self, this, rid, &sr] {
     for (auto& track : tracks_) {
       auto& config = track->Config();
       if (!config.audio && config.rid == rid)

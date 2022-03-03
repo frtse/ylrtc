@@ -54,6 +54,9 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
     } else if (p->Type() == kRtcpTypePsfb) {
       if (p->Format() == FeedbackPsMessageType::kPli) {
         spdlog::debug("Subscribe stream receive pli.");
+        auto shared = subscribe_stream_observer_.lock();
+        if (shared)
+          shared->OnSubscribeStreamFrameRequested(current_layer_rid_);
       } else if (p->Format() == FeedbackPsMessageType::kFir) {
         spdlog::debug("Subscribe stream receive fir.");
       }
@@ -88,12 +91,42 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
       if (!rid) {
         rid = clone_packet->GetExtensionValue<RepairedRtpStreamIdExtension>();
       }
-      if (rid && *rid != current_layer_rid_)
-        return;
-      if (rid && clone_packet->IsKeyFrame())
-        spdlog::debug("Receive key frame. rid == {}", (std::string)*rid);
-      if (rid)
-        spdlog::debug("Rtp ts = {}", clone_packet->Timestamp());
+
+      if (rid) {
+        if (current_layer_rid_ != target_layer_rid_) {
+          if (*rid == target_layer_rid_ && clone_packet->IsKeyFrame()) {
+            std::optional<SenderReportPacket> reference_layer_sr;
+            std::optional<SenderReportPacket> target_layer_sr;
+            auto shared = subscribe_stream_observer_.lock();
+            if (shared) {
+              shared->OnSubscribeStreamLastSrRequested(reference_layer_rid_, reference_layer_sr);
+              shared->OnSubscribeStreamLastSrRequested(target_layer_rid_, target_layer_sr);
+            }
+            if (reference_layer_sr && target_layer_sr) {
+              int64_t reference_layer_ntp_millis = NtpTime(reference_layer_sr->NtpSeconds(), reference_layer_sr->SNtpFractions()).ToMillis();
+              uint32_t  reference_layer_rtp_timestamp = reference_layer_sr->RtpTimestamp();
+              int64_t target_layer_ntp_millis = NtpTime(target_layer_sr->NtpSeconds(), target_layer_sr->SNtpFractions()).ToMillis();
+              uint32_t  target_layer_rtp_timestamp = target_layer_sr->RtpTimestamp();
+              int64_t diff_ntp_millis;
+              if (target_layer_ntp_millis >= reference_layer_ntp_millis)
+                diff_ntp_millis = target_layer_ntp_millis - reference_layer_ntp_millis;
+              else
+                diff_ntp_millis = -1 * (reference_layer_ntp_millis - target_layer_ntp_millis);
+              int64_t diff_rtp_timestamp_  = diff_ntp_millis * 90;
+              uint32_t reference_ntp_point_target_rtp_timestamp_ = target_layer_rtp_timestamp - diff_rtp_timestamp_;
+              timestamp_offset_ = reference_ntp_point_target_rtp_timestamp_ - reference_layer_rtp_timestamp;
+              current_layer_rid_ = target_layer_rid_;
+            } else {
+              auto shared = subscribe_stream_observer_.lock();
+              if (shared)
+                shared->OnSubscribeStreamFrameRequested(target_layer_rid_);
+            }
+          }
+        }
+        if (*rid != current_layer_rid_)
+          return;
+        clone_packet->SetTimestamp(clone_packet->Timestamp() - timestamp_offset_);
+      }
       ssrc_track_map_.at(clone_packet->Ssrc())->SendRtpPacket(std::move(clone_packet));
     } else {
       spdlog::warn("SubscribeStream: Unrecognized RTP packet. ssrc = {}.", rtp_packet->Ssrc());
@@ -107,10 +140,10 @@ void SubscribeStream::SetSimulcastLayer(const std::string& rid) {
   work_thread_->PostAsync([self, this, rid] {
     if (rid == current_layer_rid_)
       return;
-    current_layer_rid_ = rid;
+    target_layer_rid_ = rid;
     auto shared = subscribe_stream_observer_.lock();
     if (shared)
-      shared->OnSubscribeStreamFrameRequested(current_layer_rid_);
+      shared->OnSubscribeStreamFrameRequested(target_layer_rid_);
   });
 }
 

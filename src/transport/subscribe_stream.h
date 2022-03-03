@@ -45,4 +45,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   uint64_t transport_seq_{0};
   bool data_received_{false};
   std::string current_layer_rid_{"1"};
+  std::string target_layer_rid_{"1"};
+  std::string reference_layer_rid_{"1"};
+  uint32_t timestamp_offset_{0};
 };
