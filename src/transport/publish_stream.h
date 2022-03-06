@@ -38,14 +38,14 @@ class PublishStream : public WebrtcStream
   void OnRtcpPacketReceive(uint8_t* data, size_t length) override;
   void OnPublishStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) override;
   void OnReceiveSideTwccSendTransportFeedback(std::unique_ptr<RtcpPacket> packet) override;
-  void OnSubscribeStreamFrameRequested(const std::string& rid = "") override;
-  void OnSubscribeStreamLastSrRequested(const std::string& rid, std::optional<SenderReportPacket>& sr) override;
+  void OnSubscribeStreamFrameRequested(uint32_t rid = 0) override;
+  void OnSubscribeStreamLastSrRequested(uint32_t rid, std::optional<SenderReportPacket>& sr) override;
 
   std::list<std::shared_ptr<SubscribeStream>> data_observers_;
   std::vector<std::shared_ptr<PublishStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<PublishStreamTrack>> ssrc_track_map_;
   std::shared_ptr<ReceiveSideTWCC> receive_side_twcc_;
-  std::unordered_map<std::string, PublishStreamTrack::Configuration> rid_configuration_map_;
+  std::unordered_map<uint32_t, PublishStreamTrack::Configuration> rid_configuration_map_;
   std::unordered_map<std::string, RtpHeaderExtensionCapability> section_type_extensions_map_;
   std::vector<RtpHeaderExtensionCapability> extension_capabilities_;
   // Stream mute info.

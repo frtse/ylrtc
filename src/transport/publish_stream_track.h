@@ -30,7 +30,7 @@ class PublishStreamTrack : public Timer::Observer
     bool rtx_enabled{false};
     bool nack_enabled{false};
     std::string codec;
-    std::string rid;
+    uint32_t rid{0};
     bool audio{false};
     bool rtcpfb_pli{false};
     bool rtcpfb_fir{false};

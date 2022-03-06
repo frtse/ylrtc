@@ -107,7 +107,7 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
       if (room) {
         auto subscribe_stream = std::dynamic_pointer_cast<SubscribeStream>(room->GetStreamById(subscribe_stream_id));
         if (subscribe_stream) {
-          subscribe_stream->SetSimulcastLayer(simulcast_layer);
+          subscribe_stream->SetSimulcastLayer(std::stoi(simulcast_layer));
         } else {
           result = kNoStreamWithCorrespondingIdFound;
         }

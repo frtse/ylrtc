@@ -57,7 +57,7 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
       nack_request_->OnReceivedPacket(rtp_packet->SequenceNumber(), rtp_packet->IsKeyFrame());
   }
 
-  if (!configuration_.rid.empty())
+  if (configuration_.rid != 0)
     rtp_packet->SetSsrc(kSimulcastSubscribeVideoSsrc);
 }
 

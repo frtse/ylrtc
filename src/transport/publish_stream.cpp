@@ -223,7 +223,7 @@ void PublishStream::SetLocalDescription() {
         std::string send_rids = simulcast.at("list1");
         auto result = StringSplit(send_rids, ";");  // TODO FIXME : example[1,2,3;~4,~5].
         for (auto& rid : result)
-          rid_configuration_map_.insert(std::make_pair(rid, config));
+          rid_configuration_map_.insert(std::make_pair(std::stoi(rid), config));
       }
     }
     if (media_section.find("ext") != media_section.end()) {
@@ -256,12 +256,12 @@ void PublishStream::OnReceiveSideTwccSendTransportFeedback(std::unique_ptr<RtcpP
     SendRtcp(*packet);
 }
 
-void PublishStream::OnSubscribeStreamFrameRequested(const std::string& rid) {
+void PublishStream::OnSubscribeStreamFrameRequested(uint32_t rid) {
   auto self(shared_from_this());
   work_thread_->PostAsync([self, this, rid] {
     for (auto& track : tracks_) {
       auto& config = track->Config();
-      if (rid.empty() && !config.audio)
+      if (rid == 0 && !config.audio)
         track->SendRequestkeyFrame();
       else if (!config.audio && config.rid == rid)
         track->SendRequestkeyFrame();
@@ -269,7 +269,7 @@ void PublishStream::OnSubscribeStreamFrameRequested(const std::string& rid) {
   });
 }
 
-void PublishStream::OnSubscribeStreamLastSrRequested(const std::string& rid, std::optional<SenderReportPacket>& sr) {
+void PublishStream::OnSubscribeStreamLastSrRequested(uint32_t rid, std::optional<SenderReportPacket>& sr) {
   auto self(shared_from_this());
   work_thread_->PostSync([self, this, rid, &sr] {
     for (auto& track : tracks_) {

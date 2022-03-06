@@ -49,23 +49,29 @@ std::optional<RTPHeaderExtensionType> RtpHeaderExtensionCapability::GetIdType(in
 
 std::optional<std::string> RtpMidExtension::Parse(uint8_t* data, size_t size) {
   std::string mid;
-  if (size == 0 && !data)
+  if (size == 0 || data[0] == 0)
     return std::nullopt;
   return mid.assign((char*)data, size);
 }
 
-std::optional<std::string> RtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
-  std::string rtp_stream_id;
-  if (size == 0 && !data)
+std::optional<uint32_t> RtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
+  uint32_t rtp_stream_id;
+  if (size == 0 || data[0] == 0)
     return std::nullopt;
-  return rtp_stream_id.assign((char*)data, size);
+  rtp_stream_id = ::atoi(reinterpret_cast<char*>(data));
+  if (rtp_stream_id == 0)
+    return std::nullopt;
+  return rtp_stream_id;
 }
 
-std::optional<std::string> RepairedRtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
-  std::string repaired_rtp_stream_id;
-  if (size == 0 && !data)
+std::optional<uint32_t> RepairedRtpStreamIdExtension::Parse(uint8_t* data, size_t size) {
+  uint32_t repaired_rtp_stream_id;
+  if (size == 0 || data[0] == 0)
     return std::nullopt;
-  return repaired_rtp_stream_id.assign((char*)data, size);
+  repaired_rtp_stream_id = ::atoi(reinterpret_cast<char*>(data));
+  if (repaired_rtp_stream_id == 0)
+    return std::nullopt;
+  return repaired_rtp_stream_id;
 }
 
 std::optional<uint16_t> TransportSequenceNumberExtension::Parse(uint8_t* data, size_t size) {

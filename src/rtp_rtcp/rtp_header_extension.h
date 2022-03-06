@@ -55,15 +55,15 @@ class RtpMidExtension {
 class RtpStreamIdExtension {
  public:
   static constexpr RTPHeaderExtensionType kType = kRtpExtensionRtpStreamId;
-  using value_type = std::string;
-  static std::optional<std::string> Parse(uint8_t* data, size_t size);
+  using value_type = uint32_t;
+  static std::optional<uint32_t> Parse(uint8_t* data, size_t size);
 };
 
 class RepairedRtpStreamIdExtension {
  public:
   static constexpr RTPHeaderExtensionType kType = kRtpExtensionRepairedRtpStreamId;
-  using value_type = std::string;
-  static std::optional<std::string> Parse(uint8_t* data, size_t size);
+  using value_type = uint32_t;
+  static std::optional<uint32_t> Parse(uint8_t* data, size_t size);
 };
 
 class TransportSequenceNumberExtension {

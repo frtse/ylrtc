@@ -13,8 +13,8 @@
 
 class SubscribeStreamObserver {
  public:
-  virtual void OnSubscribeStreamFrameRequested(const std::string& rid = "") = 0;
-  virtual void OnSubscribeStreamLastSrRequested(const std::string& rid, std::optional<SenderReportPacket>& sr) = 0;
+  virtual void OnSubscribeStreamFrameRequested(uint32_t rid = 0) = 0;
+  virtual void OnSubscribeStreamLastSrRequested(uint32_t rid, std::optional<SenderReportPacket>& sr) = 0;
 };
 
 class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observer {
@@ -26,7 +26,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   std::optional<std::string> CreateAnswer() override;
   void SetLocalDescription() override;
   void OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket> rtp_packet);
-  void SetSimulcastLayer(const std::string& rid);
+  void SetSimulcastLayer(uint32_t rid);
   void Stop() override;
 
  private:
@@ -45,8 +45,8 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   std::weak_ptr<SubscribeStreamObserver> subscribe_stream_observer_;
   uint64_t transport_seq_{0};
   bool data_received_{false};
-  std::string current_layer_rid_{"1"};
-  std::string target_layer_rid_{"1"};
-  std::string reference_layer_rid_{"1"};
+  uint32_t current_layer_rid_{1};
+  uint32_t target_layer_rid_{1};
+  uint32_t reference_layer_rid_{1};
   uint32_t timestamp_offset_{0};
 };

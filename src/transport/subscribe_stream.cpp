@@ -135,7 +135,7 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
   });
 }
 
-void SubscribeStream::SetSimulcastLayer(const std::string& rid) {
+void SubscribeStream::SetSimulcastLayer(uint32_t rid) {
   auto self(shared_from_this());
   work_thread_->PostAsync([self, this, rid] {
     if (rid == current_layer_rid_)
