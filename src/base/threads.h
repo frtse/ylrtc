@@ -31,6 +31,8 @@ class Thread {
    */
   template <typename F>
   void PostSync(F&& f) {
+    if (std::this_thread::get_id() == thread_id_)
+      return f();
     std::promise<void> promise;
     auto future = promise.get_future();
     boost::asio::post(message_loop_, [&promise, f = std::forward<F>(f)]() {
