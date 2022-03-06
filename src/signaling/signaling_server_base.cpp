@@ -2,6 +2,7 @@
 
 #include "room_manager.h"
 #include "spdlog/spdlog.h"
+#include "threads.h"
 
 void HandleError(beast::error_code ec, char const* what) {
   spdlog::warn("{}: {}", what, ec.message());
@@ -19,6 +20,21 @@ WebsocketSessionBase::~WebsocketSessionBase() {}
 
 const SessionInfo& WebsocketSessionBase::GetSessionInfo() const {
   return session_info_;
+}
+
+void WebsocketSessionBase::StartCheckTimeout() {
+  timer_.reset(new Timer(MainThread::GetInstance().MessageLoop(), shared_from_this()));
+  timer_->AsyncWait(kCheckKeepAliveInterval);
+}
+
+void WebsocketSessionBase::OnTimerTimeout() {
+  auto recv_time = signaling_handler_->LastReceiveKeepAlive();
+  if (recv_time) {
+    auto delta = TimeMillis() - *recv_time;
+    if (delta > kKeepAliveTimeoutThreshold)
+      Close();
+  }
+  timer_->AsyncWait(kCheckKeepAliveInterval);
 }
 
 WebsocketSessionSet::WebsocketSessionSet() {}

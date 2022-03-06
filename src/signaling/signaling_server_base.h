@@ -17,7 +17,7 @@ struct SessionInfo {
 };
 
 class WebsocketSessionSet;
-class WebsocketSessionBase : public std::enable_shared_from_this<WebsocketSessionBase> {
+class WebsocketSessionBase : public std::enable_shared_from_this<WebsocketSessionBase>, public Timer::Observer {
  public:
   WebsocketSessionBase();
   virtual ~WebsocketSessionBase();
@@ -27,9 +27,15 @@ class WebsocketSessionBase : public std::enable_shared_from_this<WebsocketSessio
   virtual void Close() = 0;
 
  protected:
+  static const uint64_t kCheckKeepAliveInterval = 3000;
+  static const uint64_t kKeepAliveTimeoutThreshold = 3000;
+  void StartCheckTimeout();
+  void OnTimerTimeout() override;
   void HandleWsError(beast::error_code ec, char const* what);
   SessionInfo session_info_;
   std::unique_ptr<SignalingHandler> signaling_handler_;
+  std::shared_ptr<Timer> timer_;
+  bool timer_stoped_{false};
 };
 
 class WebsocketSessionSet {
@@ -61,6 +67,7 @@ class WebsocketSession : public WebsocketSessionBase {
 
   template <class Body, class Allocator>
   void Run(http::request<Body, http::basic_fields<Allocator>> req) {
+    StartCheckTimeout();
     DoAccept(std::move(req));
   }
 

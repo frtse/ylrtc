@@ -99,7 +99,7 @@ std::string SignalingHandler::HandleSignaling(const std::string& signaling) {
         result = kNoRoomWithCorrespondingID;
       }
     } else if (action == "keepAlive") {
-      // TODO.
+      last_receive_keep_alive_ = TimeMillis();
     } else if (action == "ChangeSimulcastLayer") {
       const std::string& subscribe_stream_id = request_json.at("subscribeStreamId");
       const std::string& simulcast_layer = request_json.at("simulcastLayer");
@@ -145,4 +145,8 @@ bool SignalingHandler::HijackNotification(const Notification& notification) {
   } catch (...) {
     return false;
   }
+}
+
+std::optional<int64_t> SignalingHandler::LastReceiveKeepAlive() const {
+  return last_receive_keep_alive_;
 }
