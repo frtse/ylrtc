@@ -46,7 +46,7 @@ class WebrtcStream : public std::enable_shared_from_this<WebrtcStream>,
 
   void OnUdpSocketDataReceive(uint8_t* data, size_t len, udp::endpoint* remote_ep) override;
   void OnUdpSocketError() override;
-  void OnStunMessageSend(uint8_t* data, size_t size, udp::endpoint* ep) override;
+  void OnStunMessageSend(std::shared_ptr<uint8_t> data, size_t size, udp::endpoint* ep) override;
   void OnIceConnectionCompleted() override;
   void OnIceConnectionError() override;
   void OnDtlsTransportSetup(SrtpSession::CipherSuite suite,

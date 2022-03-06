@@ -5,6 +5,9 @@
 #include "hmac_sha1.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
+#include "memory_pool.h"
+
+extern thread_local MemoryPool memory_pool;
 
 StunMessage::StunMessage(std::string local_ufrag, std::string local_password, std::string remote_ufrag)
     : mapped_endpoint_{nullptr}, has_use_candidate_{false}, local_ufrag_{local_ufrag}, local_password_{local_password}, remote_ufrag_{remote_ufrag} {}
@@ -99,7 +102,7 @@ void StunMessage::SetXorMappedAddress(udp::endpoint* address) {
 bool StunMessage::CreateResponse() {
   size_ = kStunHeaderSize + kStunAttributeHeaderSize + kXorMappedAddressAttributeLength
     + kStunAttributeHeaderSize + kMessageIntegrityAttributeLength + kStunAttributeHeaderSize + kFingerprintAttrLength;
-  data_.reset(new uint8_t[size_]);
+  data_ = memory_pool.AllocMemory(size_);
   ByteWriter writer(data_.get(), size_);
 
   if (!writer.WriteUInt16(kBindingResponse))
@@ -162,8 +165,8 @@ bool StunMessage::CreateResponse() {
   return true;
 }
 
-uint8_t* StunMessage::Data() const {
-  return data_.get();
+std::shared_ptr<uint8_t> StunMessage::Data() const {
+  return data_;
 };
 
 size_t StunMessage::Size() const {

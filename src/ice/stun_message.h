@@ -37,14 +37,14 @@ class StunMessage {
   bool Parse(uint8_t* data, size_t size);
   void SetXorMappedAddress(udp::endpoint* address);
   bool CreateResponse();
-  uint8_t* Data() const;
+  std::shared_ptr<uint8_t> Data() const;
   size_t Size() const;
   bool HasUseCandidate() const;
 
  private:
   std::string transaction_id_;
   udp::endpoint* mapped_endpoint_;
-  std::unique_ptr<uint8_t[]> data_;
+  std::shared_ptr<uint8_t> data_;
   size_t size_;
   bool has_use_candidate_;
   std::string local_ufrag_;

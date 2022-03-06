@@ -3,6 +3,7 @@
 #include <boost/asio.hpp>
 #include <cstddef>
 #include <string>
+#include <memory>
 
 #include "random.h"
 
@@ -17,7 +18,7 @@ class IceLite {
   class Observer {
    public:
     // Send STUN message to [ep].
-    virtual void OnStunMessageSend(uint8_t* data, size_t size, udp::endpoint* ep) = 0;
+    virtual void OnStunMessageSend(std::shared_ptr<uint8_t> data, size_t size, udp::endpoint* ep) = 0;
     // Ice connection complete.
     virtual void OnIceConnectionCompleted() = 0;
     // Ice connection error.

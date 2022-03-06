@@ -102,9 +102,14 @@ void WebrtcStream::OnUdpSocketError() {
   Shutdown();
 }
 
-void WebrtcStream::OnStunMessageSend(uint8_t* data, size_t size, udp::endpoint* ep) {
-  if (udp_socket_)
-    udp_socket_->SendData(data, size, ep);
+void WebrtcStream::OnStunMessageSend(std::shared_ptr<uint8_t> data, size_t size, udp::endpoint* ep) {
+  if (udp_socket_) {
+    UdpSocket::UdpMessage msg;
+    msg.buffer = data;
+    msg.endpoint = selected_endpoint_;
+    msg.length = size;
+    udp_socket_->SendData(msg);
+  }
 }
 
 void WebrtcStream::OnIceConnectionCompleted() {

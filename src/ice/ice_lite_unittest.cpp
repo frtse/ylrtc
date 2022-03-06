@@ -86,7 +86,7 @@ class IceLiteTest: public ::testing::Test, public IceLite::Observer {
   }
 
  private:
-  void OnStunMessageSend(uint8_t* data, size_t size, udp::endpoint* ep) override {
+  void OnStunMessageSend(std::shared_ptr<uint8_t> data, size_t size, udp::endpoint* ep) override {
 
   }
 
