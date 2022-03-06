@@ -168,3 +168,7 @@ void PublishStreamTrack::ReceiveSenderReport(SenderReportPacket* sr) {
 std::optional<SenderReportPacket> PublishStreamTrack::LastSr() const {
   return last_sr_;
 }
+
+int64_t PublishStreamTrack::Bitrate() {
+  return track_statistics_.BitrateReceived();
+}

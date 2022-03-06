@@ -15,6 +15,7 @@ class SubscribeStreamObserver {
  public:
   virtual void OnSubscribeStreamFrameRequested(uint32_t rid = 0) = 0;
   virtual void OnSubscribeStreamLastSrRequested(uint32_t rid, std::optional<SenderReportPacket>& sr) = 0;
+  virtual void OnSubscribeStreamQueryRID(uint32_t want, uint32_t& result) = 0;
 };
 
 class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observer {

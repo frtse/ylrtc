@@ -40,10 +40,12 @@ class PublishStream : public WebrtcStream
   void OnReceiveSideTwccSendTransportFeedback(std::unique_ptr<RtcpPacket> packet) override;
   void OnSubscribeStreamFrameRequested(uint32_t rid = 0) override;
   void OnSubscribeStreamLastSrRequested(uint32_t rid, std::optional<SenderReportPacket>& sr) override;
+  void OnSubscribeStreamQueryRID(uint32_t want, uint32_t& result) override;
 
   std::list<std::shared_ptr<SubscribeStream>> data_observers_;
   std::vector<std::shared_ptr<PublishStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<PublishStreamTrack>> ssrc_track_map_;
+  std::map<uint32_t, std::shared_ptr<PublishStreamTrack>, std::greater<uint32_t>> rid_track_map_;
   std::shared_ptr<ReceiveSideTWCC> receive_side_twcc_;
   std::unordered_map<uint32_t, PublishStreamTrack::Configuration> rid_configuration_map_;
   std::unordered_map<std::string, RtpHeaderExtensionCapability> section_type_extensions_map_;

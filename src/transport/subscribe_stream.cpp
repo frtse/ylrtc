@@ -140,8 +140,13 @@ void SubscribeStream::SetSimulcastLayer(uint32_t rid) {
   work_thread_->PostAsync([self, this, rid] {
     if (rid == current_layer_rid_)
       return;
-    target_layer_rid_ = rid;
+    uint32_t selected_rid = 0;
     auto shared = subscribe_stream_observer_.lock();
+    if (shared)
+      shared->OnSubscribeStreamQueryRID(rid, selected_rid);
+    if (selected_rid == 0)
+      return;
+    target_layer_rid_ = selected_rid;
     if (shared)
       shared->OnSubscribeStreamFrameRequested(target_layer_rid_);
   });

@@ -49,6 +49,7 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
         std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), this);
         tracks_.push_back(track);
         ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
+        rid_track_map_.insert(std::make_pair(*rid, track));
       } else if (rtp_packet->PayloadType() == config.rtx_payload_type) {
         for (auto track : tracks_) {
           auto& track_config = track->Config();
@@ -277,5 +278,25 @@ void PublishStream::OnSubscribeStreamLastSrRequested(uint32_t rid, std::optional
       if (!config.audio && config.rid == rid)
         sr = track->LastSr();
     }
+  });
+}
+
+void PublishStream::OnSubscribeStreamQueryRID(uint32_t want, uint32_t& result) {
+  auto self(shared_from_this());
+  work_thread_->PostSync([self, this, want, &result] {
+    if (rid_track_map_.empty()) {
+      result = 0;
+      return;
+    }
+    bool found = false;
+    for (auto& e : rid_track_map_) {
+      if (e.first <= want && e.second && e.second->Bitrate() > 0) {
+        result = e.first;
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      result = rid_track_map_.rbegin()->first;
   });
 }

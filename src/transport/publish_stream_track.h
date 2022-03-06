@@ -53,6 +53,7 @@ class PublishStreamTrack : public Timer::Observer
   void ReceiveDlrrSubBlock(const ReceiveTimeInfo& sub_block);
   void ReceiveSenderReport(SenderReportPacket* sr);
   std::optional<SenderReportPacket> LastSr() const;
+  int64_t Bitrate();
 
  private:
   void OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) override;

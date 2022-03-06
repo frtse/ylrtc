@@ -61,6 +61,7 @@ std::optional<uint32_t> RtpStreamIdExtension::Parse(uint8_t* data, size_t size) 
   rtp_stream_id = ::atoi(reinterpret_cast<char*>(data));
   if (rtp_stream_id == 0)
     return std::nullopt;
+  DCHECK(rtp_stream_id > 0);
   return rtp_stream_id;
 }
 
@@ -71,6 +72,7 @@ std::optional<uint32_t> RepairedRtpStreamIdExtension::Parse(uint8_t* data, size_
   repaired_rtp_stream_id = ::atoi(reinterpret_cast<char*>(data));
   if (repaired_rtp_stream_id == 0)
     return std::nullopt;
+  DCHECK(repaired_rtp_stream_id > 0);
   return repaired_rtp_stream_id;
 }
 
