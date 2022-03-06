@@ -112,7 +112,7 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
                 diff_ntp_millis = target_layer_ntp_millis - reference_layer_ntp_millis;
               else
                 diff_ntp_millis = -1 * (reference_layer_ntp_millis - target_layer_ntp_millis);
-              int64_t diff_rtp_timestamp_  = diff_ntp_millis * 90;
+              int64_t diff_rtp_timestamp_  = diff_ntp_millis * ssrc_track_map_.at(clone_packet->Ssrc())->Config().clock_rate / kNumMillisecsPerSec;
               uint32_t reference_ntp_point_target_rtp_timestamp_ = target_layer_rtp_timestamp - diff_rtp_timestamp_;
               timestamp_offset_ = reference_ntp_point_target_rtp_timestamp_ - reference_layer_rtp_timestamp;
               current_layer_rid_ = target_layer_rid_;

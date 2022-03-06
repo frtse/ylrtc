@@ -30,6 +30,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   void Stop() override;
 
  private:
+  static const int64_t kNumMillisecsPerSec = 1000;
   void OnRtpPacketReceive(uint8_t* data, size_t length) override;
   void OnRtcpPacketReceive(uint8_t* data, size_t length) override;
   void OnSubscribeStreamTrackResendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) override;

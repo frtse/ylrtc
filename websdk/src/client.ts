@@ -77,6 +77,15 @@ export default class Client extends EventDispatcher {
       0) {
       let init = null;
       if (videoRtpEncodingParameters !== null) {
+        if (Array.isArray(videoRtpEncodingParameters)) {
+          if (videoRtpEncodingParameters.length != 1) {
+            for(let i = 0; i < videoRtpEncodingParameters.length; i++) {
+              if (typeof videoRtpEncodingParameters[i] === 'object' 
+                && videoRtpEncodingParameters[i] !== null)
+                videoRtpEncodingParameters[i]["rid"] = i + 1  + "";
+            }
+          }
+        }
         init =  {
           direction: 'sendonly',
           sendEncodings: videoRtpEncodingParameters,

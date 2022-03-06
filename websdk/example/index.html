@@ -91,6 +91,7 @@
 
   class RemoteStreamView {
     constructor(streamId, UserId, hasVideo, hasAudio, subscribeStream) {
+      this.simulcastFlag = false;
       this.close = false;
       this.subscribeStream = subscribeStream;
       let self = this;
@@ -196,6 +197,11 @@
         this.subscribeStream.mute("audio");
       else
         this.subscribeStream.unmute("audio");
+      if (this.simulcastFlag)
+        this.subscribeStream.switchToSimulcastLayer("1");
+      else
+        this.subscribeStream.switchToSimulcastLayer("2");
+      this.simulcastFlag = !this.simulcastFlag;
     }
   };
   function randomString(e) {
@@ -249,7 +255,7 @@
       if (!simulcast)
         videoRtpEncodingParameters = [{maxBitrate: 500000}];
       else
-        videoRtpEncodingParameters = [{rid: '1', active: true}, {rid: '2', active: true}, {rid: '3', active: true}];
+        videoRtpEncodingParameters = [{active: true}, {active: true}, {active: true}];
       publisheStream = await client.publish(device, audioRtpEncodingParameters, videoRtpEncodingParameters);
       let localStreamCameraImg = document.getElementById('local-video-camera');
       localStreamCameraImg.src = "./img/camera-open.png";
