@@ -1,8 +1,8 @@
 [webrtc]
 #Local IP.
-localIp = "172.16.0.4"
+localIp = "127.0.0.1"
 #Fill in the public IP. If there is no public IP, fill in the local IP.
-announcedIp = "106.13.76.148"
+announcedIp = "127.0.0.1"
 #Port on which webrtc listens.
 port = 20000
 #This represents the number of worker threads. If it is 0, it is determined by hardware.
@@ -10,8 +10,8 @@ workerThreadCount = 0
 [signaling_server]
 #The port on which the signaling service listens.
 port = 8000
-certFile = "ffrtc.com.crt"
-keyFile = "ffrtc.com.key"
+certFile = "xxx.crt"
+keyFile = "xxx.key"
 [memory_pool]
 #Whether to enable memory pool.
 enabled = true
