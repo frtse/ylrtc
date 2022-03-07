@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>SFU Demo</title>
+  <title>ylrtc Demo</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=0.7, user-scalable=no, shrink-to-fit=no">
   <link rel="stylesheet" type="text/css" href="css/style.css">
@@ -13,7 +13,7 @@
   <div id="left-title">
   <div id="left-title-top"></div>
   <div id="left-title-text">
-    sfu demo
+    ylrtc demo
   </div>
   <div id="left-title-middle"></div>
   <button id="left-title-invitation-link">COPY INVITATION LINK</button id="left-title-button">
@@ -33,10 +33,10 @@
   </div>
 </body>
 <script src="./js/adapter.js"></script>
-<script src="./js/ylsfu-websdk.js"></script>
+<script src="./js/ylrtc-websdk.js"></script>
 <script>
   var client = null;
-  client = new Ylsfu.Client("ffrtc.com", 8000);
+  client = new Ylrtc.Client("ffrtc.com", 8000);
   var has_local_video = true;
   var has_local_audio = true;
   var publisheStream = null;
@@ -245,7 +245,7 @@
         remoteStreamMap.set(subscribeStream.id(), subscribeStreamView);
       });
 
-      let device = await Ylsfu.Device.CreateDevice("camera", {audio: true, video: true});
+      let device = await Ylrtc.Device.CreateDevice("camera", {audio: true, video: true});
       let localPlayer = document.getElementById('local-video');
       localPlayer.srcObject = device.mediaStream();
       let local_video_header_title = document.getElementById("local-video-header-title");

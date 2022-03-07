@@ -7,10 +7,10 @@ module.exports = {
     main: "./src/index.ts",
   },
   output: {
-    library: 'Ylsfu',
+    library: 'Ylrtc',
     libraryTarget: 'umd',
     path: path.resolve(__dirname, './dist'),
-    filename: "ylsfu-websdk.js" // <--- Will be compiled to this single file
+    filename: "ylrtc-websdk.js"
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
