@@ -2,8 +2,6 @@
 Webrtc conference service.
 
 ## Online demo
-[Video conference demo.](https://ffrtc.com)
-
 ## Features
 + Efficient multi-threaded architecture.
 + Web client SDK.
