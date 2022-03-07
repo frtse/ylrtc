@@ -31,8 +31,10 @@ void WebsocketSessionBase::OnTimerTimeout() {
   auto recv_time = signaling_handler_->LastReceiveKeepAlive();
   if (recv_time) {
     auto delta = TimeMillis() - *recv_time;
-    if (delta > kKeepAliveTimeoutThreshold)
-      Close();
+    if (delta > kKeepAliveTimeoutThreshold) {
+      // TODO diabled, Program gets stuck.
+      // Close();
+    }
   }
   timer_->AsyncWait(kCheckKeepAliveInterval);
 }

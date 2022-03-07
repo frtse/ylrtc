@@ -35,7 +35,6 @@ class WebsocketSessionBase : public std::enable_shared_from_this<WebsocketSessio
   SessionInfo session_info_;
   std::unique_ptr<SignalingHandler> signaling_handler_;
   std::shared_ptr<Timer> timer_;
-  bool timer_stoped_{false};
 };
 
 class WebsocketSessionSet {
