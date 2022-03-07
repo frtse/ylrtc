@@ -122,7 +122,7 @@ install_libsdptransform() {
 install_boost() {
   if [ -d $BUILD_LIB_DIR ]; then
     cd $BUILD_LIB_DIR
-    cp $PATHNAME/3rdparty/boost_1_76_0.zip $BUILD_LIB_DIR
+    wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.zip
     unzip boost_1_76_0.zip
     cd boost_1_76_0
     chmod +x bootstrap.sh
