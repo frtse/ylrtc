@@ -6,7 +6,7 @@ Webrtc conference service.
 + Efficient multi-threaded architecture.
 + Web client SDK.
 + Transport-wide Congestion Control.
-+ simulcast.
++ Simulcast.
 + Single port.
 
 ## Install dependencies
