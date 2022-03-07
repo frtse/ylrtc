@@ -1,5 +1,5 @@
 # ylrtc
-[![C/C++ CI](https://github.com/wxxit/ylrtc/actions/workflows/cmake.yml/badge.svg)](https://github.com/wxxit/ylrtc/actions/workflows/cmake.yml)
+[![C/C++ CI](https://github.com/wxxit/ylrtc/actions/workflows/cmake.yml/badge.svg)](https://github.com/wxxit/ylrtc/actions/workflows/cmake.yml)  
 Webrtc conference service.
 
 ## Online demo
