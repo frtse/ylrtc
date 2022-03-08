@@ -92,7 +92,7 @@ class RtpPacket {
   }
 
   void UpdateExtensionCapability(RtpHeaderExtensionCapability new_capability);
-  void RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint32_t ssrc);
+  bool RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint32_t ssrc);
   bool ParsePayload(std::string_view codec);
 
  private:

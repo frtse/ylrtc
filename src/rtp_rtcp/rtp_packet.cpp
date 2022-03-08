@@ -247,9 +247,10 @@ void RtpPacket::UpdateExtensionCapability(RtpHeaderExtensionCapability new_capab
   extension_capability_ = new_capability;
 }
 
-void RtpPacket::RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint32_t ssrc) {
+bool RtpPacket::RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint32_t ssrc) {
+  // Chrome send empty rtx payload.
   if (payload_size_ == 0)
-    return;
+    return false;
   SetPayloadType(payload_type);
   SetSequenceNumber(sequence_number);
   SetSsrc(ssrc);
@@ -259,6 +260,7 @@ void RtpPacket::RtxRepaire(uint16_t sequence_number, uint8_t payload_type, uint3
     data_[payload_offset_ + payload_size_ + padding_size_ - 1] += 2;
   }
   payload_size_ -= kRtxHeaderSize;
+  return true;
 }
 
 bool RtpPacket::ParsePayload(std::string_view codec) {
