@@ -38,19 +38,19 @@ void PublishStreamTrack::Deinit() {
     nack_request_->Deinit();
 }
 
-void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
+bool PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
   bool is_rtx = false;
   if (configuration_.rtx_enabled && configuration_.rtx_ssrc && *configuration_.rtx_ssrc == rtp_packet->Ssrc()) {
     if (rtx_track_statistics_)
       rtx_track_statistics_->ReceivePacket(rtp_packet);
     if (!rtp_packet->RtxRepair(LoadUInt16BE(rtp_packet->Payload()), configuration_.payload_type, configuration_.ssrc))
-      return;
+      return false;
     is_rtx = true;
   }
   if (!is_rtx)
     track_statistics_.ReceivePacket(rtp_packet);
   if (!configuration_.audio && !rtp_packet->ParsePayload(configuration_.codec))
-    return;
+    return false;
   if (configuration_.nack_enabled) {
     if (is_rtx)
       nack_request_->OnReceivedPacket(rtp_packet->SequenceNumber(), rtp_packet->IsKeyFrame(), true);
@@ -60,6 +60,7 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
 
   if (configuration_.rid != 0)
     rtp_packet->SetSsrc(kSimulcastSubscribeVideoSsrc);
+  return true;
 }
 
 PublishStreamTrack::Configuration& PublishStreamTrack::Config() {

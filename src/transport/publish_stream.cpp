@@ -67,7 +67,8 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
   auto twsn = rtp_packet->GetExtensionValue<TransportSequenceNumberExtension>();
   if (twsn)
     receive_side_twcc_->IncomingPacket(TimeMillis(), rtp_packet->Ssrc(), *twsn);
-  ssrc_track_map_.at(rtp_packet->Ssrc())->ReceiveRtpPacket(rtp_packet);
+  if (!ssrc_track_map_.at(rtp_packet->Ssrc())->ReceiveRtpPacket(rtp_packet))
+    return;
   for (auto& observer : data_observers_)
     observer->OnPublishStreamRtpPacketReceive(rtp_packet);
 }
