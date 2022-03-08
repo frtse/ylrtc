@@ -43,7 +43,7 @@ void PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet)
   if (configuration_.rtx_enabled && configuration_.rtx_ssrc && *configuration_.rtx_ssrc == rtp_packet->Ssrc()) {
     if (rtx_track_statistics_)
       rtx_track_statistics_->ReceivePacket(rtp_packet);
-    if (!rtp_packet->RtxRepaire(LoadUInt16BE(rtp_packet->Payload()), configuration_.payload_type, configuration_.ssrc))
+    if (!rtp_packet->RtxRepair(LoadUInt16BE(rtp_packet->Payload()), configuration_.payload_type, configuration_.ssrc))
       return;
     is_rtx = true;
   }
