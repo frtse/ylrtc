@@ -76,12 +76,15 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
     if (!connection_established_)
       return;
     if (!data_received_) {
+      // Only video can be keyframe.
       if (!rtp_packet->IsKeyFrame()) {
         auto shared = subscribe_stream_observer_.lock();
         if (shared)
           shared->OnSubscribeStreamFrameRequested();
+        return;
+      } else {
+        data_received_ = true;
       }
-      data_received_ = true;
     }
     std::unique_ptr<RtpPacket> clone_packet = std::make_unique<RtpPacket>(*rtp_packet);
     if (ssrc_track_map_.find(clone_packet->Ssrc()) != ssrc_track_map_.end()) {
