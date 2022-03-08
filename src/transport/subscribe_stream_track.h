@@ -46,6 +46,7 @@ class SubscribeStreamTrack : public Timer::Observer, public std::enable_shared_f
   void SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet);
   void ReceiveNack(NackPacket* nack_packet);
   void ReceiveReceiverReport(const ReportBlock& report_block);
+  void SyncSequenceNumber(uint16_t seq);
 
  private:
   std::optional<SenderReportPacket> BuildSr();
@@ -64,5 +65,7 @@ class SubscribeStreamTrack : public Timer::Observer, public std::enable_shared_f
   BitRateEstimator rate_statistics_;
   int64_t report_interval_;
   Random random_;
-  uint16_t rtp_seq_{0};
+  uint16_t max_rtp_seq_{0};
+  uint16_t base_rtp_seq_{0};
+  bool first_packet_{true};
 };

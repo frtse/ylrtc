@@ -2,6 +2,7 @@
 
 #include "spdlog/spdlog.h"
 #include "utils.h"
+#include "sequence_number_util.h"
 
 SubscribeStreamTrack::SubscribeStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer)
     : configuration_{configuration}, io_context_{io_context}, observer_{observer} {
@@ -31,7 +32,15 @@ void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) 
   rate_statistics_.AddData(rtp_packet->Size(), last_send_timestamp_);
   if (!configuration_.nack_enabled)
     return;
-  rtp_packet->SetSequenceNumber(rtp_seq_++);
+  uint16_t seq = base_rtp_seq_ + rtp_packet->SequenceNumber();
+  if (first_packet_) {
+    max_rtp_seq_ = seq;
+    first_packet_ = false;
+  } else {
+    if (SeqNumGT(seq, max_rtp_seq_))
+      max_rtp_seq_ = seq;
+  }
+  rtp_packet->SetSequenceNumber(seq);
   if (observer_)
     observer_->OnSubscribeStreamTrackSendRtpPacket(rtp_packet->Data(), rtp_packet->Size());
   send_packet_recorder_.Record(std::move(rtp_packet));
@@ -67,6 +76,10 @@ void SubscribeStreamTrack::ReceiveReceiverReport(const ReportBlock& report_block
     rtt_millis_ = NtpTime::CreateFromCompactNtp(rtp_compact_ntp).ToMillis();
     send_packet_recorder_.SetRtt(rtt_millis_);
   }
+}
+
+void SubscribeStreamTrack::SyncSequenceNumber(uint16_t seq) {
+  base_rtp_seq_ = max_rtp_seq_ - seq + 1;
 }
 
 std::optional<SenderReportPacket> SubscribeStreamTrack::BuildSr() {

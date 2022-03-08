@@ -119,6 +119,8 @@ void SubscribeStream::OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket>
               uint32_t reference_ntp_point_target_rtp_timestamp_ = target_layer_rtp_timestamp - diff_rtp_timestamp_;
               timestamp_offset_ = reference_ntp_point_target_rtp_timestamp_ - reference_layer_rtp_timestamp;
               current_layer_rid_ = target_layer_rid_;
+              if (ssrc_track_map_.find(clone_packet->Ssrc()) != ssrc_track_map_.end())
+                ssrc_track_map_.at(clone_packet->Ssrc())->SyncSequenceNumber(clone_packet->SequenceNumber());
             } else {
               auto shared = subscribe_stream_observer_.lock();
               if (shared)
