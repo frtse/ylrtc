@@ -10,6 +10,7 @@
 #include "rtcp_packet.h"
 #include "subscribe_stream_track.h"
 #include "webrtc_stream.h"
+#include "transport_feedback.h"
 
 class SubscribeStreamObserver {
  public:
@@ -41,6 +42,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
                                            uint16_t sequence_number) override;
   void OnSubscribeStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) override;
   void OnSubscribeStreamTrackSendRtpPacket(RtpPacket* packet) override;
+  void ReceiveTransportFeedback(const TransportFeedback& feedback);
   std::vector<std::shared_ptr<SubscribeStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<SubscribeStreamTrack>> ssrc_track_map_;
   std::weak_ptr<SubscribeStreamObserver> subscribe_stream_observer_;

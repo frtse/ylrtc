@@ -201,7 +201,8 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
         NackPacket* nack_packet = dynamic_cast<NackPacket*>(p);
         ssrc_track_map_[nack_packet->MediaSsrc()]->ReceiveNack(nack_packet);
       } else if (p->Format() == FeedbackRtpMessageType::kTwcc) {
-        // twcc
+        TransportFeedback* fb = dynamic_cast<TransportFeedback*>(p);
+        ReceiveTransportFeedback(*fb);
       } else {
         spdlog::debug("fb format = {}", p->Format());
       }
@@ -289,4 +290,7 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtpPacket(RtpPacket* packet) {
     return;
   packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
   SendRtp(packet->Data(), packet->Size());
+}
+
+void SubscribeStream::ReceiveTransportFeedback(const TransportFeedback& feedback) {
 }
