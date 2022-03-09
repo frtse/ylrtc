@@ -70,7 +70,7 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
   if (!ssrc_track_map_.at(rtp_packet->Ssrc())->ReceiveRtpPacket(rtp_packet))
     return;
   for (auto& observer : data_observers_)
-    observer->OnPublishStreamRtpPacketReceive(rtp_packet);
+    observer->ReceivePublishStreamRtpPacket(rtp_packet);
 }
 
 void PublishStream::UpdateMuteInfo(const std::string& type, bool muted) {

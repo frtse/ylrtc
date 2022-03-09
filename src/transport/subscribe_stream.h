@@ -26,7 +26,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   bool SetRemoteDescription(const std::string& offer) override;
   std::optional<std::string> CreateAnswer() override;
   void SetLocalDescription() override;
-  void OnPublishStreamRtpPacketReceive(std::shared_ptr<RtpPacket> rtp_packet);
+  void ReceivePublishStreamRtpPacket(std::shared_ptr<RtpPacket> rtp_packet);
   void SetSimulcastLayer(uint32_t rid);
   void Stop() override;
 
@@ -40,7 +40,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
                                            uint32_t ssrc,
                                            uint16_t sequence_number) override;
   void OnSubscribeStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) override;
-  void OnSubscribeStreamTrackSendRtpPacket(uint8_t* data, size_t size) override;
+  void OnSubscribeStreamTrackSendRtpPacket(RtpPacket* packet) override;
   std::vector<std::shared_ptr<SubscribeStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<SubscribeStreamTrack>> ssrc_track_map_;
   std::weak_ptr<SubscribeStreamObserver> subscribe_stream_observer_;

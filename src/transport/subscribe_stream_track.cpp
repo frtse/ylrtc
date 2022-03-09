@@ -42,7 +42,7 @@ void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) 
   }
   rtp_packet->SetSequenceNumber(seq);
   if (observer_)
-    observer_->OnSubscribeStreamTrackSendRtpPacket(rtp_packet->Data(), rtp_packet->Size());
+    observer_->OnSubscribeStreamTrackSendRtpPacket(rtp_packet.get());
   send_packet_recorder_.Record(std::move(rtp_packet));
 }
 
