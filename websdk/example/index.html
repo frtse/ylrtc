@@ -91,7 +91,6 @@
 
   class RemoteStreamView {
     constructor(streamId, UserId, hasVideo, hasAudio, subscribeStream) {
-      this.simulcastFlag = false;
       this.close = false;
       this.subscribeStream = subscribeStream;
       let self = this;
@@ -197,12 +196,6 @@
         this.subscribeStream.mute("audio");
       else
         this.subscribeStream.unmute("audio");
-      // TODO: Remove test code.
-      if (this.simulcastFlag)
-        this.subscribeStream.switchToSimulcastLayer("1");
-      else
-        this.subscribeStream.switchToSimulcastLayer("2");
-      this.simulcastFlag = !this.simulcastFlag;
     }
   };
   function randomString(e) {
