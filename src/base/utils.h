@@ -1,5 +1,16 @@
 #pragma once
 
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <numeric>
+#include <string>
+#include <vector>
+
 #include <boost/asio.hpp>
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/dispatch.hpp>
@@ -11,19 +22,7 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/beast/websocket.hpp>
-#include <boost/make_unique.hpp>
-#include <boost/optional.hpp>
 #include <boost/stacktrace.hpp>
-#include <cmath>
-#include <cstddef>
-#include <cstdint>
-#include <functional>
-#include <iostream>
-#include <limits>
-#include <memory>
-#include <numeric>
-#include <string>
-#include <vector>
 
 namespace beast = boost::beast;
 namespace http = beast::http;

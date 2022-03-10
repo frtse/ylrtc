@@ -212,9 +212,9 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
       auto report_blocks = rr->GetReportBlocks();
       for (auto block : report_blocks) {
         // TODO: When RTX is enabled, the RR packet of RTX is ignored. Fix!!.
-        auto stream_iter = ssrc_track_map_.find(block.MediaSsrc());
-        if (stream_iter != ssrc_track_map_.end())
-          stream_iter->second->ReceiveReceiverReport(block);
+        auto track_iter = ssrc_track_map_.find(block.MediaSsrc());
+        if (track_iter != ssrc_track_map_.end())
+          track_iter->second->ReceiveReceiverReport(block);
       }
     } else if (p->Type() == kRtcpTypePsfb) {
       if (p->Format() == FeedbackPsMessageType::kPli) {
