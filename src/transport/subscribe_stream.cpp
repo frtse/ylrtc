@@ -11,7 +11,8 @@
 extern thread_local MemoryPool memory_pool;
 
 SubscribeStream::SubscribeStream(const std::string& room_id, const std::string& stream_id, std::weak_ptr<WebrtcStream::Observer> observer, std::weak_ptr<SubscribeStreamObserver> subscribe_stream_observer)
-    : WebrtcStream(room_id, stream_id, observer), subscribe_stream_observer_{subscribe_stream_observer} {}
+    : WebrtcStream(room_id, stream_id, observer), subscribe_stream_observer_{subscribe_stream_observer}
+    , send_side_twcc_{std::make_unique<SendSideTWCC>()} {}
 
 SubscribeStream::~SubscribeStream() {}
 
@@ -233,7 +234,9 @@ void SubscribeStream::OnRtcpPacketReceive(uint8_t* data, size_t length) {
 void SubscribeStream::OnSubscribeStreamTrackResendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) {
   if (!connection_established_)
     return;
-  rtp_packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
+  uint16_t twsn = (++transport_seq_) & 0xFFFF;
+  rtp_packet->SetExtensionValue<TransportSequenceNumberExtension>(twsn);
+  InjectSendSideTWCC(rtp_packet.get(), twsn);
   SendRtp(rtp_packet->Data(), rtp_packet->Size());
 }
 
@@ -257,7 +260,9 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtxPacket(std::unique_ptr<RtpPac
   work_thread_->AssertInThisThread();
   if (!connection_established_)
     return;
-  rtp_packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
+  uint16_t twsn = (++transport_seq_) & 0xFFFF;
+  rtp_packet->SetExtensionValue<TransportSequenceNumberExtension>(twsn);
+  InjectSendSideTWCC(rtp_packet.get(), twsn);
   int protect_rtp_need_len = send_srtp_session_->GetProtectRtpNeedLength(rtp_packet->Size() + kRtxHeaderSize);
   UdpSocket::UdpMessage msg;
   msg.buffer = memory_pool.AllocMemory(protect_rtp_need_len);
@@ -288,9 +293,22 @@ void SubscribeStream::OnSubscribeStreamTrackSendRtcpPacket(RtcpPacket& rtcp_pack
 void SubscribeStream::OnSubscribeStreamTrackSendRtpPacket(RtpPacket* packet) {
   if (!packet)
     return;
-  packet->SetExtensionValue<TransportSequenceNumberExtension>((++transport_seq_) & 0xFFFF);
+  uint16_t twsn = (++transport_seq_) & 0xFFFF;
+  packet->SetExtensionValue<TransportSequenceNumberExtension>(twsn);
+  InjectSendSideTWCC(packet, twsn);
   SendRtp(packet->Data(), packet->Size());
 }
 
 void SubscribeStream::ReceiveTransportFeedback(const TransportFeedback& feedback) {
+  send_side_twcc_->ReceiveTransportFeedback(feedback);
+}
+
+void SubscribeStream::InjectSendSideTWCC(RtpPacket* packet, uint16_t twsn) {
+  if (!packet)
+    return;
+  PacketStatus packet_status;
+  packet_status.sent_time_millis = TimeMillis();
+  packet_status.transport_wide_sequence_number = twsn;
+  packet_status.size = packet->Size();
+  send_side_twcc_->SendPacket(packet_status);
 }

@@ -11,6 +11,7 @@
 #include "subscribe_stream_track.h"
 #include "webrtc_stream.h"
 #include "transport_feedback.h"
+#include "send_side_twcc.h"
 
 class SubscribeStreamObserver {
  public:
@@ -43,6 +44,7 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   void OnSubscribeStreamTrackSendRtcpPacket(RtcpPacket& rtcp_packet) override;
   void OnSubscribeStreamTrackSendRtpPacket(RtpPacket* packet) override;
   void ReceiveTransportFeedback(const TransportFeedback& feedback);
+  void InjectSendSideTWCC(RtpPacket* packet, uint16_t twsn);
   std::vector<std::shared_ptr<SubscribeStreamTrack>> tracks_;
   std::unordered_map<uint32_t, std::shared_ptr<SubscribeStreamTrack>> ssrc_track_map_;
   std::weak_ptr<SubscribeStreamObserver> subscribe_stream_observer_;
@@ -52,4 +54,5 @@ class SubscribeStream : public WebrtcStream, public SubscribeStreamTrack::Observ
   uint32_t target_layer_rid_{1};
   uint32_t reference_layer_rid_{1};
   uint32_t timestamp_offset_{0};
+  std::unique_ptr<SendSideTWCC> send_side_twcc_;
 };
