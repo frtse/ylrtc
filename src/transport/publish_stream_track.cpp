@@ -86,7 +86,7 @@ void PublishStreamTrack::OnNackRequesterRequestNack(const std::vector<uint16_t>&
 void PublishStreamTrack::OnNackRequesterRequestKeyFrame() {
   RtcpFirPacket fir;
   fir.SetSenderSsrc(configuration_.ssrc);
-  fir.AddFciEntry(configuration_.ssrc, 111); // TODO 111?
+  fir.AddFciEntry(configuration_.ssrc, ++fir_seq_num_);
   if (observer_)
     observer_->OnPublishStreamTrackSendRtcpPacket(fir);
 }
@@ -141,7 +141,7 @@ void PublishStreamTrack::SendRequestkeyFrame() {
   } else if (configuration_.rtcpfb_fir) {
     RtcpFirPacket fir;
     fir.SetSenderSsrc(configuration_.ssrc);
-    fir.AddFciEntry(configuration_.ssrc, fir_seq_num_++);
+    fir.AddFciEntry(configuration_.ssrc, ++fir_seq_num_);
     if (observer_)
       observer_->OnPublishStreamTrackSendRtcpPacket(fir);
   } else {
