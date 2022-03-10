@@ -88,6 +88,10 @@ std::optional<std::string> SdpNegotiator::CreatePublishAnswer() {
   auto& media = publish_anwser_sdp_.at("media");
   for (int i = 0; i < media.size(); ++i) {
     auto& media_section = media[i];
+    // https://datatracker.ietf.org/doc/html/draft-ietf-mmusic-sdp-bundle-negotiation-54#section-6
+    // Make bundle-only unspecified.
+    if (media_section.at("port") == 0)
+      media_section["port"] = 9;
     media_section.erase("ssrcs");
     media_section.erase("ssrcGroups");
     media_section.erase("iceOptions");
@@ -161,7 +165,6 @@ std::optional<std::string> SdpNegotiator::CreatePublishAnswer() {
                                 }),
                  fmtp.end());
       if (ServerConfig::GetInstance().EnableDTX() && select_codec == "opus") {
-        spdlog::debug("yes enable dtx....");
         for (auto& f : fmtp) {
           if (f.at("payload") == codec_payload)
             f.at("config") = std::string(f.at("config")) + std::string(";usedtx=1");
