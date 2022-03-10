@@ -7,6 +7,7 @@ announcedIp = "127.0.0.1"
 port = 20000
 #This represents the number of worker threads. If it is 0, it is determined by hardware.
 workerThreadCount = 0
+enableDTX = true
 [signaling_server]
 #The port on which the signaling service listens.
 port = 8000

@@ -25,6 +25,7 @@ class ServerConfig {
   std::string_view LogDirectory() const;
   bool RunAsDaemon() const;
   bool CoreDump() const;
+  bool EnableDTX() const;
 
  private:
   ServerConfig() = default;
@@ -41,4 +42,5 @@ class ServerConfig {
   bool run_as_daemon_;
   bool core_dump_;
   bool loaded_{false};
+  bool enableDTX_{false};
 };

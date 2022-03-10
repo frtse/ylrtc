@@ -8,6 +8,7 @@
 #include "spdlog/spdlog.h"
 #include "utils.h"
 #include "dtls_transport.h"
+#include "server_config.h"
 
 SdpNegotiator::SdpNegotiator() : local_dtls_setup_{"active"} {}
 
@@ -159,7 +160,8 @@ std::optional<std::string> SdpNegotiator::CreatePublishAnswer() {
                                   return item.at("payload") != codec_payload;
                                 }),
                  fmtp.end());
-      if (select_codec == "opus") {
+      if (ServerConfig::GetInstance().EnableDTX() && select_codec == "opus") {
+        spdlog::debug("yes enable dtx....");
         for (auto& f : fmtp) {
           if (f.at("payload") == codec_payload)
             f.at("config") = std::string(f.at("config")) + std::string(";usedtx=1");

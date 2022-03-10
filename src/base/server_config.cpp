@@ -20,6 +20,7 @@ bool ServerConfig::Load(std::string_view json_file_name) {
     announced_ip_ = toml::find<std::string>(webrtc, "announcedIp");
     webrtc_port_ = toml::find<uint16_t>(webrtc, "port");
     webrtc_worker_thread_count_ = toml::find<uint32_t>(webrtc, "workerThreadCount");
+    enableDTX_ = toml::find<bool>(webrtc, "enableDTX");
 
     const auto& signaling_server = toml::find(config_file, "signaling_server");
     signaling_server_port_ = toml::find<uint16_t>(signaling_server, "port");
@@ -103,4 +104,9 @@ bool ServerConfig::RunAsDaemon() const {
 bool ServerConfig::CoreDump() const {
   DCHECK(loaded_);
   return core_dump_;
+}
+
+bool ServerConfig::EnableDTX() const {
+  DCHECK(loaded_);
+  return enableDTX_;
 }
