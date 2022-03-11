@@ -44,9 +44,9 @@ class PublishStreamTrack : public Timer::Observer
   };
 
   PublishStreamTrack(const Configuration& configuration, boost::asio::io_context& io_context, Observer* observer);
-  bool ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet);
   void Init();
   void Deinit();
+  bool ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet);
   Configuration& Config();
   void SetRtxSSRC(uint32_t ssrc);
   void SendRequestkeyFrame();

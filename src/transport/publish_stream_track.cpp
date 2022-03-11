@@ -74,63 +74,6 @@ void PublishStreamTrack::SetRtxSSRC(uint32_t ssrc) {
   }
 }
 
-void PublishStreamTrack::OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) {
-  NackPacket nack;
-  nack.SetSenderSsrc(configuration_.ssrc);
-  nack.SetMediaSsrc(configuration_.ssrc);
-  nack.SetLostPacketSequenceNumbers(nack_list);
-  if (observer_)
-    observer_->OnPublishStreamTrackSendRtcpPacket(nack);
-}
-
-void PublishStreamTrack::OnNackRequesterRequestKeyFrame() {
-  RtcpFirPacket fir;
-  fir.SetSenderSsrc(configuration_.ssrc);
-  fir.AddFciEntry(configuration_.ssrc, ++fir_seq_num_);
-  if (observer_)
-    observer_->OnPublishStreamTrackSendRtcpPacket(fir);
-}
-
-void PublishStreamTrack::OnTimerTimeout() {
-  ReceiverReportPacket rr;
-  std::vector<ReportBlock> report_blocks;
-  track_statistics_.MaybeAppendReportBlockAndReset(report_blocks);
-  if (rtx_track_statistics_)
-    rtx_track_statistics_->MaybeAppendReportBlockAndReset(report_blocks);
-  if (!report_blocks.empty()) {
-    rr.SetReportBlocks(std::move(report_blocks));
-    if (observer_)
-      observer_->OnPublishStreamTrackSendRtcpPacket(rr);
-  }
-
-  XrPacket xr;
-  RrtrBlockContext rrtr_contex;
-  rrtr_contex.SetNtp(NtpTime::CreateFromMillis(TimeMillis()));
-  xr.SetRrtr(rrtr_contex);
-  xr.SetSenderSsrc(configuration_.ssrc);
-  if (observer_)
-    observer_->OnPublishStreamTrackSendRtcpPacket(xr);
-  // generate next time to send an RTCP report
-  int64_t min_interval = report_interval_;
-
-  if (!configuration_.audio) {
-    // Calculate bandwidth for video; 360 / send bandwidth in kbit/s.
-    auto rate = track_statistics_.BitrateReceived();
-    if (rate) {
-      int64_t send_bitrate_kbit = rate / 1000;
-      if (send_bitrate_kbit != 0) {
-        const int64_t millisecs_per_sec = 1000;
-        min_interval = std::min(360 * millisecs_per_sec / send_bitrate_kbit, report_interval_);
-      }
-    }
-  }
-
-  // The interval between RTCP packets is varied randomly over the
-  // range [1/2,3/2] times the calculated interval.
-  int64_t time_to_next = random_.RandomNumber(min_interval * 1 / 2, min_interval * 3 / 2);
-  rtcp_timer_->AsyncWait(time_to_next);
-}
-
 void PublishStreamTrack::SendRequestkeyFrame() {
   if (configuration_.rtcpfb_pli) {
     RtcpPliPacket pli;
@@ -173,4 +116,57 @@ std::optional<SenderReportPacket> PublishStreamTrack::LastSr() const {
 
 int64_t PublishStreamTrack::Bitrate() {
   return track_statistics_.BitrateReceived();
+}
+
+void PublishStreamTrack::OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) {
+  NackPacket nack;
+  nack.SetSenderSsrc(configuration_.ssrc);
+  nack.SetMediaSsrc(configuration_.ssrc);
+  nack.SetLostPacketSequenceNumbers(nack_list);
+  if (observer_)
+    observer_->OnPublishStreamTrackSendRtcpPacket(nack);
+}
+
+void PublishStreamTrack::OnNackRequesterRequestKeyFrame() {
+  SendRequestkeyFrame();
+}
+
+void PublishStreamTrack::OnTimerTimeout() {
+  ReceiverReportPacket rr;
+  std::vector<ReportBlock> report_blocks;
+  track_statistics_.MaybeAppendReportBlockAndReset(report_blocks);
+  if (rtx_track_statistics_)
+    rtx_track_statistics_->MaybeAppendReportBlockAndReset(report_blocks);
+  if (!report_blocks.empty()) {
+    rr.SetReportBlocks(std::move(report_blocks));
+    if (observer_)
+      observer_->OnPublishStreamTrackSendRtcpPacket(rr);
+  }
+
+  XrPacket xr;
+  RrtrBlockContext rrtr_contex;
+  rrtr_contex.SetNtp(NtpTime::CreateFromMillis(TimeMillis()));
+  xr.SetRrtr(rrtr_contex);
+  xr.SetSenderSsrc(configuration_.ssrc);
+  if (observer_)
+    observer_->OnPublishStreamTrackSendRtcpPacket(xr);
+  // generate next time to send an RTCP report
+  int64_t min_interval = report_interval_;
+
+  if (!configuration_.audio) {
+    // Calculate bandwidth for video; 360 / send bandwidth in kbit/s.
+    auto rate = track_statistics_.BitrateReceived();
+    if (rate) {
+      int64_t send_bitrate_kbit = rate / 1000;
+      if (send_bitrate_kbit != 0) {
+        const int64_t millisecs_per_sec = 1000;
+        min_interval = std::min(360 * millisecs_per_sec / send_bitrate_kbit, report_interval_);
+      }
+    }
+  }
+
+  // The interval between RTCP packets is varied randomly over the
+  // range [1/2,3/2] times the calculated interval.
+  int64_t time_to_next = random_.RandomNumber(min_interval * 1 / 2, min_interval * 3 / 2);
+  rtcp_timer_->AsyncWait(time_to_next);
 }
