@@ -17,10 +17,12 @@
 #include "rtp_packet.h"
 #include "threads.h"
 #include "timer.h"
+#include "keyframe_requester.h"
 
 class PublishStreamTrack : public Timer::Observer
   , public NackRequester::Observer
-  , public std::enable_shared_from_this<PublishStreamTrack> {
+  , public std::enable_shared_from_this<PublishStreamTrack>
+  , public KeyframeRequesterObserver {
  public:
   struct Configuration {
     uint32_t ssrc;
@@ -59,6 +61,8 @@ class PublishStreamTrack : public Timer::Observer
   void OnNackRequesterRequestNack(const std::vector<uint16_t>& nack_list) override;
   void OnNackRequesterRequestKeyFrame() override;
   void OnTimerTimeout() override;
+  void OnKeyframeRequesterRequest() override;
+
   std::shared_ptr<Timer> rtcp_timer_;
   int64_t report_interval_;
   Configuration configuration_;
@@ -71,4 +75,5 @@ class PublishStreamTrack : public Timer::Observer
   int64_t rtt_millis_{100};
   Observer* observer_;
   std::optional<SenderReportPacket> last_sr_;
+  std::shared_ptr<KeyframeRequester> key_frame_requester_;
 };

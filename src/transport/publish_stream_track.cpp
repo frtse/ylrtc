@@ -29,6 +29,8 @@ PublishStreamTrack::PublishStreamTrack(const Configuration& configuration, boost
 void PublishStreamTrack::Init() {
   rtcp_timer_.reset(new Timer(io_context_, shared_from_this()));
   rtcp_timer_->AsyncWait(report_interval_);
+  key_frame_requester_.reset(new KeyframeRequester(io_context_, shared_from_this()));
+  key_frame_requester_->Start();
 }
 
 void PublishStreamTrack::Deinit() {
@@ -36,6 +38,8 @@ void PublishStreamTrack::Deinit() {
     rtcp_timer_->Stop();
   if (nack_request_)
     nack_request_->Deinit();
+  if (key_frame_requester_)
+    key_frame_requester_->Stop();
 }
 
 bool PublishStreamTrack::ReceiveRtpPacket(std::shared_ptr<RtpPacket> rtp_packet) {
@@ -75,21 +79,7 @@ void PublishStreamTrack::SetRtxSSRC(uint32_t ssrc) {
 }
 
 void PublishStreamTrack::SendRequestkeyFrame() {
-  if (configuration_.rtcpfb_pli) {
-    RtcpPliPacket pli;
-    pli.SetSenderSsrc(configuration_.ssrc);
-    pli.SetMediaSsrc(configuration_.ssrc);
-    if (observer_)
-      observer_->OnPublishStreamTrackSendRtcpPacket(pli);
-  } else if (configuration_.rtcpfb_fir) {
-    RtcpFirPacket fir;
-    fir.SetSenderSsrc(configuration_.ssrc);
-    fir.AddFciEntry(configuration_.ssrc, ++fir_seq_num_);
-    if (observer_)
-      observer_->OnPublishStreamTrackSendRtcpPacket(fir);
-  } else {
-    return;
-  }
+  key_frame_requester_->KeyFrameRequest();
 }
 
 void PublishStreamTrack::ReceiveDlrrSubBlock(const ReceiveTimeInfo& sub_block) {
@@ -128,7 +118,7 @@ void PublishStreamTrack::OnNackRequesterRequestNack(const std::vector<uint16_t>&
 }
 
 void PublishStreamTrack::OnNackRequesterRequestKeyFrame() {
-  SendRequestkeyFrame();
+  key_frame_requester_->KeyFrameRequest();
 }
 
 void PublishStreamTrack::OnTimerTimeout() {
@@ -169,4 +159,22 @@ void PublishStreamTrack::OnTimerTimeout() {
   // range [1/2,3/2] times the calculated interval.
   int64_t time_to_next = random_.RandomNumber(min_interval * 1 / 2, min_interval * 3 / 2);
   rtcp_timer_->AsyncWait(time_to_next);
+}
+
+void PublishStreamTrack::OnKeyframeRequesterRequest() {
+  if (configuration_.rtcpfb_pli) {
+    RtcpPliPacket pli;
+    pli.SetSenderSsrc(configuration_.ssrc);
+    pli.SetMediaSsrc(configuration_.ssrc);
+    if (observer_)
+      observer_->OnPublishStreamTrackSendRtcpPacket(pli);
+  } else if (configuration_.rtcpfb_fir) {
+    RtcpFirPacket fir;
+    fir.SetSenderSsrc(configuration_.ssrc);
+    fir.AddFciEntry(configuration_.ssrc, ++fir_seq_num_);
+    if (observer_)
+      observer_->OnPublishStreamTrackSendRtcpPacket(fir);
+  } else {
+    return;
+  }
 }
