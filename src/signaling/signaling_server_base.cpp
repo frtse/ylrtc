@@ -32,11 +32,12 @@ void WebsocketSessionBase::OnTimerTimeout() {
   if (recv_time) {
     auto delta = TimeMillis() - *recv_time;
     if (delta > kKeepAliveTimeoutThreshold) {
-      // TODO diabled, Program gets stuck.
-      // Close();
+      AsyncClose();
+      timed_out_ = true;
     }
   }
-  timer_->AsyncWait(kCheckKeepAliveInterval);
+  if (!timed_out_)
+    timer_->AsyncWait(kCheckKeepAliveInterval);
 }
 
 WebsocketSessionSet::WebsocketSessionSet() {}

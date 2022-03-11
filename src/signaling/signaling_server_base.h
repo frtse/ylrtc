@@ -25,6 +25,7 @@ class WebsocketSessionBase : public std::enable_shared_from_this<WebsocketSessio
   virtual void SendNotification(const Notification& notification) = 0;
   const SessionInfo& GetSessionInfo() const;
   virtual void Close() = 0;
+  virtual void AsyncClose() = 0;
 
  protected:
   static const uint64_t kCheckKeepAliveInterval = 3000;
@@ -35,6 +36,7 @@ class WebsocketSessionBase : public std::enable_shared_from_this<WebsocketSessio
   SessionInfo session_info_;
   std::unique_ptr<SignalingHandler> signaling_handler_;
   std::shared_ptr<Timer> timer_;
+  bool timed_out_{false};
 };
 
 class WebsocketSessionSet {
@@ -100,7 +102,15 @@ class WebsocketSession : public WebsocketSessionBase {
     Derived().Ws().close(websocket::close_reason(websocket::close_code::normal), err);
   }
 
+  void AsyncClose() override {
+    Derived().Ws().async_close(websocket::close_code::normal,
+        beast::bind_front_handler(
+            &WebsocketSession::OnClose,
+            std::dynamic_pointer_cast<WebsocketSession<DerivedClass>>(shared_from_this())));
+  }
+
  private:
+  void OnClose(beast::error_code ec) {}
   std::vector<beast::flat_buffer> write_buffers_;
   std::shared_ptr<WebsocketSessionSet> websocket_sessions_;
   DerivedClass& Derived() {
