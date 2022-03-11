@@ -79,7 +79,8 @@ void PublishStreamTrack::SetRtxSSRC(uint32_t ssrc) {
 }
 
 void PublishStreamTrack::SendRequestkeyFrame() {
-  key_frame_requester_->KeyFrameRequest();
+  if (key_frame_requester_)
+    key_frame_requester_->KeyFrameRequest();
 }
 
 void PublishStreamTrack::ReceiveDlrrSubBlock(const ReceiveTimeInfo& sub_block) {

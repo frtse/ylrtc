@@ -47,6 +47,7 @@ void PublishStream::OnRtpPacketReceive(uint8_t* data, size_t length) {
         config.rid = *rid;
         config.extension_capability = extension_capability;
         std::shared_ptr<PublishStreamTrack> track = std::make_shared<PublishStreamTrack>(config, work_thread_->MessageLoop(), this);
+        track->Init();
         tracks_.push_back(track);
         ssrc_track_map_.insert(std::make_pair(config.ssrc, track));
         rid_track_map_.insert(std::make_pair(*rid, track));
