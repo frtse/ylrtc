@@ -30,8 +30,6 @@ void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) 
   last_rtp_timestamp_ = rtp_packet->Timestamp();
   last_send_timestamp_ = TimeMillis();
   rate_statistics_.AddData(rtp_packet->Size(), last_send_timestamp_);
-  if (!configuration_.nack_enabled)
-    return;
   uint16_t seq = base_rtp_seq_ + rtp_packet->SequenceNumber();
   if (first_packet_) {
     max_rtp_seq_ = seq;
@@ -43,7 +41,8 @@ void SubscribeStreamTrack::SendRtpPacket(std::unique_ptr<RtpPacket> rtp_packet) 
   rtp_packet->SetSequenceNumber(seq);
   if (observer_)
     observer_->OnSubscribeStreamTrackSendRtpPacket(rtp_packet.get());
-  send_packet_recorder_.Record(std::move(rtp_packet));
+  if (configuration_.nack_enabled)
+    send_packet_recorder_.Record(std::move(rtp_packet));
 }
 
 void SubscribeStreamTrack::ReceiveNack(NackPacket* nack_packet) {
