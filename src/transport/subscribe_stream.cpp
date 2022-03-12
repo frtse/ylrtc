@@ -160,6 +160,8 @@ void SubscribeStream::ReceivePublishStreamRtpPacket(std::shared_ptr<RtpPacket> r
 void SubscribeStream::SetSimulcastLayer(uint32_t rid) {
   auto self(shared_from_this());
   work_thread_->PostAsync([self, this, rid] {
+    if (rid > kMaxSimulcastLayers || rid == kInvalidLayerIndex)
+      return;
     if (rid == current_layer_rid_)
       return;
     uint32_t selected_rid = 0;
