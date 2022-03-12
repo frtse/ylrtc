@@ -1,8 +1,9 @@
 #include "send_side_twcc.h"
+
 #include "utils.h"
 #include "spdlog/spdlog.h"
 
-SendSideTWCC::SendSideTWCC() : inter_arrival_delta_{std::make_unique<InterArrivalDelta>(5)}, trendline_estimator_{std::make_unique<TrendlineEstimator>()}{
+SendSideTWCC::SendSideTWCC() : inter_arrival_delta_{std::make_unique<InterArrivalDelta>()}, trendline_estimator_{std::make_unique<TrendlineEstimator>()}{
 }
 
 void SendSideTWCC::SendPacket(const PacketStatus& packet) {
@@ -36,13 +37,13 @@ void SendSideTWCC::ReceiveTransportFeedback(const TransportFeedback& feedback) {
   }
   if (!packet_status_vector.empty()) {
     int64_t now_millis = TimeMillis();
-    int64_t send_time_delta = -1;
-    int64_t arrival_time_delta = -1;
+    int64_t send_time_delta_millis = -1;
+    int64_t arrival_time_delta_millis = -1;
     int packet_size_delta = -1;
     for (auto& packet_status : packet_status_vector) {
       bool calculated_deltas = inter_arrival_delta_->ComputeDeltas(packet_status.sent_time_millis, packet_status.receive_time_millis
-        , now_millis, packet_status.size, &send_time_delta, &arrival_time_delta, &packet_size_delta);
-      trendline_estimator_->Update(arrival_time_delta, send_time_delta, packet_status.sent_time_millis
+        , now_millis, packet_status.size, &send_time_delta_millis, &arrival_time_delta_millis, &packet_size_delta);
+      trendline_estimator_->Update(arrival_time_delta_millis, send_time_delta_millis, packet_status.sent_time_millis
         , packet_status.receive_time_millis, packet_status.size, calculated_deltas);
     }
   }

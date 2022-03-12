@@ -10,6 +10,7 @@
 #include "sequence_number_util.h"
 #include "inter_arrival_delta.h"
 #include "trendline_estimator.h"
+#include "common.h"
 
 struct PacketStatus {
   int64_t sent_time_millis{-1};

@@ -7,12 +7,7 @@
 #include <memory>
 #include <utility>
 
-enum class BandwidthUsage {
-  kBwNormal = 0,
-  kBwUnderusing = 1,
-  kBwOverusing = 2,
-  kLast
-};
+#include "common.h"
 
 struct TrendlineEstimatorSettings {
   static constexpr unsigned kDefaultTrendlineWindowSize = 20;
